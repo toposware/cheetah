@@ -1,0 +1,32 @@
+[package]
+name = "cheetah"
+description = "Implementation of the cheetah STARK-friendly curve"
+authors = ["Robin Salen <salenrobin@gmail.com>"]
+homepage = "https://github.com/Nashtare/cheetah"
+license = "MIT"
+repository = "https://github.com/Nashtare/cheetah"
+version = "0.1.0"
+edition = "2018"
+readme = "README.md"
+categories = ["cryptography", "no-std"]
+keywords = ["cryptography", "crypto", "curve"]
+
+[dependencies]
+bitvec = { version = "0.22", default-features = false }
+getrandom = { version = "0.2", default-features = false, features = ["js"] }
+rand_core = { version = "0.6", default-features = false }
+subtle = { version = "2.4", default-features = false }
+zeroize = { version = "1", default-features = false }
+
+[dev-dependencies]
+bincode = "1"
+criterion = "0.3"
+rand = "0.8"
+
+[[bench]]
+name = "fp"
+harness = false
+
+[[bench]]
+name = "fp4"
+harness = false
