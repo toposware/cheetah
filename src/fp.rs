@@ -37,8 +37,15 @@ const U: u64 = 4611624995532046335;
 ///
 /// Internal values are stored in Montgomery representation and can be in the range [0; 2M).
 /// The backing type is `u64`.
-#[derive(Copy, Clone, Eq, Debug, Default)]
+#[derive(Copy, Clone, Eq, Default)]
 pub struct Fp(pub(crate) u64);
+
+impl Debug for Fp {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let tmp = self.to_repr();
+        write!(f, "{:?}", tmp)
+    }
+}
 
 impl Display for Fp {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
@@ -425,9 +432,9 @@ mod tests {
 
     #[test]
     fn test_debug() {
-        assert_eq!(format!("{:?}", Fp::zero()), "Fp(0)");
-        assert_eq!(format!("{:?}", Fp::one()), "Fp(244091581366268)");
-        assert_eq!(format!("{:?}", R2), "Fp(630444561284293700)");
+        assert_eq!(format!("{:?}", Fp::zero()), "0");
+        assert_eq!(format!("{:?}", Fp::one()), "1");
+        assert_eq!(format!("{:?}", R2), "244091581366268");
     }
 
     #[test]
