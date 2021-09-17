@@ -1,6 +1,7 @@
 //! This module implements arithmetic over the extension field Fp4,
 //! defined with irreducible polynomial u^4 + 3.
 
+use core::convert::TryInto;
 use core::fmt;
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use rand_core::{CryptoRng, RngCore};
@@ -10,6 +11,20 @@ use crate::fp::Fp;
 
 /// U4 = -3
 const U4: Fp = Fp::new(4611624995532046334);
+
+const MODULUS_MINUS_ONE_DIV_TWO: [u64; 4] = [
+    0x7fff910000000000,
+    0x9c3facc02418c000,
+    0x23584e521a0c5ac8,
+    0x007ffe4402418ab2,
+];
+
+const MODULUS_PLUS_ONE_DIV_TWO: [u64; 4] = [
+    0x7fff910000000001,
+    0x9c3facc02418c000,
+    0x23584e521a0c5ac8,
+    0x007ffe4402418ab2,
+];
 
 #[derive(Copy, Clone)]
 /// An element of the extension GF(p^4)
@@ -283,6 +298,68 @@ impl Fp4 {
         Fp4 { c0, c1, c2, c3 }
     }
 
+    /// Computes the square root of this element, if it exists.
+    /// This operation is not constant time, as it requires going
+    /// through a non-constant number of field elements until we reach
+    /// a non-square.
+    // TODO: Should rng be passed as argument?
+    pub fn sqrt_vartime(&self) -> Option<Self> {
+        // Cipolla's algorithm
+        // https://en.wikipedia.org/wiki/Cipolla%27s_algorithm
+
+        fn mul_in_fp8(a: &[Fp4; 2], b: &[Fp4; 2], beta: &Fp4) -> [Fp4; 2] {
+            let v0 = (&a[0]).mul(&b[0]);
+            let v1 = (&a[1]).mul(&b[1]);
+            let c0 = (&v0).add(&(beta.mul(&v1)));
+            let c1 = (&a[0]).add(&a[1]);
+            let c1 = (&c1).mul(&b[0].add(&b[1]));
+            let c1 = (&c1).sub(&v0);
+            let c1 = (&c1).sub(&v1);
+
+            [c0, c1]
+        }
+
+        fn exp_vartime_in_fp8(a: &[Fp4; 2], by: &[u64; 4], beta: &Fp4) -> [Fp4; 2] {
+            let mut res = [Fp4::one(), Fp4::zero()];
+            for e in by.iter().rev() {
+                for i in (0..64).rev() {
+                    res = mul_in_fp8(&res, &res, beta);
+
+                    if ((*e >> i) & 1) == 1 {
+                        res = mul_in_fp8(&res, a, beta);
+                    }
+                }
+            }
+            res
+        }
+
+        // check = self^((p^4 - 1) // 2)
+        //       = self^226144454312899887337049390624647902791911916949497242970760277014746234880
+        let check = self.exp_vartime(&MODULUS_MINUS_ONE_DIV_TWO);
+
+        if check != Fp4::one() {
+            return None;
+        }
+
+        let mut a = Fp4::from(Fp::one().double());
+        while (a.square() - self).exp_vartime(&MODULUS_MINUS_ONE_DIV_TWO) != -Fp4::one() {
+            a += Fp4::one();
+        }
+
+        let beta = a.square() - self;
+
+        let res = exp_vartime_in_fp8(&[a, Fp4::one()], &MODULUS_PLUS_ONE_DIV_TWO, &beta);
+        if res[1] != Fp4::zero() {
+            return None;
+        }
+
+        if bool::from(self.ct_eq(&res[0].square())) {
+            Some(res[0])
+        } else {
+            None
+        }
+    }
+
     /// Add two elements together
     #[inline]
     pub const fn add(&self, rhs: &Self) -> Self {
@@ -398,304 +475,350 @@ impl Fp4 {
             Fp::montgomery_reduce(self.c3.0, 0).0,
         ]
     }
-}
 
-#[test]
-fn test_conditional_selection() {
-    let a = Fp4 {
-        c0: Fp::from_raw_unchecked(1),
-        c1: Fp::from_raw_unchecked(2),
-        c2: Fp::from_raw_unchecked(3),
-        c3: Fp::from_raw_unchecked(4),
-    };
-    let b = Fp4 {
-        c0: Fp::from_raw_unchecked(5),
-        c1: Fp::from_raw_unchecked(6),
-        c2: Fp::from_raw_unchecked(7),
-        c3: Fp::from_raw_unchecked(8),
-    };
+    /// Converts a `Fp` element into a byte representation in
+    /// little-endian byte order.
+    pub fn to_bytes(&self) -> [u8; 32] {
+        // Turn into canonical form by computing
+        // (a.R) / R = a
+        let tmp = self.to_repr();
 
-    assert_eq!(
-        ConditionallySelectable::conditional_select(&a, &b, Choice::from(0u8)),
-        a
-    );
-    assert_eq!(
-        ConditionallySelectable::conditional_select(&a, &b, Choice::from(1u8)),
-        b
-    );
-}
+        let mut res = [0u8; 32];
+        res[0..8].copy_from_slice(&tmp[0].to_le_bytes());
+        res[8..16].copy_from_slice(&tmp[1].to_le_bytes());
+        res[16..24].copy_from_slice(&tmp[2].to_le_bytes());
+        res[24..32].copy_from_slice(&tmp[3].to_le_bytes());
 
-#[test]
-fn test_equality() {
-    fn is_equal(a: &Fp4, b: &Fp4) -> bool {
-        let eq = a == b;
-        let ct_eq = a.ct_eq(&b);
-
-        assert_eq!(eq, bool::from(ct_eq));
-
-        eq
+        res
     }
 
-    assert!(is_equal(
-        &Fp4 {
+    /// Converts an array of bytes into an `Fp4` element
+    pub fn from_bytes(bytes: &[u8; 32]) -> Fp4 {
+        let mut res = Fp4::zero();
+
+        let mut array: [u8; 8] = bytes[0..8].try_into().unwrap();
+        res.c0 = Fp::from(array);
+        array = bytes[8..16].try_into().unwrap();
+        res.c1 = Fp::from(array);
+        array = bytes[16..24].try_into().unwrap();
+        res.c2 = Fp::from(array);
+        array = bytes[24..32].try_into().unwrap();
+        res.c3 = Fp::from(array);
+
+        res
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use rand::thread_rng;
+
+    #[test]
+    fn test_conditional_selection() {
+        let a = Fp4 {
             c0: Fp::from_raw_unchecked(1),
             c1: Fp::from_raw_unchecked(2),
             c2: Fp::from_raw_unchecked(3),
             c3: Fp::from_raw_unchecked(4),
-        },
-        &Fp4 {
-            c0: Fp::from_raw_unchecked(1),
-            c1: Fp::from_raw_unchecked(2),
-            c2: Fp::from_raw_unchecked(3),
-            c3: Fp::from_raw_unchecked(4),
+        };
+        let b = Fp4 {
+            c0: Fp::from_raw_unchecked(5),
+            c1: Fp::from_raw_unchecked(6),
+            c2: Fp::from_raw_unchecked(7),
+            c3: Fp::from_raw_unchecked(8),
+        };
+
+        assert_eq!(
+            ConditionallySelectable::conditional_select(&a, &b, Choice::from(0u8)),
+            a
+        );
+        assert_eq!(
+            ConditionallySelectable::conditional_select(&a, &b, Choice::from(1u8)),
+            b
+        );
+    }
+
+    #[test]
+    fn test_equality() {
+        fn is_equal(a: &Fp4, b: &Fp4) -> bool {
+            let eq = a == b;
+            let ct_eq = a.ct_eq(&b);
+
+            assert_eq!(eq, bool::from(ct_eq));
+
+            eq
         }
-    ));
 
-    assert!(!is_equal(
-        &Fp4 {
-            c0: Fp::from_raw_unchecked(2),
-            c1: Fp::from_raw_unchecked(2),
-            c2: Fp::from_raw_unchecked(3),
-            c3: Fp::from_raw_unchecked(4),
-        },
-        &Fp4 {
-            c0: Fp::from_raw_unchecked(1),
-            c1: Fp::from_raw_unchecked(2),
-            c2: Fp::from_raw_unchecked(3),
-            c3: Fp::from_raw_unchecked(4),
-        }
-    ));
+        assert!(is_equal(
+            &Fp4 {
+                c0: Fp::from_raw_unchecked(1),
+                c1: Fp::from_raw_unchecked(2),
+                c2: Fp::from_raw_unchecked(3),
+                c3: Fp::from_raw_unchecked(4),
+            },
+            &Fp4 {
+                c0: Fp::from_raw_unchecked(1),
+                c1: Fp::from_raw_unchecked(2),
+                c2: Fp::from_raw_unchecked(3),
+                c3: Fp::from_raw_unchecked(4),
+            }
+        ));
 
-    assert!(!is_equal(
-        &Fp4 {
-            c0: Fp::from_raw_unchecked(1),
-            c1: Fp::from_raw_unchecked(3),
-            c2: Fp::from_raw_unchecked(3),
-            c3: Fp::from_raw_unchecked(4),
-        },
-        &Fp4 {
-            c0: Fp::from_raw_unchecked(1),
-            c1: Fp::from_raw_unchecked(2),
-            c2: Fp::from_raw_unchecked(3),
-            c3: Fp::from_raw_unchecked(4),
-        }
-    ));
+        assert!(!is_equal(
+            &Fp4 {
+                c0: Fp::from_raw_unchecked(2),
+                c1: Fp::from_raw_unchecked(2),
+                c2: Fp::from_raw_unchecked(3),
+                c3: Fp::from_raw_unchecked(4),
+            },
+            &Fp4 {
+                c0: Fp::from_raw_unchecked(1),
+                c1: Fp::from_raw_unchecked(2),
+                c2: Fp::from_raw_unchecked(3),
+                c3: Fp::from_raw_unchecked(4),
+            }
+        ));
 
-    assert!(!is_equal(
-        &Fp4 {
-            c0: Fp::from_raw_unchecked(1),
-            c1: Fp::from_raw_unchecked(2),
-            c2: Fp::from_raw_unchecked(4),
-            c3: Fp::from_raw_unchecked(4),
-        },
-        &Fp4 {
-            c0: Fp::from_raw_unchecked(1),
-            c1: Fp::from_raw_unchecked(2),
-            c2: Fp::from_raw_unchecked(3),
-            c3: Fp::from_raw_unchecked(4),
-        }
-    ));
+        assert!(!is_equal(
+            &Fp4 {
+                c0: Fp::from_raw_unchecked(1),
+                c1: Fp::from_raw_unchecked(3),
+                c2: Fp::from_raw_unchecked(3),
+                c3: Fp::from_raw_unchecked(4),
+            },
+            &Fp4 {
+                c0: Fp::from_raw_unchecked(1),
+                c1: Fp::from_raw_unchecked(2),
+                c2: Fp::from_raw_unchecked(3),
+                c3: Fp::from_raw_unchecked(4),
+            }
+        ));
 
-    assert!(!is_equal(
-        &Fp4 {
-            c0: Fp::from_raw_unchecked(1),
-            c1: Fp::from_raw_unchecked(2),
-            c2: Fp::from_raw_unchecked(3),
-            c3: Fp::from_raw_unchecked(5),
-        },
-        &Fp4 {
-            c0: Fp::from_raw_unchecked(1),
-            c1: Fp::from_raw_unchecked(2),
-            c2: Fp::from_raw_unchecked(3),
-            c3: Fp::from_raw_unchecked(4),
-        }
-    ));
-}
+        assert!(!is_equal(
+            &Fp4 {
+                c0: Fp::from_raw_unchecked(1),
+                c1: Fp::from_raw_unchecked(2),
+                c2: Fp::from_raw_unchecked(4),
+                c3: Fp::from_raw_unchecked(4),
+            },
+            &Fp4 {
+                c0: Fp::from_raw_unchecked(1),
+                c1: Fp::from_raw_unchecked(2),
+                c2: Fp::from_raw_unchecked(3),
+                c3: Fp::from_raw_unchecked(4),
+            }
+        ));
 
-#[test]
-fn test_squaring() {
-    let a = Fp4 {
-        c0: Fp::new(3221830727238336732),
-        c1: Fp::new(979900501602246277),
-        c2: Fp::new(3348828664716707940),
-        c3: Fp::new(553377494921525747),
-    };
-    let b = Fp4 {
-        c0: Fp::new(4296344331630153542),
-        c1: Fp::new(3962027865415014205),
-        c2: Fp::new(1295707009280005994),
-        c3: Fp::new(175739025260361652),
-    };
+        assert!(!is_equal(
+            &Fp4 {
+                c0: Fp::from_raw_unchecked(1),
+                c1: Fp::from_raw_unchecked(2),
+                c2: Fp::from_raw_unchecked(3),
+                c3: Fp::from_raw_unchecked(5),
+            },
+            &Fp4 {
+                c0: Fp::from_raw_unchecked(1),
+                c1: Fp::from_raw_unchecked(2),
+                c2: Fp::from_raw_unchecked(3),
+                c3: Fp::from_raw_unchecked(4),
+            }
+        ));
+    }
 
-    assert_eq!(a.square(), b);
-}
-
-#[test]
-fn test_multiplication() {
-    let a = Fp4 {
-        c0: Fp::new(1),
-        c1: Fp::new(2),
-        c2: Fp::new(3),
-        c3: Fp::new(4),
-    };
-    let b = Fp4::one();
-    let c = Fp4 {
-        c0: Fp::new(1),
-        c1: Fp::new(2),
-        c2: Fp::new(3),
-        c3: Fp::new(4),
-    };
-
-    assert_eq!(a * b, c);
-
-    let a = Fp4 {
-        c0: Fp::new(3221830727238336732),
-        c1: Fp::new(979900501602246277),
-        c2: Fp::new(3348828664716707940),
-        c3: Fp::new(553377494921525747),
-    };
-    let b = Fp4 {
-        c0: Fp::new(1512850102547057140),
-        c1: Fp::new(3247687537609432777),
-        c2: Fp::new(2002622220347860596),
-        c3: Fp::new(1845869432939790873),
-    };
-    let c = Fp4 {
-        c0: Fp::new(3911041241527762547),
-        c1: Fp::new(1196892283469028245),
-        c2: Fp::new(4235984110621735126),
-        c3: Fp::new(495889613393377298),
-    };
-
-    assert_eq!(a * b, c);
-}
-
-#[test]
-fn test_addition() {
-    let a = Fp4 {
-        c0: Fp::new(1),
-        c1: Fp::new(2),
-        c2: Fp::new(3),
-        c3: Fp::new(4),
-    };
-    let b = Fp4 {
-        c0: Fp::new(4),
-        c1: Fp::new(3),
-        c2: Fp::new(2),
-        c3: Fp::new(1),
-    };
-    let c = Fp4 {
-        c0: Fp::new(5),
-        c1: Fp::new(5),
-        c2: Fp::new(5),
-        c3: Fp::new(5),
-    };
-
-    assert_eq!(a + b, c);
-}
-
-#[test]
-fn test_subtraction() {
-    let a = Fp4 {
-        c0: Fp::new(9),
-        c1: Fp::new(8),
-        c2: Fp::new(7),
-        c3: Fp::new(6),
-    };
-    let b = Fp4 {
-        c0: Fp::new(5),
-        c1: Fp::new(4),
-        c2: Fp::new(3),
-        c3: Fp::new(2),
-    };
-    let c = Fp4 {
-        c0: Fp::new(4),
-        c1: Fp::new(4),
-        c2: Fp::new(4),
-        c3: Fp::new(4),
-    };
-
-    assert_eq!(a - b, c);
-}
-
-#[test]
-fn test_negation() {
-    let a = Fp4 {
-        c0: Fp::new(1),
-        c1: Fp::new(2),
-        c2: Fp::new(3),
-        c3: Fp::new(4),
-    };
-    let b = Fp4 {
-        c0: -Fp::new(1),
-        c1: -Fp::new(2),
-        c2: -Fp::new(3),
-        c3: -Fp::new(4),
-    };
-
-    assert_eq!(-a, b);
-}
-
-#[test]
-fn test_inversion() {
-    let a = Fp4 {
-        c0: Fp::new(3221830727238336732),
-        c1: Fp::new(979900501602246277),
-        c2: Fp::new(3348828664716707940),
-        c3: Fp::new(553377494921525747),
-    };
-
-    let b = Fp4 {
-        c0: Fp::new(31598296486133907),
-        c1: Fp::new(1556075319026159673),
-        c2: Fp::new(683494480746306747),
-        c3: Fp::new(697610636998943008),
-    };
-
-    assert_eq!(a.invert().unwrap(), b);
-
-    assert!(bool::from(Fp4::zero().invert().is_none()));
-}
-
-#[test]
-fn test_lexicographic_largest() {
-    assert!(!bool::from(Fp4::zero().lexicographically_largest()));
-    assert!(!bool::from(Fp4::one().lexicographically_largest()));
-    assert!(bool::from(
-        Fp4 {
-            c0: Fp::new(1389794268293709605),
-            c1: Fp::new(3631724493929800060),
-            c2: Fp::new(1262796330815338397),
-            c3: Fp::new(4058247500610520590),
-        }
-        .lexicographically_largest()
-    ));
-    assert!(!bool::from(
-        Fp4 {
+    #[test]
+    fn test_squaring() {
+        let a = Fp4 {
             c0: Fp::new(3221830727238336732),
             c1: Fp::new(979900501602246277),
             c2: Fp::new(3348828664716707940),
             c3: Fp::new(553377494921525747),
-        }
-        .lexicographically_largest()
-    ));
-    assert!(bool::from(
-        Fp4 {
-            c0: Fp::new(0),
-            c1: Fp::new(0),
-            c2: Fp::new(4058247500610520590),
-            c3: Fp::new(0),
-        }
-        .lexicographically_largest()
-    ));
-}
+        };
+        let b = Fp4 {
+            c0: Fp::new(4296344331630153542),
+            c1: Fp::new(3962027865415014205),
+            c2: Fp::new(1295707009280005994),
+            c3: Fp::new(175739025260361652),
+        };
 
-#[cfg(feature = "zeroize")]
-#[test]
-fn test_zeroize() {
-    use zeroize::Zeroize;
+        assert_eq!(a.square(), b);
+    }
 
-    let mut a = Fp4::one();
-    a.zeroize();
-    assert!(bool::from(a.is_zero()));
+    #[test]
+    fn test_sqrt() {
+        for _ in 0..10 {
+            let a = Fp4::random(&mut thread_rng()).square();
+            let b = a.sqrt_vartime().unwrap();
+            assert_eq!(a, b.square());
+        }
+    }
+
+    #[test]
+    fn test_multiplication() {
+        let a = Fp4 {
+            c0: Fp::new(1),
+            c1: Fp::new(2),
+            c2: Fp::new(3),
+            c3: Fp::new(4),
+        };
+        let b = Fp4::one();
+        let c = Fp4 {
+            c0: Fp::new(1),
+            c1: Fp::new(2),
+            c2: Fp::new(3),
+            c3: Fp::new(4),
+        };
+
+        assert_eq!(a * b, c);
+
+        let a = Fp4 {
+            c0: Fp::new(3221830727238336732),
+            c1: Fp::new(979900501602246277),
+            c2: Fp::new(3348828664716707940),
+            c3: Fp::new(553377494921525747),
+        };
+        let b = Fp4 {
+            c0: Fp::new(1512850102547057140),
+            c1: Fp::new(3247687537609432777),
+            c2: Fp::new(2002622220347860596),
+            c3: Fp::new(1845869432939790873),
+        };
+        let c = Fp4 {
+            c0: Fp::new(3911041241527762547),
+            c1: Fp::new(1196892283469028245),
+            c2: Fp::new(4235984110621735126),
+            c3: Fp::new(495889613393377298),
+        };
+
+        assert_eq!(a * b, c);
+    }
+
+    #[test]
+    fn test_addition() {
+        let a = Fp4 {
+            c0: Fp::new(1),
+            c1: Fp::new(2),
+            c2: Fp::new(3),
+            c3: Fp::new(4),
+        };
+        let b = Fp4 {
+            c0: Fp::new(4),
+            c1: Fp::new(3),
+            c2: Fp::new(2),
+            c3: Fp::new(1),
+        };
+        let c = Fp4 {
+            c0: Fp::new(5),
+            c1: Fp::new(5),
+            c2: Fp::new(5),
+            c3: Fp::new(5),
+        };
+
+        assert_eq!(a + b, c);
+    }
+
+    #[test]
+    fn test_subtraction() {
+        let a = Fp4 {
+            c0: Fp::new(9),
+            c1: Fp::new(8),
+            c2: Fp::new(7),
+            c3: Fp::new(6),
+        };
+        let b = Fp4 {
+            c0: Fp::new(5),
+            c1: Fp::new(4),
+            c2: Fp::new(3),
+            c3: Fp::new(2),
+        };
+        let c = Fp4 {
+            c0: Fp::new(4),
+            c1: Fp::new(4),
+            c2: Fp::new(4),
+            c3: Fp::new(4),
+        };
+
+        assert_eq!(a - b, c);
+    }
+
+    #[test]
+    fn test_negation() {
+        let a = Fp4 {
+            c0: Fp::new(1),
+            c1: Fp::new(2),
+            c2: Fp::new(3),
+            c3: Fp::new(4),
+        };
+        let b = Fp4 {
+            c0: -Fp::new(1),
+            c1: -Fp::new(2),
+            c2: -Fp::new(3),
+            c3: -Fp::new(4),
+        };
+
+        assert_eq!(-a, b);
+    }
+
+    #[test]
+    fn test_inversion() {
+        let a = Fp4 {
+            c0: Fp::new(3221830727238336732),
+            c1: Fp::new(979900501602246277),
+            c2: Fp::new(3348828664716707940),
+            c3: Fp::new(553377494921525747),
+        };
+
+        let b = Fp4 {
+            c0: Fp::new(31598296486133907),
+            c1: Fp::new(1556075319026159673),
+            c2: Fp::new(683494480746306747),
+            c3: Fp::new(697610636998943008),
+        };
+
+        assert_eq!(a.invert().unwrap(), b);
+
+        assert!(bool::from(Fp4::zero().invert().is_none()));
+    }
+
+    #[test]
+    fn test_lexicographic_largest() {
+        assert!(!bool::from(Fp4::zero().lexicographically_largest()));
+        assert!(!bool::from(Fp4::one().lexicographically_largest()));
+        assert!(bool::from(
+            Fp4 {
+                c0: Fp::new(1389794268293709605),
+                c1: Fp::new(3631724493929800060),
+                c2: Fp::new(1262796330815338397),
+                c3: Fp::new(4058247500610520590),
+            }
+            .lexicographically_largest()
+        ));
+        assert!(!bool::from(
+            Fp4 {
+                c0: Fp::new(3221830727238336732),
+                c1: Fp::new(979900501602246277),
+                c2: Fp::new(3348828664716707940),
+                c3: Fp::new(553377494921525747),
+            }
+            .lexicographically_largest()
+        ));
+        assert!(bool::from(
+            Fp4 {
+                c0: Fp::new(0),
+                c1: Fp::new(0),
+                c2: Fp::new(4058247500610520590),
+                c3: Fp::new(0),
+            }
+            .lexicographically_largest()
+        ));
+    }
+
+    #[test]
+    fn test_zeroize() {
+        use zeroize::Zeroize;
+
+        let mut a = Fp4::one();
+        a.zeroize();
+        assert!(bool::from(a.is_zero()));
+    }
 }
