@@ -121,43 +121,8 @@ impl<'a, 'b> Mul<&'b Fp4> for &'a Fp4 {
     type Output = Fp4;
 
     #[inline]
-    fn mul(self, other: &'b Fp4) -> Fp4 {
-        let aa = self.c0 * other.c0;
-        let ab = self.c0 * other.c1;
-        let ac = self.c0 * other.c2;
-        let ad = self.c0 * other.c3;
-
-        let ba = self.c1 * other.c0;
-        let bb = self.c1 * other.c1;
-        let bc = self.c1 * other.c2;
-        let bd = self.c1 * other.c3;
-
-        let ca = self.c2 * other.c0;
-        let cb = self.c2 * other.c1;
-        let cc = self.c2 * other.c2;
-        let cd = self.c2 * other.c3;
-
-        let da = self.c3 * other.c0;
-        let db = self.c3 * other.c1;
-        let dc = self.c3 * other.c2;
-        let dd = self.c3 * other.c3;
-
-        let c0 = bd + cc + db;
-        let c0 = c0 * U4;
-        let c0 = c0 + aa;
-
-        let c1 = cd + dc;
-        let c1 = c1 * U4;
-        let c1 = c1 + ab + ba;
-
-        let c2 = dd * U4;
-        let c2 = c2 + ac + ca;
-        let c2 = c2 + bb;
-
-        let c3 = ad + da;
-        let c3 = c3 + bc + cb;
-
-        Fp4 { c0, c1, c2, c3 }
+    fn mul(self, rhs: &'b Fp4) -> Fp4 {
+        self.mul(rhs)
     }
 }
 
@@ -204,14 +169,14 @@ impl Fp4 {
 
     #[inline(always)]
     /// Multiply by nonresidue u.
-    pub fn mul_by_nonresidue(&self) -> Self {
+    pub const fn mul_by_nonresidue(&self) -> Self {
         // Given a + bu + cu^2 + du^3, this produces
         //     au + bu^2 + cu^3 + du^4
         // but because u^4 = -3, we have
         //     -3d + au + bu^2 + cu^3
 
         Fp4 {
-            c0: U4.sub(&self.c3),
+            c0: (&U4).sub(&self.c3),
             c1: self.c0,
             c2: self.c1,
             c3: self.c2,
@@ -234,41 +199,92 @@ impl Fp4 {
             | (self.c1.is_zero() & self.c0.lexicographically_largest())
     }
 
+    #[inline]
+    /// Computes the multiplication of two Fp4 elements
+    pub const fn mul(&self, other: &Fp4) -> Fp4 {
+        let aa = (&self.c0).mul(&other.c0);
+        let ab = (&self.c0).mul(&other.c1);
+        let ac = (&self.c0).mul(&other.c2);
+        let ad = (&self.c0).mul(&other.c3);
+
+        let ba = (&self.c1).mul(&other.c0);
+        let bb = (&self.c1).mul(&other.c1);
+        let bc = (&self.c1).mul(&other.c2);
+        let bd = (&self.c1).mul(&other.c3);
+
+        let ca = (&self.c2).mul(&other.c0);
+        let cb = (&self.c2).mul(&other.c1);
+        let cc = (&self.c2).mul(&other.c2);
+        let cd = (&self.c2).mul(&other.c3);
+
+        let da = (&self.c3).mul(&other.c0);
+        let db = (&self.c3).mul(&other.c1);
+        let dc = (&self.c3).mul(&other.c2);
+        let dd = (&self.c3).mul(&other.c3);
+
+        let c0 = (&bd).add(&cc);
+        let c0 = (&c0).add(&db);
+        let c0 = (&c0).mul(&U4);
+        let c0 = (&c0).add(&aa);
+
+        let c1 = (&cd).add(&dc);
+        let c1 = (&c1).mul(&U4);
+        let c1 = (&c1).add(&ab);
+        let c1 = (&c1).add(&ba);
+
+        let c2 = (&dd).mul(&U4);
+        let c2 = (&c2).add(&ac);
+        let c2 = (&c2).add(&ca);
+        let c2 = (&c2).add(&bb);
+
+        let c3 = (&ad).add(&da);
+        let c3 = (&c3).add(&bc);
+        let c3 = (&c3).add(&cb);
+
+        Fp4 { c0, c1, c2, c3 }
+    }
+
     /// Square this element
-    pub fn square(&self) -> Self {
-        let aa = self.c0 * self.c0;
-        let ab = self.c0 * self.c1;
-        let ac = self.c0 * self.c2;
-        let ad = self.c0 * self.c3;
+    #[inline]
+    pub const fn square(&self) -> Self {
+        let aa = (&self.c0).mul(&self.c0);
+        let ab = (&self.c0).mul(&self.c1);
+        let ac = (&self.c0).mul(&self.c2);
+        let ad = (&self.c0).mul(&self.c3);
 
-        let bb = self.c1 * self.c1;
-        let bc = self.c1 * self.c2;
-        let bd = self.c1 * self.c3;
+        let bb = (&self.c1).mul(&self.c1);
+        let bc = (&self.c1).mul(&self.c2);
+        let bd = (&self.c1).mul(&self.c3);
 
-        let cc = self.c2 * self.c2;
-        let cd = self.c2 * self.c3;
+        let cc = (&self.c2).mul(&self.c2);
+        let cd = (&self.c2).mul(&self.c3);
 
-        let dd = self.c3 * self.c3;
+        let dd = (&self.c3).mul(&self.c3);
 
-        let c0 = bd + cc + bd;
-        let c0 = c0 * U4;
-        let c0 = c0 + aa;
+        let c0 = (&bd).add(&cc);
+        let c0 = (&c0).add(&bd);
+        let c0 = (&c0).mul(&U4);
+        let c0 = (&c0).add(&aa);
 
-        let c1 = cd + cd;
-        let c1 = c1 * U4;
-        let c1 = c1 + ab + ab;
+        let c1 = (&cd).add(&cd);
+        let c1 = (&c1).mul(&U4);
+        let c1 = (&c1).add(&ab);
+        let c1 = (&c1).add(&ab);
 
-        let c2 = dd * U4;
-        let c2 = c2 + ac + ac;
-        let c2 = c2 + bb;
+        let c2 = (&dd).mul(&U4);
+        let c2 = (&c2).add(&ac);
+        let c2 = (&c2).add(&ac);
+        let c2 = (&c2).add(&bb);
 
-        let c3 = ad + ad;
-        let c3 = c3 + bc + bc;
+        let c3 = (&ad).add(&ad);
+        let c3 = (&c3).add(&bc);
+        let c3 = (&c3).add(&bc);
 
         Fp4 { c0, c1, c2, c3 }
     }
 
     /// Add two elements together
+    #[inline]
     pub const fn add(&self, rhs: &Self) -> Self {
         Fp4 {
             c0: (&self.c0).add(&rhs.c0),
@@ -279,6 +295,7 @@ impl Fp4 {
     }
 
     /// Substract two elements together
+    #[inline]
     pub const fn sub(&self, rhs: &Self) -> Self {
         Fp4 {
             c0: (&self.c0).sub(&rhs.c0),
@@ -289,6 +306,7 @@ impl Fp4 {
     }
 
     /// Negate `&self`
+    #[inline]
     pub const fn neg(&self) -> Self {
         Fp4 {
             c0: (&self.c0).neg(),
@@ -302,7 +320,42 @@ impl Fp4 {
     /// element, returning None in the case that this element
     /// is zero.
     pub fn invert(&self) -> CtOption<Self> {
-        unimplemented!();
+        let a2 = (&self.c0).square();
+        let b2 = (&self.c1).square();
+        let c2 = (&self.c2).square();
+        let d2 = (&self.c3).square();
+
+        let three = Fp::new(3);
+        let two = Fp::new(2);
+
+        let inv = a2.square() + three * b2.square()
+            - three.double().double() * self.c0 * b2 * self.c2
+            + three.double() * a2 * c2
+            + three.square() * c2.square()
+            + three.square() * three * d2.square()
+            + three.square().double() * (b2 + two * self.c0 * self.c2) * d2
+            + three.double().double() * (a2 * self.c1 - three * self.c1 * c2) * self.c3;
+
+        let c0 = a2 * self.c0 - three * b2 * self.c2
+            + three * self.c0 * c2
+            + three.double() * self.c0 * self.c1 * self.c3
+            + three.square() * self.c2 * d2;
+        let c1 = -(a2 * self.c1 - three * self.c1 * c2
+            + three.square() * d2 * self.c3
+            + three * (b2 + two * self.c0 * self.c2) * self.c3);
+        let c2 = (&self.c0) * b2 - a2 * self.c2 - three * c2 * self.c2
+            + three.double() * self.c1 * self.c2 * self.c3
+            - three * self.c0 * d2;
+        let c3 = -(b2 * self.c1 - two * self.c0 * self.c1 * self.c2
+            + three * self.c1 * d2
+            + (a2 - three * c2) * self.c3);
+
+        inv.invert().map(|t| Fp4 {
+            c0: c0 * t,
+            c1: c1 * t,
+            c2: c2 * t,
+            c3: c3 * t,
+        })
     }
 
     /// Exponentiates `self` by `power`, where `power` is a
@@ -312,11 +365,11 @@ impl Fp4 {
         for e in by.iter().rev() {
             for i in (0..64).rev() {
                 res = res.square();
-            let mut tmp = res;
-            tmp *= self;
-            res.conditional_assign(&tmp, (((e >> i) & 1) as u8).into());
+                let mut tmp = res;
+                tmp *= self;
+                res.conditional_assign(&tmp, (((e >> i) & 1) as u8).into());
+            }
         }
-    }
         res
     }
 
