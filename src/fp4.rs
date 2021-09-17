@@ -343,12 +343,12 @@ impl Fp4 {
         let c1 = -(a2 * self.c1 - three * self.c1 * c2
             + three.square() * d2 * self.c3
             + three * (b2 + two * self.c0 * self.c2) * self.c3);
+        let c3 = -(b2 * self.c1 - two * self.c0 * self.c1 * self.c2
+            + three * self.c1 * d2
+            + (a2 - three * self.c2.square()) * self.c3);
         let c2 = (&self.c0) * b2 - a2 * self.c2 - three * c2 * self.c2
             + three.double() * self.c1 * self.c2 * self.c3
             - three * self.c0 * d2;
-        let c3 = -(b2 * self.c1 - two * self.c0 * self.c1 * self.c2
-            + three * self.c1 * d2
-            + (a2 - three * c2) * self.c3);
 
         inv.invert().map(|t| Fp4 {
             c0: c0 * t,
