@@ -22,6 +22,7 @@ extern crate std;
 #[macro_use]
 mod utils;
 
+mod curve;
 mod fp;
 mod fp4;
 mod scalar;
@@ -31,4 +32,4 @@ pub use scalar::Scalar;
 pub use fp::Fp;
 pub use fp4::Fp4;
 
-// pub use curve::{AffinePoint, ProjectivePoint};
+pub use curve::{AffinePoint, ProjectivePoint};
