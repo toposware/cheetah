@@ -423,7 +423,7 @@ impl Fp4 {
         let c3 = -(b2 * self.c1 - two * self.c0 * self.c1 * self.c2
             + three * self.c1 * d2
             + (a2 - three * self.c2.square()) * self.c3);
-        let c2 = (&self.c0) * b2 - a2 * self.c2 - three * c2 * self.c2
+        let c2 = self.c0 * b2 - a2 * self.c2 - three * c2 * self.c2
             + three.double() * self.c1 * self.c2 * self.c3
             - three * self.c0 * d2;
 
@@ -811,6 +811,16 @@ mod test {
             }
             .lexicographically_largest()
         ));
+    }
+
+    #[test]
+    fn test_bytes() {
+        let mut rng = thread_rng();
+        for _ in 0..100 {
+            let a = Fp4::random(&mut rng);
+            let bytes = a.to_bytes();
+            assert_eq!(a, Fp4::from_bytes(&bytes));
+        }
     }
 
     #[test]

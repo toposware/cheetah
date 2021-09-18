@@ -160,7 +160,7 @@ impl Fp {
     /// Computes the square of a field element
     #[inline]
     pub const fn square(&self) -> Self {
-        self.mul(&self)
+        self.mul(self)
     }
 
     /// Computes the double of a field element
