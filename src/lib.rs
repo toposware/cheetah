@@ -24,12 +24,16 @@ mod utils;
 
 mod curve;
 mod fp;
+mod fp2;
 mod fp4;
+mod fp6;
 mod scalar;
 
 pub use scalar::Scalar;
 
 pub use fp::Fp;
+pub use fp2::Fp2;
 pub use fp4::Fp4;
+pub use fp6::Fp6;
 
 pub use curve::{AffinePoint, ProjectivePoint};
