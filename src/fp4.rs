@@ -191,7 +191,7 @@ impl Fp4 {
         //     -3d + au + bu^2 + cu^3
 
         Fp4 {
-            c0: (&U4).sub(&self.c3),
+            c0: (&U4).mul(&self.c3),
             c1: self.c0,
             c2: self.c1,
             c3: self.c2,
@@ -656,14 +656,14 @@ mod test {
     #[test]
     fn test_multiplication() {
         let a = Fp4 {
-            c0: Fp::new(1),
+            c0: Fp::one(),
             c1: Fp::new(2),
             c2: Fp::new(3),
             c3: Fp::new(4),
         };
         let b = Fp4::one();
         let c = Fp4 {
-            c0: Fp::new(1),
+            c0: Fp::one(),
             c1: Fp::new(2),
             c2: Fp::new(3),
             c3: Fp::new(4),
@@ -696,7 +696,7 @@ mod test {
     #[test]
     fn test_addition() {
         let a = Fp4 {
-            c0: Fp::new(1),
+            c0: Fp::one(),
             c1: Fp::new(2),
             c2: Fp::new(3),
             c3: Fp::new(4),
@@ -705,7 +705,7 @@ mod test {
             c0: Fp::new(4),
             c1: Fp::new(3),
             c2: Fp::new(2),
-            c3: Fp::new(1),
+            c3: Fp::one(),
         };
         let c = Fp4 {
             c0: Fp::new(5),
@@ -744,13 +744,13 @@ mod test {
     #[test]
     fn test_negation() {
         let a = Fp4 {
-            c0: Fp::new(1),
+            c0: Fp::one(),
             c1: Fp::new(2),
             c2: Fp::new(3),
             c3: Fp::new(4),
         };
         let b = Fp4 {
-            c0: -Fp::new(1),
+            c0: -Fp::one(),
             c1: -Fp::new(2),
             c2: -Fp::new(3),
             c3: -Fp::new(4),
@@ -804,10 +804,10 @@ mod test {
         ));
         assert!(bool::from(
             Fp4 {
-                c0: Fp::new(0),
-                c1: Fp::new(0),
+                c0: Fp::zero(),
+                c1: Fp::zero(),
                 c2: Fp::new(4058247500610520590),
-                c3: Fp::new(0),
+                c3: Fp::zero(),
             }
             .lexicographically_largest()
         ));
