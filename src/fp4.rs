@@ -543,7 +543,7 @@ mod test {
     fn test_equality() {
         fn is_equal(a: &Fp4, b: &Fp4) -> bool {
             let eq = a == b;
-            let ct_eq = a.ct_eq(&b);
+            let ct_eq = a.ct_eq(b);
 
             assert_eq!(eq, bool::from(ct_eq));
 
