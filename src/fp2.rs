@@ -198,9 +198,9 @@ impl Fp2 {
 
         let bb = &self.c1.square();
 
-        let c0 = (&bb).add(&aa);
+        let c0 = aa.add(bb);
 
-        let c1 = (&bb).add(&ab);
+        let c1 = bb.add(&ab);
         let c1 = (&c1).add(&ab);
 
         Fp2 { c0, c1 }

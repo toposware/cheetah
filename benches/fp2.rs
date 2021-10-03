@@ -13,41 +13,41 @@ use cheetah::Fp2;
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = thread_rng();
 
-    c.bench_function("field add", |bench| {
+    c.bench_function("fp2 add", |bench| {
         let x = Fp2::random(&mut rng);
         let y = Fp2::random(&mut rng);
         bench.iter(|| black_box(x) + black_box(y))
     });
 
-    c.bench_function("field sub", |bench| {
+    c.bench_function("fp2 sub", |bench| {
         let x = Fp2::random(&mut rng);
         let y = Fp2::random(&mut rng);
         bench.iter(|| black_box(x) - black_box(y))
     });
 
-    c.bench_function("field mul", |bench| {
+    c.bench_function("fp2 mul", |bench| {
         let x = Fp2::random(&mut rng);
         let y = Fp2::random(&mut rng);
         bench.iter(|| black_box(x) * black_box(y))
     });
 
-    c.bench_function("field square", |bench| {
+    c.bench_function("fp2 square", |bench| {
         let x = Fp2::random(&mut rng);
         bench.iter(|| black_box(x).square())
     });
 
-    c.bench_function("field square_from_mul", |bench| {
+    c.bench_function("fp2 square_from_mul", |bench| {
         let x = Fp2::random(&mut rng);
         bench.iter(|| black_box(x) * black_box(x))
     });
 
-    c.bench_function("field exp", |bench| {
+    c.bench_function("fp2 exp", |bench| {
         let x = Fp2::random(&mut rng);
         let y = Fp2::random(&mut rng).to_repr();
         bench.iter(|| Fp2::exp(black_box(x), black_box(&y)))
     });
 
-    c.bench_function("field invert", |bench| {
+    c.bench_function("fp2 invert", |bench| {
         let x = Fp2::random(&mut rng);
         bench.iter(|| Fp2::invert(black_box(&x)))
     });
