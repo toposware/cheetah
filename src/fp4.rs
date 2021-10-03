@@ -182,22 +182,6 @@ impl Fp4 {
         }
     }
 
-    #[inline(always)]
-    /// Multiply by nonresidue u.
-    pub const fn mul_by_nonresidue(&self) -> Self {
-        // Given a + bu + cu^2 + du^3, this produces
-        //     au + bu^2 + cu^3 + du^4
-        // but because u^4 = -3, we have
-        //     -3d + au + bu^2 + cu^3
-
-        Fp4 {
-            c0: (&U4).mul(&self.c3),
-            c1: self.c0,
-            c2: self.c1,
-            c3: self.c2,
-        }
-    }
-
     /// Returns whether or not this element is strictly lexicographically
     /// larger than its negation.
     #[inline]

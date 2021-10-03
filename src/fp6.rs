@@ -176,25 +176,6 @@ impl Fp6 {
         }
     }
 
-    #[inline(always)]
-    /// Multiply by nonresidue u.
-    pub const fn mul_by_nonresidue(&self) -> Self {
-        // Given a + bv + cv^2, this produces
-        //     av + bv^2 + cv^3
-        // but because v^3 = 4v + 1, we have
-        //     c + (a + 4c)v + bv^2
-
-        Fp6 {
-            c0: self.c2,
-            c1: (&(&self.c0).add(&Fp2 {
-                c0: Fp::new(4),
-                c1: Fp::zero(),
-            }))
-                .mul(&self.c2),
-            c2: self.c1,
-        }
-    }
-
     /// Returns whether or not this element is strictly lexicographically
     /// larger than its negation.
     #[inline]
