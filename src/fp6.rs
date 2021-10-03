@@ -1,5 +1,5 @@
 //! This module implements arithmetic over the extension field Fp6,
-//! defined with irreducible polynomial v^3 - 4v - 1.
+//! defined with irreducible polynomial v^3 - v - 2.
 
 use core::convert::TryInto;
 use core::fmt;
@@ -225,24 +225,18 @@ impl Fp6 {
         let cb = (&self.c2).mul(&other.c1);
         let cc = (&self.c2).mul(&other.c2);
 
-        let c0 = (&aa).add(&bc);
-        let c0 = (&c0).add(&cb);
+        let c0 = (&bc).add(&cb);
+        let c0 = (&c0).double();
+        let c0 = (&c0).add(&aa);
 
         let c1 = (&bc).add(&cb);
-        let c1 = (&c1).mul(&Fp2 {
-            c0: Fp::new(4),
-            c1: Fp::zero(),
-        });
+        let t1 = (&cc).double();
+        let c1 = (&c1).add(&t1);
         let c1 = (&c1).add(&ab);
         let c1 = (&c1).add(&ba);
-        let c1 = (&c1).add(&cc);
 
-        let c2 = (&cc).mul(&Fp2 {
-            c0: Fp::new(4),
-            c1: Fp::zero(),
-        });
+        let c2 = (&cc).add(&ca);
         let c2 = (&c2).add(&ac);
-        let c2 = (&c2).add(&ca);
         let c2 = (&c2).add(&bb);
 
         Fp6 { c0, c1, c2 }
@@ -260,23 +254,17 @@ impl Fp6 {
 
         let cc = (&self.c2).mul(&self.c2);
 
-        let c0 = (&aa).add(&bc);
-        let c0 = (&c0).add(&bc);
+        let c0 = (&bc).double();
+        let c0 = (&c0).double();
+        let c0 = (&c0).add(&aa);
 
-        let c1 = (&bc).add(&bc);
-        let c1 = (&c1).mul(&Fp2 {
-            c0: Fp::new(4),
-            c1: Fp::zero(),
-        });
+        let c1 = (&bc).double();
+        let t1 = (&cc).double();
+        let c1 = (&c1).add(&t1);
         let c1 = (&c1).add(&ab);
         let c1 = (&c1).add(&ab);
-        let c1 = (&c1).add(&cc);
 
-        let c2 = (&cc).mul(&Fp2 {
-            c0: Fp::new(4),
-            c1: Fp::zero(),
-        });
-        let c2 = (&c2).add(&ac);
+        let c2 = (&cc).add(&ac);
         let c2 = (&c2).add(&ac);
         let c2 = (&c2).add(&bb);
 
@@ -379,24 +367,28 @@ impl Fp6 {
     /// element, returning None in the case that this element
     /// is zero.
     pub fn invert(&self) -> CtOption<Self> {
-        let a2 = (&self.c0).square();
-        let b2 = (&self.c1).square();
-        let c2 = (&self.c2).square();
+        let three = Fp2::new(3);
+        let two = Fp2::new(2);
+        let four = Fp2::new(4);
 
-        let two = Fp2::one() + Fp2::one();
-        let three = two + Fp2::one();
-        let four = three + Fp2::one();
-        let eight = four.double();
-        let sixteen = four * four;
+        let c0_sq = self.c0.square();
+        let c1_sq = self.c1.square();
+        let c2_sq = self.c2.square();
 
-        let inv = a2 * self.c0 - four * self.c0 * b2 + self.c1 * b2 + sixteen * self.c0 * c2
-            - four * self.c1 * c2
-            + self.c2 * c2
-            + (eight * a2 - three * self.c0 * self.c1) * self.c2;
+        let two_c1 = two * self.c1;
+        let c0_c1 = self.c0 * self.c1;
 
-        let c0 = a2 - four * b2 + (eight * self.c0 - self.c1) * self.c2 + sixteen * c2;
-        let c1 = -self.c0 * self.c1 + c2;
-        let c2 = b2 - self.c0 * self.c2 - four * c2;
+        let inv = self.c0 * c0_sq - self.c0 * self.c1.square()
+            + two_c1 * c1_sq
+            + (self.c0 - two_c1) * self.c2.square()
+            + four * self.c2 * c2_sq
+            + two * (self.c0.square() - three * c0_c1) * self.c2;
+
+        let c0 = self.c0.square() - self.c1.square()
+            + two * (self.c0 - self.c1) * self.c2
+            + self.c2.square();
+        let c1 = -(c0_c1 - two * self.c2.square());
+        let c2 = self.c1.square() - self.c0 * self.c2 - self.c2.square();
 
         inv.invert().map(|t| Fp6 {
             c0: c0 * t,
@@ -667,30 +659,30 @@ mod test {
     fn test_squaring() {
         let a = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(4167072808029173087),
-                c1: Fp::new(1618085398724889560),
+                c0: Fp::new(4009227748844085582),
+                c1: Fp::new(4031374605246455920),
             },
             c1: Fp2 {
-                c0: Fp::new(4252814005348531461),
-                c1: Fp::new(1978937931976521722),
+                c0: Fp::new(1533760094217716083),
+                c1: Fp::new(2434700852926098351),
             },
             c2: Fp2 {
-                c0: Fp::new(733612977188794891),
-                c1: Fp::new(2521078467018751009),
+                c0: Fp::new(3070271868151135425),
+                c1: Fp::new(4445614804572870244),
             },
         };
         let b = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(411871884247580752),
-                c1: Fp::new(975422536930101490),
+                c0: Fp::new(1949415958821096488),
+                c1: Fp::new(34803124703569509),
             },
             c1: Fp2 {
-                c0: Fp::new(3660111879911998944),
-                c1: Fp::new(3658765734269830397),
+                c0: Fp::new(2372921723172571513),
+                c1: Fp::new(3116692962746587027),
             },
             c2: Fp2 {
-                c0: Fp::new(1336378171450403537),
-                c1: Fp::new(3568041835212862283),
+                c0: Fp::new(3662356892616824886),
+                c1: Fp::new(4411799637305927293),
             },
         };
 
@@ -718,7 +710,7 @@ mod test {
                 c1: Fp::new(4),
             },
             c2: Fp2 {
-                c0: Fp::new(6),
+                c0: Fp::new(5),
                 c1: Fp::new(6),
             },
         };
@@ -733,7 +725,7 @@ mod test {
                 c1: Fp::new(4),
             },
             c2: Fp2 {
-                c0: Fp::new(6),
+                c0: Fp::new(5),
                 c1: Fp::new(6),
             },
         };
@@ -742,44 +734,44 @@ mod test {
 
         let a = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(4167072808029173087),
-                c1: Fp::new(1618085398724889560),
+                c0: Fp::new(4009227748844085582),
+                c1: Fp::new(4031374605246455920),
             },
             c1: Fp2 {
-                c0: Fp::new(4252814005348531461),
-                c1: Fp::new(1978937931976521722),
+                c0: Fp::new(1533760094217716083),
+                c1: Fp::new(2434700852926098351),
             },
             c2: Fp2 {
-                c0: Fp::new(733612977188794891),
-                c1: Fp::new(2521078467018751009),
+                c0: Fp::new(3070271868151135425),
+                c1: Fp::new(4445614804572870244),
             },
         };
         let b = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(411871884247580752),
-                c1: Fp::new(975422536930101490),
+                c0: Fp::new(1949415958821096488),
+                c1: Fp::new(34803124703569509),
             },
             c1: Fp2 {
-                c0: Fp::new(3660111879911998944),
-                c1: Fp::new(3658765734269830397),
+                c0: Fp::new(2372921723172571513),
+                c1: Fp::new(3116692962746587027),
             },
             c2: Fp2 {
-                c0: Fp::new(1336378171450403537),
-                c1: Fp::new(3568041835212862283),
+                c0: Fp::new(3662356892616824886),
+                c1: Fp::new(4411799637305927293),
             },
         };
         let c = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(4100979495961732988),
-                c1: Fp::new(815786812220801534),
+                c0: Fp::new(3466079655920498030),
+                c1: Fp::new(2417642467435273447),
             },
             c1: Fp2 {
-                c0: Fp::new(4558525380807129266),
-                c1: Fp::new(3579606074809773744),
+                c0: Fp::new(44683634131777069),
+                c1: Fp::new(87878120261881242),
             },
             c2: Fp2 {
-                c0: Fp::new(3450239709028392840),
-                c1: Fp::new(4151094398153102512),
+                c0: Fp::new(3689005368361223881),
+                c1: Fp::new(1980168815030341140),
             },
         };
 
@@ -920,31 +912,31 @@ mod test {
     fn test_inversion() {
         let a = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(4167072808029173087),
-                c1: Fp::new(1618085398724889560),
+                c0: Fp::new(4009227748844085582),
+                c1: Fp::new(4031374605246455920),
             },
             c1: Fp2 {
-                c0: Fp::new(4252814005348531461),
-                c1: Fp::new(1978937931976521722),
+                c0: Fp::new(1533760094217716083),
+                c1: Fp::new(2434700852926098351),
             },
             c2: Fp2 {
-                c0: Fp::new(733612977188794891),
-                c1: Fp::new(2521078467018751009),
+                c0: Fp::new(3070271868151135425),
+                c1: Fp::new(4445614804572870244),
             },
         };
 
         let b = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(250182847153364610),
-                c1: Fp::new(1902439816108175911),
+                c0: Fp::new(2755520761612505010),
+                c1: Fp::new(1048198912003742666),
             },
             c1: Fp2 {
-                c0: Fp::new(218641481061462196),
-                c1: Fp::new(3629663639262592947),
+                c0: Fp::new(4202901689791132434),
+                c1: Fp::new(2790375792599204151),
             },
             c2: Fp2 {
-                c0: Fp::new(376185455706256631),
-                c1: Fp::new(854203883548072415),
+                c0: Fp::new(122386710556669900),
+                c1: Fp::new(3508229261956137550),
             },
         };
 

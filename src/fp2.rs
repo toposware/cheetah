@@ -1,5 +1,5 @@
 //! This module implements arithmetic over the extension field Fp2,
-//! defined with irreducible polynomial u^2 - 3.
+//! defined with irreducible polynomial u^2 - x - 1.
 
 use core::convert::TryInto;
 use core::fmt;
@@ -8,9 +8,6 @@ use rand_core::{CryptoRng, RngCore};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 use crate::fp::Fp;
-
-/// U2 = 3
-const U2: Fp = Fp::new(3);
 
 const MODULUS_MINUS_ONE_DIV_TWO: [u64; 2] = [0x3fffc88000000000, 0x07fff22006042000];
 
@@ -120,6 +117,15 @@ impl_binops_additive!(Fp2, Fp2);
 impl_binops_multiplicative!(Fp2, Fp2);
 
 impl Fp2 {
+    /// Creates a new field element from a `u64` value.
+    /// The value is converted to Montgomery form by computing
+    /// (a.R^0 * R^2) / R = a.R
+    pub const fn new(value: u64) -> Self {
+        Fp2 {
+            c0: Fp::new(value),
+            c1: Fp::zero(),
+        }
+    }
     #[inline]
     /// The additive identity
     pub const fn zero() -> Self {
@@ -151,20 +157,6 @@ impl Fp2 {
         }
     }
 
-    #[inline(always)]
-    /// Multiply by nonresidue u.
-    pub const fn mul_by_nonresidue(&self) -> Self {
-        // Given a + bu, this produces
-        //     au + bu^2
-        // but because u^2 = 3, we have
-        //     3b + au
-
-        Fp2 {
-            c0: (&U2).mul(&self.c1),
-            c1: self.c0,
-        }
-    }
-
     /// Returns whether or not this element is strictly lexicographically
     /// larger than its negation.
     #[inline]
@@ -189,10 +181,10 @@ impl Fp2 {
         let ba = (&self.c1).mul(&other.c0);
         let bb = (&self.c1).mul(&other.c1);
 
-        let c0 = (&U2).mul(&bb);
-        let c0 = (&c0).add(&aa);
+        let c0 = (&bb).add(&aa);
 
-        let c1 = (&ab).add(&ba);
+        let c1 = (&bb).add(&ab);
+        let c1 = (&c1).add(&ba);
 
         Fp2 { c0, c1 }
     }
@@ -201,15 +193,15 @@ impl Fp2 {
     #[inline]
     // TODO: check how to reduce number of multiplications
     pub const fn square(&self) -> Self {
-        let aa = (&self.c0).mul(&self.c0);
+        let aa = &self.c0.square();
         let ab = (&self.c0).mul(&self.c1);
 
-        let bb = (&self.c1).mul(&self.c1);
+        let bb = &self.c1.square();
 
-        let c0 = (&U2).mul(&bb);
-        let c0 = (&c0).add(&aa);
+        let c0 = (&bb).add(&aa);
 
-        let c1 = (&ab).double();
+        let c1 = (&bb).add(&ab);
+        let c1 = (&c1).add(&ab);
 
         Fp2 { c0, c1 }
     }
@@ -312,10 +304,10 @@ impl Fp2 {
     /// element, returning None in the case that this element
     /// is zero.
     pub fn invert(&self) -> CtOption<Self> {
-        let inv = self.c0.square() - U2 * self.c1.square();
+        let inv = self.c0.square() + self.c0 * self.c1 - self.c1.square();
 
         inv.invert().map(|t| Fp2 {
-            c0: self.c0 * t,
+            c0: (self.c0 + self.c1) * t,
             c1: -self.c1 * t,
         })
     }
@@ -460,12 +452,12 @@ mod test {
     #[test]
     fn test_squaring() {
         let a = Fp2 {
-            c0: Fp::new(1851690248047311121),
-            c1: Fp::new(1205056697394665971),
+            c0: Fp::new(1373422459643663482),
+            c1: Fp::new(1559760838287424487),
         };
         let b = Fp2 {
-            c0: Fp::new(3946652058438079324),
-            c1: Fp::new(1328996369931136764),
+            c0: Fp::new(4508439400065818468),
+            c1: Fp::new(3727974599246273355),
         };
 
         assert_eq!(a.square(), b);
@@ -495,16 +487,16 @@ mod test {
         assert_eq!(a * b, c);
 
         let a = Fp2 {
-            c0: Fp::new(1851690248047311121),
-            c1: Fp::new(1205056697394665971),
+            c0: Fp::new(1373422459643663482),
+            c1: Fp::new(1559760838287424487),
         };
         let b = Fp2 {
-            c0: Fp::new(1082224376367775569),
-            c1: Fp::new(110075071541015995),
+            c0: Fp::new(4508439400065818468),
+            c1: Fp::new(3727974599246273355),
         };
         let c = Fp2 {
-            c0: Fp::new(578882405646625226),
-            c1: Fp::new(2901565625542988861),
+            c0: Fp::new(3944078691460293030),
+            c1: Fp::new(1622844793164244792),
         };
 
         assert_eq!(a * b, c);
@@ -563,13 +555,13 @@ mod test {
     #[test]
     fn test_inversion() {
         let a = Fp2 {
-            c0: Fp::new(1851690248047311121),
-            c1: Fp::new(1205056697394665971),
+            c0: Fp::new(2077468337887652729),
+            c1: Fp::new(3560716367442326177),
         };
 
         let b = Fp2 {
-            c0: Fp::new(2938726696691230341),
-            c1: Fp::new(2564687647929215999),
+            c0: Fp::new(293161233865469014),
+            c1: Fp::new(2017440449651245094),
         };
 
         assert_eq!(a.invert().unwrap(), b);
