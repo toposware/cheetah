@@ -206,13 +206,12 @@ impl Fp6 {
         let cb = (&self.c2).mul(&other.c1);
         let cc = (&self.c2).mul(&other.c2);
 
-        let c0 = (&bc).add(&cb);
-        let c0 = (&c0).double();
+        let tmp = (&bc).add(&cb);
+        let c0 = (&tmp).double();
         let c0 = (&c0).add(&aa);
 
-        let c1 = (&bc).add(&cb);
         let t1 = (&cc).double();
-        let c1 = (&c1).add(&t1);
+        let c1 = (&tmp).add(&t1);
         let c1 = (&c1).add(&ab);
         let c1 = (&c1).add(&ba);
 
@@ -239,11 +238,9 @@ impl Fp6 {
         let c0 = (&c0).double();
         let c0 = (&c0).add(&aa);
 
-        let c1 = (&bc).double();
-        let t1 = (&cc).double();
-        let c1 = (&c1).add(&t1);
-        let c1 = (&c1).add(&ab);
-        let c1 = (&c1).add(&ab);
+        let c1 = (&bc).add(&ab);
+        let c1 = (&c1).add(&cc);
+        let c1 = (&c1).double();
 
         let c2 = (&cc).add(&ac);
         let c2 = (&c2).add(&ac);
