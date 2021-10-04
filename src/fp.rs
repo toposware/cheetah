@@ -170,7 +170,7 @@ impl Fp {
         self.add(self)
     }
 
-    /// Outputs the internal representation as 4 64-bit limbs after Montgomery reduction
+    /// Outputs the internal representation as a 64-bit limb after Montgomery reduction
     pub const fn to_repr(&self) -> u64 {
         Fp::montgomery_reduce(self.0, 0).0
     }

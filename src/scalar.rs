@@ -10,48 +10,51 @@ use bitvec::{order::Lsb0, slice::BitSlice};
 use rand_core::{CryptoRng, RngCore};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
-#[cfg(feature = "serialize")]
-use serde::de::Visitor;
-#[cfg(feature = "serialize")]
-use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
-
 // CONSTANTS
 // ================================================================================================
 
-// Field modulus = 452288908625799774674098781249295805571160305918807263004273270801344763473
+// Field modulus = 9618866709266846897190681717726035074731103115011964004359729618342275068175251479314708351071139295228317576333
 const M: Scalar = Scalar([
-    0x02f096739c941651,
-    0x2ef8715df33bd3e0,
-    0x46b09ca43418b591,
-    0x00fffc8804831564,
+    0x6210a856e8e2ac8d,
+    0x2774ffd1eeca0208,
+    0x833c7cca5f5735d0,
+    0x72a71e3a69c7b80f,
+    0x52f1b32fc5d4ddf9,
+    0x000fffacc0b47aef,
 ]);
 
-/// 2^256 mod M; this is used for conversion of elements into Montgomery representation.
+/// 2^384 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R: Scalar = Scalar([
-    0x0f698c636be9af00,
-    0x078ea20cc42c1ffd,
-    0x4f635bcbe74a6ed1,
-    0x000377fb7cea9bb9,
+    0xf57a9171d5373000,
+    0xb002e1135fdf79de,
+    0x38335a0a8ca2fd88,
+    0x8e1c5963847f07cc,
+    0xe4cd03a2b22068d5,
+    0x000533f4b8510ad0,
 ]);
 
-/// 2^512 mod M; this is used for conversion of elements into Montgomery representation.
+/// 2^768 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R2: Scalar = Scalar([
-    0xb598f7a893b7ab5a,
-    0xced8a71a39a3d46e,
-    0x997959903d1e6b70,
-    0x005fa27e825555e8,
+    0xb5abf62b949211ef,
+    0xf6fe56a92fd697c6,
+    0x97b8009b9c1a408b,
+    0x964d02bf42d11f0d,
+    0xcf9bd5ee5563ea90,
+    0x0003cb51dd9af85b,
 ]);
 
-/// 2^768 mod M; this is used during element inversion.
+/// 2^1152 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R3: Scalar = Scalar([
-    0xf116e1df1d4f7994,
-    0x7894e4d7b5c9d436,
-    0xaed9f68f025ae2a7,
-    0x00154013fc66b6c6,
+    0xbffff69417dd9d74,
+    0x400dbe34b209590a,
+    0x6339965a283a9add,
+    0x0082f3ee34e8f243,
+    0x3bc0c639696414ad,
+    0x000a96be6cadda40,
 ]);
 
 /// -M^{-1} mod 2^64; this is used during element multiplication.
-const U: u64 = 0xc0000a221cbb0d4f;
+const U: u64 = 17813468779381197243;
 
 // SCALAR FIELD ELEMENT
 // ================================================================================================
@@ -59,9 +62,9 @@ const U: u64 = 0xc0000a221cbb0d4f;
 /// Represents a scalar field element.
 ///
 /// Internal values are stored in their canonical form in the range [0, M).
-/// The backing type is `[u64; 4]`.
+/// The backing type is `[u64; 6]`.
 #[derive(Copy, Clone, Eq)]
-pub struct Scalar(pub(crate) [u64; 4]);
+pub struct Scalar(pub(crate) [u64; 6]);
 
 impl Default for Scalar {
     #[inline]
@@ -93,6 +96,8 @@ impl ConstantTimeEq for Scalar {
             & self.0[1].ct_eq(&other.0[1])
             & self.0[2].ct_eq(&other.0[2])
             & self.0[3].ct_eq(&other.0[3])
+            & self.0[4].ct_eq(&other.0[4])
+            & self.0[5].ct_eq(&other.0[5])
     }
 }
 
@@ -110,6 +115,8 @@ impl ConditionallySelectable for Scalar {
             u64::conditional_select(&a.0[1], &b.0[1], choice),
             u64::conditional_select(&a.0[2], &b.0[2], choice),
             u64::conditional_select(&a.0[3], &b.0[3], choice),
+            u64::conditional_select(&a.0[4], &b.0[4], choice),
+            u64::conditional_select(&a.0[5], &b.0[5], choice),
         ])
     }
 }
@@ -117,17 +124,17 @@ impl ConditionallySelectable for Scalar {
 impl zeroize::DefaultIsZeroes for Scalar {}
 
 impl Scalar {
-    /// Creates a new field element from a [u64; 4] value.
+    /// Creates a new field element from a [u64; 6] value.
     /// The value is converted to Montgomery form by computing
     /// (a.R^0 * R^2) / R = a.R
-    pub const fn new(value: [u64; 4]) -> Self {
+    pub const fn new(value: [u64; 6]) -> Self {
         (&Scalar(value)).mul(&R2)
     }
 
     /// Returns zero, the additive identity.
     #[inline]
     pub const fn zero() -> Self {
-        Scalar([0, 0, 0, 0])
+        Scalar([0, 0, 0, 0, 0, 0])
     }
 
     /// Returns one, the multiplicative identity.
@@ -152,37 +159,67 @@ impl Scalar {
         r5: u64,
         r6: u64,
         r7: u64,
+        r8: u64,
+        r9: u64,
+        r10: u64,
+        r11: u64,
     ) -> Self {
         let k = r0.wrapping_mul(U);
         let (_, carry) = mul64_with_carry(r0, k, M.0[0], 0);
         let (r1, carry) = mul64_with_carry(r1, k, M.0[1], carry);
         let (r2, carry) = mul64_with_carry(r2, k, M.0[2], carry);
         let (r3, carry) = mul64_with_carry(r3, k, M.0[3], carry);
-        let (r4, carry2) = add64_with_carry(r4, 0, carry);
+        let (r4, carry) = mul64_with_carry(r4, k, M.0[4], carry);
+        let (r5, carry) = mul64_with_carry(r5, k, M.0[5], carry);
+        let (r6, carry2) = add64_with_carry(r6, 0, carry);
 
         let k = r1.wrapping_mul(U);
         let (_, carry) = mul64_with_carry(r1, k, M.0[0], 0);
         let (r2, carry) = mul64_with_carry(r2, k, M.0[1], carry);
         let (r3, carry) = mul64_with_carry(r3, k, M.0[2], carry);
         let (r4, carry) = mul64_with_carry(r4, k, M.0[3], carry);
-        let (r5, carry2) = add64_with_carry(r5, carry2, carry);
+        let (r5, carry) = mul64_with_carry(r5, k, M.0[4], carry);
+        let (r6, carry) = mul64_with_carry(r6, k, M.0[5], carry);
+        let (r7, carry2) = add64_with_carry(r7, carry2, carry);
 
         let k = r2.wrapping_mul(U);
         let (_, carry) = mul64_with_carry(r2, k, M.0[0], 0);
         let (r3, carry) = mul64_with_carry(r3, k, M.0[1], carry);
         let (r4, carry) = mul64_with_carry(r4, k, M.0[2], carry);
         let (r5, carry) = mul64_with_carry(r5, k, M.0[3], carry);
-        let (r6, carry2) = add64_with_carry(r6, carry2, carry);
+        let (r6, carry) = mul64_with_carry(r6, k, M.0[4], carry);
+        let (r7, carry) = mul64_with_carry(r7, k, M.0[5], carry);
+        let (r8, carry2) = add64_with_carry(r8, carry2, carry);
 
         let k = r3.wrapping_mul(U);
         let (_, carry) = mul64_with_carry(r3, k, M.0[0], 0);
         let (r4, carry) = mul64_with_carry(r4, k, M.0[1], carry);
         let (r5, carry) = mul64_with_carry(r5, k, M.0[2], carry);
         let (r6, carry) = mul64_with_carry(r6, k, M.0[3], carry);
-        let (r7, _) = add64_with_carry(r7, carry2, carry);
+        let (r7, carry) = mul64_with_carry(r7, k, M.0[4], carry);
+        let (r8, carry) = mul64_with_carry(r8, k, M.0[5], carry);
+        let (r9, carry2) = add64_with_carry(r9, carry2, carry);
+
+        let k = r4.wrapping_mul(U);
+        let (_, carry) = mul64_with_carry(r4, k, M.0[0], 0);
+        let (r5, carry) = mul64_with_carry(r5, k, M.0[1], carry);
+        let (r6, carry) = mul64_with_carry(r6, k, M.0[2], carry);
+        let (r7, carry) = mul64_with_carry(r7, k, M.0[3], carry);
+        let (r8, carry) = mul64_with_carry(r8, k, M.0[4], carry);
+        let (r9, carry) = mul64_with_carry(r9, k, M.0[5], carry);
+        let (r10, carry2) = add64_with_carry(r10, carry2, carry);
+
+        let k = r5.wrapping_mul(U);
+        let (_, carry) = mul64_with_carry(r5, k, M.0[0], 0);
+        let (r6, carry) = mul64_with_carry(r6, k, M.0[1], carry);
+        let (r7, carry) = mul64_with_carry(r7, k, M.0[2], carry);
+        let (r8, carry) = mul64_with_carry(r8, k, M.0[3], carry);
+        let (r9, carry) = mul64_with_carry(r9, k, M.0[4], carry);
+        let (r10, carry) = mul64_with_carry(r10, k, M.0[5], carry);
+        let (r11, _) = add64_with_carry(r11, carry2, carry);
 
         // Result may be within M of the correct value, hence substracting the modulus
-        (&Scalar([r4, r5, r6, r7])).sub(&M)
+        (&Scalar([r6, r7, r8, r9, r10, r11])).sub(&M)
     }
 
     /// Computes the summation of two scalar elements
@@ -191,11 +228,13 @@ impl Scalar {
         let (d0, carry) = add64_with_carry(self.0[0], rhs.0[0], 0);
         let (d1, carry) = add64_with_carry(self.0[1], rhs.0[1], carry);
         let (d2, carry) = add64_with_carry(self.0[2], rhs.0[2], carry);
-        let (d3, _) = add64_with_carry(self.0[3], rhs.0[3], carry);
+        let (d3, carry) = add64_with_carry(self.0[3], rhs.0[3], carry);
+        let (d4, carry) = add64_with_carry(self.0[4], rhs.0[4], carry);
+        let (d5, _) = add64_with_carry(self.0[5], rhs.0[5], carry);
 
         // Attempt to subtract the modulus, to ensure the value
         // is smaller than the modulus.
-        (&Scalar([d0, d1, d2, d3])).sub(&M)
+        (&Scalar([d0, d1, d2, d3, d4, d5])).sub(&M)
     }
 
     /// Computes the difference of two scalar elements
@@ -205,33 +244,48 @@ impl Scalar {
         let (d1, borrow) = sub64_with_carry(self.0[1], rhs.0[1], borrow);
         let (d2, borrow) = sub64_with_carry(self.0[2], rhs.0[2], borrow);
         let (d3, borrow) = sub64_with_carry(self.0[3], rhs.0[3], borrow);
+        let (d4, borrow) = sub64_with_carry(self.0[4], rhs.0[4], borrow);
+        let (d5, borrow) = sub64_with_carry(self.0[5], rhs.0[5], borrow);
 
         // If underflow occurred on the final limb,
         // borrow = 0xfff...fff, otherwise borrow = 0x000...000.
         let (d0, carry) = add64_with_carry(d0, M.0[0] & borrow, 0);
         let (d1, carry) = add64_with_carry(d1, M.0[1] & borrow, carry);
         let (d2, carry) = add64_with_carry(d2, M.0[2] & borrow, carry);
-        let (d3, _) = add64_with_carry(d3, M.0[3] & borrow, carry);
+        let (d3, carry) = add64_with_carry(d3, M.0[3] & borrow, carry);
+        let (d4, carry) = add64_with_carry(d4, M.0[4] & borrow, carry);
+        let (d5, _) = add64_with_carry(d5, M.0[5] & borrow, carry);
 
-        Scalar([d0, d1, d2, d3])
+        Scalar([d0, d1, d2, d3, d4, d5])
     }
 
     /// Computes the negation of a scalar element
     #[inline]
     pub const fn neg(&self) -> Self {
-        // Subtract `self` from `MODULUS` to negate. Ignore the final
+        // Subtract `self` from `M` to negate. Ignore the final
         // borrow because it cannot underflow; self is guaranteed to
         // be in the field.
         let (d0, borrow) = sub64_with_carry(M.0[0], self.0[0], 0);
         let (d1, borrow) = sub64_with_carry(M.0[1], self.0[1], borrow);
         let (d2, borrow) = sub64_with_carry(M.0[2], self.0[2], borrow);
-        let (d3, _) = sub64_with_carry(M.0[3], self.0[3], borrow);
+        let (d3, borrow) = sub64_with_carry(M.0[3], self.0[3], borrow);
+        let (d4, borrow) = sub64_with_carry(M.0[4], self.0[4], borrow);
+        let (d5, _) = sub64_with_carry(M.0[5], self.0[5], borrow);
 
-        // `tmp` could be `MODULUS` if `self` was zero. Create a mask that is
+        // `tmp` could be `M` if `self` was zero. Create a mask that is
         // zero if `self` was zero, and `u64::max_value()` if self was nonzero.
-        let mask = (((self.0[0] | self.0[1] | self.0[2] | self.0[3]) == 0) as u64).wrapping_sub(1);
+        let mask = (((self.0[0] | self.0[1] | self.0[2] | self.0[3] | self.0[4] | self.0[5]) == 0)
+            as u64)
+            .wrapping_sub(1);
 
-        Scalar([d0 & mask, d1 & mask, d2 & mask, d3 & mask])
+        Scalar([
+            d0 & mask,
+            d1 & mask,
+            d2 & mask,
+            d3 & mask,
+            d4 & mask,
+            d5 & mask,
+        ])
     }
 
     /// Computes the multiplication of two scalar elements
@@ -239,59 +293,100 @@ impl Scalar {
     pub const fn mul(&self, rhs: &Self) -> Self {
         // Schoolbook multiplication
 
-        let (r0, carry) = mul64_with_carry(0, self.0[0], rhs.0[0], 0);
-        let (r1, carry) = mul64_with_carry(0, self.0[0], rhs.0[1], carry);
-        let (r2, carry) = mul64_with_carry(0, self.0[0], rhs.0[2], carry);
-        let (r3, r4) = mul64_with_carry(0, self.0[0], rhs.0[3], carry);
+        let (t0, carry) = mul64_with_carry(0, self.0[0], rhs.0[0], 0);
+        let (t1, carry) = mul64_with_carry(0, self.0[0], rhs.0[1], carry);
+        let (t2, carry) = mul64_with_carry(0, self.0[0], rhs.0[2], carry);
+        let (t3, carry) = mul64_with_carry(0, self.0[0], rhs.0[3], carry);
+        let (t4, carry) = mul64_with_carry(0, self.0[0], rhs.0[4], carry);
+        let (t5, t6) = mul64_with_carry(0, self.0[0], rhs.0[5], carry);
 
-        let (r1, carry) = mul64_with_carry(r1, self.0[1], rhs.0[0], 0);
-        let (r2, carry) = mul64_with_carry(r2, self.0[1], rhs.0[1], carry);
-        let (r3, carry) = mul64_with_carry(r3, self.0[1], rhs.0[2], carry);
-        let (r4, r5) = mul64_with_carry(r4, self.0[1], rhs.0[3], carry);
+        let (t1, carry) = mul64_with_carry(t1, self.0[1], rhs.0[0], 0);
+        let (t2, carry) = mul64_with_carry(t2, self.0[1], rhs.0[1], carry);
+        let (t3, carry) = mul64_with_carry(t3, self.0[1], rhs.0[2], carry);
+        let (t4, carry) = mul64_with_carry(t4, self.0[1], rhs.0[3], carry);
+        let (t5, carry) = mul64_with_carry(t5, self.0[1], rhs.0[4], carry);
+        let (t6, t7) = mul64_with_carry(t6, self.0[1], rhs.0[5], carry);
 
-        let (r2, carry) = mul64_with_carry(r2, self.0[2], rhs.0[0], 0);
-        let (r3, carry) = mul64_with_carry(r3, self.0[2], rhs.0[1], carry);
-        let (r4, carry) = mul64_with_carry(r4, self.0[2], rhs.0[2], carry);
-        let (r5, r6) = mul64_with_carry(r5, self.0[2], rhs.0[3], carry);
+        let (t2, carry) = mul64_with_carry(t2, self.0[2], rhs.0[0], 0);
+        let (t3, carry) = mul64_with_carry(t3, self.0[2], rhs.0[1], carry);
+        let (t4, carry) = mul64_with_carry(t4, self.0[2], rhs.0[2], carry);
+        let (t5, carry) = mul64_with_carry(t5, self.0[2], rhs.0[3], carry);
+        let (t6, carry) = mul64_with_carry(t6, self.0[2], rhs.0[4], carry);
+        let (t7, t8) = mul64_with_carry(t7, self.0[2], rhs.0[5], carry);
 
-        let (r3, carry) = mul64_with_carry(r3, self.0[3], rhs.0[0], 0);
-        let (r4, carry) = mul64_with_carry(r4, self.0[3], rhs.0[1], carry);
-        let (r5, carry) = mul64_with_carry(r5, self.0[3], rhs.0[2], carry);
-        let (r6, r7) = mul64_with_carry(r6, self.0[3], rhs.0[3], carry);
+        let (t3, carry) = mul64_with_carry(t3, self.0[3], rhs.0[0], 0);
+        let (t4, carry) = mul64_with_carry(t4, self.0[3], rhs.0[1], carry);
+        let (t5, carry) = mul64_with_carry(t5, self.0[3], rhs.0[2], carry);
+        let (t6, carry) = mul64_with_carry(t6, self.0[3], rhs.0[3], carry);
+        let (t7, carry) = mul64_with_carry(t7, self.0[3], rhs.0[4], carry);
+        let (t8, t9) = mul64_with_carry(t8, self.0[3], rhs.0[5], carry);
 
-        Scalar::montgomery_reduce(r0, r1, r2, r3, r4, r5, r6, r7)
+        let (t4, carry) = mul64_with_carry(t4, self.0[4], rhs.0[0], 0);
+        let (t5, carry) = mul64_with_carry(t5, self.0[4], rhs.0[1], carry);
+        let (t6, carry) = mul64_with_carry(t6, self.0[4], rhs.0[2], carry);
+        let (t7, carry) = mul64_with_carry(t7, self.0[4], rhs.0[3], carry);
+        let (t8, carry) = mul64_with_carry(t8, self.0[4], rhs.0[4], carry);
+        let (t9, t10) = mul64_with_carry(t9, self.0[4], rhs.0[5], carry);
+
+        let (t5, carry) = mul64_with_carry(t5, self.0[5], rhs.0[0], 0);
+        let (t6, carry) = mul64_with_carry(t6, self.0[5], rhs.0[1], carry);
+        let (t7, carry) = mul64_with_carry(t7, self.0[5], rhs.0[2], carry);
+        let (t8, carry) = mul64_with_carry(t8, self.0[5], rhs.0[3], carry);
+        let (t9, carry) = mul64_with_carry(t9, self.0[5], rhs.0[4], carry);
+        let (t10, t11) = mul64_with_carry(t10, self.0[5], rhs.0[5], carry);
+
+        Self::montgomery_reduce(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11)
     }
 
     /// Computes the square of a scalar element
     #[inline]
     pub const fn square(&self) -> Self {
-        let (r1, carry) = mul64_with_carry(0, self.0[0], self.0[1], 0);
-        let (r2, carry) = mul64_with_carry(0, self.0[0], self.0[2], carry);
-        let (r3, r4) = mul64_with_carry(0, self.0[0], self.0[3], carry);
+        let (t1, carry) = mul64_with_carry(0, self.0[0], self.0[1], 0);
+        let (t2, carry) = mul64_with_carry(0, self.0[0], self.0[2], carry);
+        let (t3, carry) = mul64_with_carry(0, self.0[0], self.0[3], carry);
+        let (t4, carry) = mul64_with_carry(0, self.0[0], self.0[4], carry);
+        let (t5, t6) = mul64_with_carry(0, self.0[0], self.0[5], carry);
 
-        let (r3, carry) = mul64_with_carry(r3, self.0[1], self.0[2], 0);
-        let (r4, r5) = mul64_with_carry(r4, self.0[1], self.0[3], carry);
+        let (t3, carry) = mul64_with_carry(t3, self.0[1], self.0[2], 0);
+        let (t4, carry) = mul64_with_carry(t4, self.0[1], self.0[3], carry);
+        let (t5, carry) = mul64_with_carry(t5, self.0[1], self.0[4], carry);
+        let (t6, t7) = mul64_with_carry(t6, self.0[1], self.0[5], carry);
 
-        let (r5, r6) = mul64_with_carry(r5, self.0[2], self.0[3], 0);
+        let (t5, carry) = mul64_with_carry(t5, self.0[2], self.0[3], 0);
+        let (t6, carry) = mul64_with_carry(t6, self.0[2], self.0[4], carry);
+        let (t7, t8) = mul64_with_carry(t7, self.0[2], self.0[5], carry);
 
-        let r7 = r6 >> 63;
-        let r6 = (r6 << 1) | (r5 >> 63);
-        let r5 = (r5 << 1) | (r4 >> 63);
-        let r4 = (r4 << 1) | (r3 >> 63);
-        let r3 = (r3 << 1) | (r2 >> 63);
-        let r2 = (r2 << 1) | (r1 >> 63);
-        let r1 = r1 << 1;
+        let (t7, carry) = mul64_with_carry(t7, self.0[3], self.0[4], 0);
+        let (t8, t9) = mul64_with_carry(t8, self.0[3], self.0[5], carry);
 
-        let (r0, carry) = mul64_with_carry(0, self.0[0], self.0[0], 0);
-        let (r1, carry) = add64_with_carry(0, r1, carry);
-        let (r2, carry) = mul64_with_carry(r2, self.0[1], self.0[1], carry);
-        let (r3, carry) = add64_with_carry(0, r3, carry);
-        let (r4, carry) = mul64_with_carry(r4, self.0[2], self.0[2], carry);
-        let (r5, carry) = add64_with_carry(0, r5, carry);
-        let (r6, carry) = mul64_with_carry(r6, self.0[3], self.0[3], carry);
-        let (r7, _) = add64_with_carry(0, r7, carry);
+        let (t9, t10) = mul64_with_carry(t9, self.0[4], self.0[5], 0);
 
-        Scalar::montgomery_reduce(r0, r1, r2, r3, r4, r5, r6, r7)
+        let t11 = t10 >> 63;
+        let t10 = (t10 << 1) | (t9 >> 63);
+        let t9 = (t9 << 1) | (t8 >> 63);
+        let t8 = (t8 << 1) | (t7 >> 63);
+        let t7 = (t7 << 1) | (t6 >> 63);
+        let t6 = (t6 << 1) | (t5 >> 63);
+        let t5 = (t5 << 1) | (t4 >> 63);
+        let t4 = (t4 << 1) | (t3 >> 63);
+        let t3 = (t3 << 1) | (t2 >> 63);
+        let t2 = (t2 << 1) | (t1 >> 63);
+        let t1 = t1 << 1;
+
+        let (t0, carry) = mul64_with_carry(0, self.0[0], self.0[0], 0);
+        let (t1, carry) = add64_with_carry(t1, 0, carry);
+        let (t2, carry) = mul64_with_carry(t2, self.0[1], self.0[1], carry);
+        let (t3, carry) = add64_with_carry(t3, 0, carry);
+        let (t4, carry) = mul64_with_carry(t4, self.0[2], self.0[2], carry);
+        let (t5, carry) = add64_with_carry(t5, 0, carry);
+        let (t6, carry) = mul64_with_carry(t6, self.0[3], self.0[3], carry);
+        let (t7, carry) = add64_with_carry(t7, 0, carry);
+        let (t8, carry) = mul64_with_carry(t8, self.0[4], self.0[4], carry);
+        let (t9, carry) = add64_with_carry(t9, 0, carry);
+        let (t10, carry) = mul64_with_carry(t10, self.0[5], self.0[5], carry);
+        let (t11, _) = add64_with_carry(t11, 0, carry);
+
+        Self::montgomery_reduce(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11)
     }
 
     /// Computes the double of a scalar element
@@ -303,21 +398,25 @@ impl Scalar {
 
     /// Attempts to convert a little-endian byte representation of
     /// a scalar into a `Scalar`, failing if the input is not canonical.
-    pub fn from_bytes(bytes: &[u8; 32]) -> CtOption<Scalar> {
-        let mut tmp = Scalar([0, 0, 0, 0]);
+    pub fn from_bytes(bytes: &[u8; 48]) -> CtOption<Scalar> {
+        let mut tmp = Scalar([0, 0, 0, 0, 0, 0]);
 
         tmp.0[0] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[0..8]).unwrap());
         tmp.0[1] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[8..16]).unwrap());
         tmp.0[2] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[16..24]).unwrap());
         tmp.0[3] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[24..32]).unwrap());
+        tmp.0[4] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[32..40]).unwrap());
+        tmp.0[5] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[40..48]).unwrap());
 
         // Try to subtract the modulus
         let (_, borrow) = sub64_with_carry(tmp.0[0], M.0[0], 0);
         let (_, borrow) = sub64_with_carry(tmp.0[1], M.0[1], borrow);
         let (_, borrow) = sub64_with_carry(tmp.0[2], M.0[2], borrow);
         let (_, borrow) = sub64_with_carry(tmp.0[3], M.0[3], borrow);
+        let (_, borrow) = sub64_with_carry(tmp.0[4], M.0[4], borrow);
+        let (_, borrow) = sub64_with_carry(tmp.0[5], M.0[5], borrow);
 
-        // If the element is smaller than MODULUS then the
+        // If the element is smaller than M then the
         // subtraction will underflow, producing a borrow value
         // of 0xffff...ffff. Otherwise, it'll be zero.
         let is_some = (borrow as u8) & 1;
@@ -335,12 +434,12 @@ impl Scalar {
     /// to the bit slice.** If the slice is fixed,
     /// this operation is effectively constant time.
     pub fn from_bits_vartime(bit_slice: &BitSlice<Lsb0, u8>) -> Scalar {
-        assert_eq!(bit_slice.len(), 256);
+        assert_eq!(bit_slice.len(), 384);
 
         let mut result = Scalar::zero();
-        for i in 0..256 {
+        for i in 0..384 {
             result = result.double();
-            if bit_slice[255 - i] {
+            if bit_slice[383 - i] {
                 result += Scalar::one();
             }
         }
@@ -348,31 +447,38 @@ impl Scalar {
         result
     }
 
-    /// Outputs the internal representation as 4 64-bit limbs after Montgomery reduction
-    pub const fn to_repr(&self) -> [u64; 4] {
-        Scalar::montgomery_reduce(self.0[0], self.0[1], self.0[2], self.0[3], 0, 0, 0, 0).0
+    /// Outputs the internal representation as 6 64-bit limbs after Montgomery reduction
+    pub const fn to_repr(&self) -> [u64; 6] {
+        Scalar::montgomery_reduce(
+            self.0[0], self.0[1], self.0[2], self.0[3], self.0[4], self.0[5], 0, 0, 0, 0, 0, 0,
+        )
+        .0
     }
 
     /// Converts a `Scalar` element into a byte representation in
     /// little-endian byte order.
-    pub fn to_bytes(&self) -> [u8; 32] {
+    pub fn to_bytes(&self) -> [u8; 48] {
         // Turn into canonical form by computing
         // (a.R) / R = a
-        let tmp = Scalar::montgomery_reduce(self.0[0], self.0[1], self.0[2], self.0[3], 0, 0, 0, 0);
+        let tmp = Scalar::montgomery_reduce(
+            self.0[0], self.0[1], self.0[2], self.0[3], self.0[4], self.0[5], 0, 0, 0, 0, 0, 0,
+        );
 
-        let mut res = [0; 32];
+        let mut res = [0; 48];
         res[0..8].copy_from_slice(&tmp.0[0].to_le_bytes());
         res[8..16].copy_from_slice(&tmp.0[1].to_le_bytes());
         res[16..24].copy_from_slice(&tmp.0[2].to_le_bytes());
         res[24..32].copy_from_slice(&tmp.0[3].to_le_bytes());
+        res[32..40].copy_from_slice(&tmp.0[4].to_le_bytes());
+        res[40..48].copy_from_slice(&tmp.0[5].to_le_bytes());
 
         res
     }
 
-    /// Converts a 512-bit little endian integer into
+    /// Converts a 768-bit little endian integer into
     /// a `Scalar` by reducing by the modulus.
-    pub fn from_bytes_wide(bytes: &[u8; 64]) -> Self {
-        Scalar::from_u512([
+    pub fn from_bytes_wide(bytes: &[u8; 96]) -> Self {
+        Scalar::from_u768([
             u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[0..8]).unwrap()),
             u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[8..16]).unwrap()),
             u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[16..24]).unwrap()),
@@ -381,25 +487,29 @@ impl Scalar {
             u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[40..48]).unwrap()),
             u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[48..56]).unwrap()),
             u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[56..64]).unwrap()),
+            u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[64..72]).unwrap()),
+            u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[72..80]).unwrap()),
+            u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[80..88]).unwrap()),
+            u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[88..96]).unwrap()),
         ])
     }
 
-    fn from_u512(limbs: [u64; 8]) -> Self {
-        // We reduce an arbitrary 512-bit number by decomposing it into two 256-bit digits
-        // with the higher bits multiplied by 2^256. Thus, we perform two reductions
+    fn from_u768(limbs: [u64; 12]) -> Self {
+        // We reduce an arbitrary 768-bit number by decomposing it into two 384-bit digits
+        // with the higher bits multiplied by 2^384. Thus, we perform two reductions
         //
         // 1. the lower bits are multiplied by R^2, as normal
-        // 2. the upper bits are multiplied by R^2 * 2^256 = R^3
+        // 2. the upper bits are multiplied by R^2 * 2^384 = R^3
         //
-        // and computing their sum in the field. It remains to see that arbitrary 256-bit
+        // and computing their sum in the field. It remains to see that arbitrary 384-bit
         // numbers can be placed into Montgomery form safely using the reduction. The
-        // reduction works so long as the product is less than R=2^256 multiplied by
+        // reduction works so long as the product is less than R=2^384 multiplied by
         // the modulus. This holds because for any `c` smaller than the modulus, we have
-        // that (2^256 - 1)*c is an acceptable product for the reduction. Therefore, the
+        // that (2^384 - 1)*c is an acceptable product for the reduction. Therefore, the
         // reduction always works so long as `c` is in the field; in this case it is either the
         // constant `R2` or `R3`.
-        let d0 = Scalar([limbs[0], limbs[1], limbs[2], limbs[3]]);
-        let d1 = Scalar([limbs[4], limbs[5], limbs[6], limbs[7]]);
+        let d0 = Scalar([limbs[0], limbs[1], limbs[2], limbs[3], limbs[4], limbs[5]]);
+        let d1 = Scalar([limbs[6], limbs[7], limbs[8], limbs[9], limbs[10], limbs[11]]);
 
         // Convert to Montgomery form
         d0 * R2 + d1 * R3
@@ -414,12 +524,16 @@ impl Scalar {
         // (p - 1) // 2.
 
         // First, because self is in Montgomery form we need to reduce it
-        let tmp = Scalar::montgomery_reduce(self.0[0], self.0[1], self.0[2], self.0[3], 0, 0, 0, 0);
+        let tmp = Scalar::montgomery_reduce(
+            self.0[0], self.0[1], self.0[2], self.0[3], self.0[4], self.0[5], 0, 0, 0, 0, 0, 0,
+        );
 
-        let (_, borrow) = sub64_with_carry(tmp.0[0], 0x0178_4b39_ce4a_0b29, 0);
-        let (_, borrow) = sub64_with_carry(tmp.0[1], 0x977c_38ae_f99d_e9f0, borrow);
-        let (_, borrow) = sub64_with_carry(tmp.0[2], 0x2358_4e52_1a0c_5ac8, borrow);
-        let (_, borrow) = sub64_with_carry(tmp.0[3], 0x007f_fe44_0241_8ab2, borrow);
+        let (_, borrow) = sub64_with_carry(tmp.0[0], 0x3108_542b_7471_5647, 0);
+        let (_, borrow) = sub64_with_carry(tmp.0[1], 0x13ba_7fe8_f765_0104, borrow);
+        let (_, borrow) = sub64_with_carry(tmp.0[2], 0xc19e_3e65_2fab_9ae8, borrow);
+        let (_, borrow) = sub64_with_carry(tmp.0[3], 0xb953_8f1d_34e3_dc07, borrow);
+        let (_, borrow) = sub64_with_carry(tmp.0[4], 0xa978_d997_e2ea_6efc, borrow);
+        let (_, borrow) = sub64_with_carry(tmp.0[5], 0x0007_ffd6_605a_3d77, borrow);
 
         // If the element was smaller, the subtraction will underflow
         // producing a borrow value of 0xffff...ffff, otherwise it will
@@ -432,7 +546,7 @@ impl Scalar {
 
     /// Exponentiates `self` by `power`, where `power` is a
     /// little-endian order integer exponent.
-    pub fn exp(self, power: &[u64; 4]) -> Self {
+    pub fn exp(self, power: &[u64; 6]) -> Self {
         let mut res = Self::one();
         for e in power.iter().rev() {
             for i in (0..64).rev() {
@@ -451,7 +565,7 @@ impl Scalar {
     /// **This operation is variable time with respect
     /// to the exponent.** If the exponent is fixed,
     /// this operation is effectively constant time.
-    pub fn exp_vartime(&self, power: &[u64; 4]) -> Self {
+    pub fn exp_vartime(&self, power: &[u64; 6]) -> Self {
         let mut res = Self::one();
         for e in power.iter().rev() {
             for i in (0..64).rev() {
@@ -475,99 +589,152 @@ impl Scalar {
             }
         }
         // found using https://github.com/kwantam/addchain for M - 2
-
-        let mut t1 = self.square(); //       1:   2
-        let mut t0 = t1 * self; //           2:   3
-        let mut t11 = t1.square(); //        3:   4
-        let mut t10 = t0.square(); //        4:   6
-        let mut t5 = t11.square(); //        5:   8
-        let t20 = t10 * t0; //               6:   9
-        let mut t2 = t10.square(); //        7:   12
-        let t17 = t20 * t11; //              8:   13
-        t0 = t5 * t10; //                    9:   14
-        t1 = t20 * t10; //                   10:  15
-        let t14 = t20 * t5; //               11:  17
-        let t13 = t0 * t20; //               12:  23
-        let t8 = t14 * t0; //                13:  31
-        let t3 = t13 * t0; //                14:  37
-        let t4 = t8 * t5; //                 15:  39
-        let t18 = t3 * t11; //               16:  41
-        let t19 = t8 * t2; //                17:  43
-        let t7 = t4 * t5; //                 18:  47
-        let t16 = t3 * t2; //                19:  49
-        let t9 = t7 * t0; //                 20:  61
-        let t6 = t9 * t0; //                 21:  75
-        t2 = t6 * t0; //                     22:  89
-        t11 = t2 * t11; //                   23:  93
-        let t15 = t11 * t0; //               24:  107
-        let t12 = t15 * t10; //              25:  113
-        t5 = t15 * t5; //                    26:  115
-        t10 = t15 * t0; //                   27:  121
-        let t21 = t12 * t0; //               28:  127
-        t0 = t21.square(); //                29:  254
-        square_assign_multi(&mut t0, 6); //  35:  16256
-        t0 *= &t21; //                       36:  16383
-        square_assign_multi(&mut t0, 7); //  43:  2097024
-        t0 *= &t14; //                       44:  2097041
-        square_assign_multi(&mut t0, 12); // 56:  8589479936
-        t0 *= &t20; //                       57:  8589479945
-        square_assign_multi(&mut t0, 11); // 68:  17591254927360
-        t0 *= &t16; //                       69:  17591254927409
-        square_assign_multi(&mut t0, 7); //  76:  2251680630708352
-        t0 *= &t19; //                       77:  2251680630708395
-        square_assign_multi(&mut t0, 7); //  84:  288215120730674560
-        t0 *= &t14; //                       85:  288215120730674577
-        square_assign_multi(&mut t0, 10); // 95:  295132283628210766848
-        t0 *= &t15; //                       96:  295132283628210766955
-        square_assign_multi(&mut t0, 10); // 106: 302215458435287825361920
-        t0 *= &t4; //                        107: 302215458435287825361959
-        square_assign_multi(&mut t0, 8); //  115: 77367157359433683292661504
-        t0 *= &t18; //                       116: 77367157359433683292661545
-        square_assign_multi(&mut t0, 8); //  124: 19805992284015022922921355520
-        t0 *= &t17; //                       125: 19805992284015022922921355533
-        square_assign_multi(&mut t0, 11); // 136: 40562672197662766946142936131584
-        t0 *= &t16; //                       137: 40562672197662766946142936131633
-        square_assign_multi(&mut t0, 8); //  145: 10384044082601668338212591649698048
-        t0 *= &t15; //                       146: 10384044082601668338212591649698155
-        square_assign_multi(&mut t0, 7); //  153: 1329157642573013547291211731161363840
-        t0 *= &t14; //                       154: 1329157642573013547291211731161363857
-        square_assign_multi(&mut t0, 7); //  161: 170132178249345734053275101588654573696
-        t0 *= &t13; //                       162: 170132178249345734053275101588654573719
-        square_assign_multi(&mut t0, 6); //  168: 10888459407958126979409606501673892718016
-        t0 *= &t8; //                        169: 10888459407958126979409606501673892718047
-        square_assign_multi(&mut t0, 11); // 180: 22299564867498244053830874115428132286560256
-        t0 *= &t12; //                       181: 22299564867498244053830874115428132286560369
-        square_assign_multi(&mut t0, 8); //  189: 5708688606079550477780703773549601865359454464
-        t0 *= &t11; //                       190: 5708688606079550477780703773549601865359454557
-        square_assign_multi(&mut t0, 7); //  197: 730712141578182461155930083014349038766010183296
-        t0 *= &t10; //                       198: 730712141578182461155930083014349038766010183417
-        square_assign_multi(&mut t0, 6); //  204: 46765577061003677513979525312918338481024651738688
-        t0 *= &t4; //                        205: 46765577061003677513979525312918338481024651738727
-        square_assign_multi(&mut t0, 7); //  212: 5985993863808470721789379240053547325571155422557056
-        t0 *= &t9; //                        213: 5985993863808470721789379240053547325571155422557117
-        square_assign_multi(&mut t0, 7); //  220: 766207214567484252389040542726854057673107894087310976
-        t0 *= &t8; //                        221: 766207214567484252389040542726854057673107894087311007
-        square_assign_multi(&mut t0, 17); // 238: 100428312027789295929136322016294215047329597893812028309504
-        t0 *= &t7; //                        239: 100428312027789295929136322016294215047329597893812028309551
-        square_assign_multi(&mut t0, 11); // 250: 205677183032912478062871187489370552416931016486527033977960448
-        t0 *= &t6; //                        251: 205677183032912478062871187489370552416931016486527033977960523
-        square_assign_multi(&mut t0, 9); //  260: 105306717712851188768190047994557722837468680441101841396715787776
-        t0 *= &t5; //                        261: 105306717712851188768190047994557722837468680441101841396715787891
-        square_assign_multi(&mut t0, 6); //  267: 6739629933622476081164163071651694261597995548230517849389810425024
-        t0 *= &t4; //                        268: 6739629933622476081164163071651694261597995548230517849389810425063
-        square_assign_multi(&mut t0, 8); //  276: 1725345263007353876778025746342833730969086860347012569443791468816128
-        t0 *= &t3; //                        277: 1725345263007353876778025746342833730969086860347012569443791468816165
-        square_assign_multi(&mut t0, 12); // 289: 7067014197278121479282793457020246962049379779981363484441769856271011840
-        t0 *= &t2; //                        290: 7067014197278121479282793457020246962049379779981363484441769856271011929
-        square_assign_multi(&mut t0, 6); //  296: 452288908625799774674098781249295805571160305918807263004273270801344763456
-        t0 *= &t1; //                        297: 452288908625799774674098781249295805571160305918807263004273270801344763471 = M-2
+        let t1 = self.square(); //          1    2
+        let t7 = t1 * self; //              2:   3
+        let mut t0 = t1.square(); //        3:   4
+        let t4 = t0 * t7; //                4:   7
+        let t8 = t4 * t1; //                5:   9
+        let t1 = t4 * t0; //                6:   11
+        let t13 = t8 * t0; //               7:   13
+        let t10 = t1 * t0; //               8:   15
+        let t14 = t13 * t0; //              9:   17
+        let t12 = t10 * t0; //              10:  19
+        let t3 = t14 * t0; //               11:  21
+        let t6 = t12 * t0; //               12:  23
+        let t2 = t3 * t0; //                13:  25
+        let t15 = t6 * t0; //               14:  27
+        let t9 = t2 * t0; //                15:  29
+        let t11 = t15 * t0; //              16:  31
+        t0 = t11.square(); //               17:  62
+        square_assign_multi(&mut t0, 4); // 21:  992
+        t0 *= &t11; //                      22:  1023
+        square_assign_multi(&mut t0, 5); // 27:  32736
+        t0 *= &t9; //                       28:  32765
+        square_assign_multi(&mut t0, 3); // 31:  262120
+        t0 *= &t7; //                       32:  262123
+        square_assign_multi(&mut t0, 4); // 36:  4193968
+        t0 *= &t7; //                       37:  4193971
+        square_assign_multi(&mut t0, 10); //47:  4294626304
+        t0 *= &t1; //                       48:  4294626315
+        square_assign_multi(&mut t0, 6); // 54:  274856084160
+        t0 *= &t14; //                      55:  274856084177
+        square_assign_multi(&mut t0, 5); // 60:  8795394693664
+        t0 *= &t9; //                       61:  8795394693693
+        square_assign_multi(&mut t0, 6); // 67:  562905260396352
+        t0 *= &t9; //                       68:  562905260396381
+        square_assign_multi(&mut t0, 5); // 73:  18012968332684192
+        t0 *= &t9; //                       74:  18012968332684221
+        square_assign_multi(&mut t0, 5); // 79:  576414986645895072
+        t0 *= &t8; //                       80:  576414986645895081
+        square_assign_multi(&mut t0, 5); // 85:  18445279572668642592
+        t0 *= &t10; //                      86:  18445279572668642607
+        square_assign_multi(&mut t0, 8); // 94:  4721991570603172507392
+        t0 *= &t15; //                      95:  4721991570603172507419
+        square_assign_multi(&mut t0, 7); // 102: 604414921037206080949632
+        t0 *= &t2; //                       103: 604414921037206080949657
+        square_assign_multi(&mut t0, 6); // 109: 38682554946381189180778048
+        t0 *= &t11; //                      110: 38682554946381189180778079
+        square_assign_multi(&mut t0, 5); // 115: 1237841758284198053784898528
+        t0 *= &t14; //                      116: 1237841758284198053784898545
+        square_assign_multi(&mut t0, 6); // 122: 79221872530188675442233506880
+        t0 *= &t9; //                       123: 79221872530188675442233506909
+        square_assign_multi(&mut t0, 6); // 129: 5070199841932075228302944442176
+        t0 *= &t12; //                      130: 5070199841932075228302944442195
+        square_assign_multi(&mut t0, 6); // 136: 324492789883652814611388444300480
+        t0 *= &t9; //                       137: 324492789883652814611388444300509
+        square_assign_multi(&mut t0, 5); // 142: 10383769276276890067564430217616288
+        t0 *= &t11; //                      143: 10383769276276890067564430217616319
+        square_assign_multi(&mut t0, 7); // 150: 1329122467363441928648247067854888832
+        t0 *= &t6; //                       151: 1329122467363441928648247067854888855
+        square_assign_multi(&mut t0, 7); // 158: 170127675822520566866975624685425773440
+        t0 *= &t3; //                       159: 170127675822520566866975624685425773461
+        square_assign_multi(&mut t0, 5); // 164: 5444085626320658139743219989933624750752
+        t0 *= &t4; //                       165: 5444085626320658139743219989933624750759
+        square_assign_multi(&mut t0, 7); // 172: 696842960169044241887132158711503968097152
+        t0 *= &t10; //                      173: 696842960169044241887132158711503968097167
+        square_assign_multi(&mut t0, 8); // 181: 178391797803275325923105832630145015832874752
+        t0 *= &t9; //                       182: 178391797803275325923105832630145015832874781
+        square_assign_multi(&mut t0, 6); // 188: 11417075059409620859078773288329281013303985984
+        t0 *= &t13; //                      189: 11417075059409620859078773288329281013303985997
+        square_assign_multi(&mut t0, 5); // 194: 365346401901107867490520745226536992425727551904
+        t0 *= &t4; //                       195: 365346401901107867490520745226536992425727551911
+        square_assign_multi(&mut t0, 7); // 202: 46764339443341807038786655388996735030493126644608
+        t0 *= &t10; //                      203: 46764339443341807038786655388996735030493126644623
+        square_assign_multi(&mut t0, 4); // 207: 748229431093468912620586486223947760487890026313968
+        t0 *= &t4; //                       208: 748229431093468912620586486223947760487890026313975
+        square_assign_multi(&mut t0, 12); //220: 3064747749758848666093922247573290026958397547782041600
+        t0 *= &t11; //                      221: 3064747749758848666093922247573290026958397547782041631
+        square_assign_multi(&mut t0, 7); // 228: 392287711969132629260022047689381123450674886116101328768
+        t0 *= &t7; //                       229: 392287711969132629260022047689381123450674886116101328771
+        square_assign_multi(&mut t0, 6); // 235: 25106413566024488272641411052120391900843192711430485041344
+        t0 *= &t10; //                      236: 25106413566024488272641411052120391900843192711430485041359
+        square_assign_multi(&mut t0, 8); // 244: 6427241872902268997796201229342820326615857334126204170587904
+        t0 *= &t11; //                      245: 6427241872902268997796201229342820326615857334126204170587935
+        square_assign_multi(&mut t0, 7); // 252: 822686959731490431717913757355881001806829738768154133835255680
+        t0 *= &t2; //                       253: 822686959731490431717913757355881001806829738768154133835255705
+        square_assign_multi(&mut t0, 5); // 258: 26325982711407693814973240235388192057818551640580932282728182560
+        t0 *= &t8; //                       259: 26325982711407693814973240235388192057818551640580932282728182569
+        square_assign_multi(&mut t0, 6); // 265: 1684862893530092404158287375064844291700387304997179666094603684416
+        t0 *= &t11; //                      266: 1684862893530092404158287375064844291700387304997179666094603684447
+        square_assign_multi(&mut t0, 6); // 272: 107831225185925913866130392004150034668824787519819498630054635804608
+        t0 *= &t3; //                       273: 107831225185925913866130392004150034668824787519819498630054635804629
+        square_assign_multi(&mut t0, 5); // 278: 3450599205949629243716172544132801109402393200634223956161748345748128
+        t0 *= &t2; //                       279: 3450599205949629243716172544132801109402393200634223956161748345748153
+        square_assign_multi(&mut t0, 5); // 284: 110419174590388135798917521412249635500876582420295166597175947063940896
+        t0 *= &t3; //                       285: 110419174590388135798917521412249635500876582420295166597175947063940917
+        square_assign_multi(&mut t0, 4); // 289: 1766706793446210172782680342595994168014025318724722665554815153023054672
+        t0 *= &t13; //                      290: 1766706793446210172782680342595994168014025318724722665554815153023054685
+        square_assign_multi(&mut t0, 11); //301: 3618215512977838433858929341636596056092723852748232019056261433391215994880
+        t0 *= &t12; //                      302: 3618215512977838433858929341636596056092723852748232019056261433391215994899
+        square_assign_multi(&mut t0, 5); // 307: 115782896415290829883485738932371073794967163287943424609800365868518911836768
+        t0 *= &t6; //                       308: 115782896415290829883485738932371073794967163287943424609800365868518911836791
+        square_assign_multi(&mut t0, 6); // 314: 7410105370578613112543087291671748722877898450428379175027223415585210357554624
+        t0 *= &t12; //                      315: 7410105370578613112543087291671748722877898450428379175027223415585210357554643
+        square_assign_multi(&mut t0, 5); // 320: 237123371858515619601378793333495959132092750413708133600871149298726731441748576
+        t0 *= &t11; //                      321: 237123371858515619601378793333495959132092750413708133600871149298726731441748607
+        square_assign_multi(&mut t0, 5); // 326: 7587947899472499827244121386671870692226968013238660275227876777559255406135955424
+        t0 *= &t9; //                       327: 7587947899472499827244121386671870692226968013238660275227876777559255406135955453
+        square_assign_multi(&mut t0, 7); // 334: 971257331132479977887247537493999448605051905694548515229168227527584691985402297984
+        t0 *= &t10; //                      335: 971257331132479977887247537493999448605051905694548515229168227527584691985402297999
+        square_assign_multi(&mut t0, 6); // 341: 62160469192478718584783842399615964710723321964451104974666766561765420287065747071936
+        t0 *= &t9; //                       342: 62160469192478718584783842399615964710723321964451104974666766561765420287065747071965
+        square_assign_multi(&mut t0, 4); // 346: 994567507079659497356541478393855435371573151431217679594668264988246724593051953151440
+        t0 *= &t8; //                       347: 994567507079659497356541478393855435371573151431217679594668264988246724593051953151449
+        square_assign_multi(&mut t0, 2); // 349: 3978270028318637989426165913575421741486292605724870718378673059952986898372207812605796
+        t0 *= &self; //                     350: 3978270028318637989426165913575421741486292605724870718378673059952986898372207812605797
+        square_assign_multi(&mut t0, 8); // 358: 1018437127249571325293098473875307965820490907065566903904940303347964645983285200027084032
+        t0 *= &self; //                     359: 1018437127249571325293098473875307965820490907065566903904940303347964645983285200027084033
+        square_assign_multi(&mut t0, 6); // 365: 65179976143972564818758302328019709812511418052196281849916179414269737342930252801733378112
+        t0 *= &self; //                     366: 65179976143972564818758302328019709812511418052196281849916179414269737342930252801733378113
+        square_assign_multi(&mut t0, 6); // 372: 4171518473214244148400531348993261428000730755340562038394635482513263189947536179310936199232
+        t0 *= &t7; //                       373: 4171518473214244148400531348993261428000730755340562038394635482513263189947536179310936199235
+        square_assign_multi(&mut t0, 4); // 377: 66744295571427906374408501583892182848011692085448992614314167720212211039160578868974979187760
+        t0 *= &self; //                     378: 66744295571427906374408501583892182848011692085448992614314167720212211039160578868974979187761
+        square_assign_multi(&mut t0, 5); // 383: 2135817458285693003981072050684549851136374146734367763658053367046790753253138523807199334008352
+        t0 *= &self; //                     384: 2135817458285693003981072050684549851136374146734367763658053367046790753253138523807199334008353
+        square_assign_multi(&mut t0, 9); // 393: 1093538538642274818038308889950489523781823563127996294992923323927956865665606924189286059012276736
+        t0 *= &t3; //                       394: 1093538538642274818038308889950489523781823563127996294992923323927956865665606924189286059012276757
+        square_assign_multi(&mut t0, 9); // 403: 559891731784844706835614151654650636176293664321534103036376741851113915220790745184914462214285699584
+        t0 *= &t3; //                       404: 559891731784844706835614151654650636176293664321534103036376741851113915220790745184914462214285699605
+        square_assign_multi(&mut t0, 5); // 409: 17916535417115030618739652852948820357641397258289091297164055739235645287065303845917262790857142387360
+        t0 *= &t6; //                       410: 17916535417115030618739652852948820357641397258289091297164055739235645287065303845917262790857142387383
+        square_assign_multi(&mut t0, 2); // 412: 71666141668460122474958611411795281430565589033156365188656222956942581148261215383669051163428569549532
+        t0 *= &self; //                     413: 71666141668460122474958611411795281430565589033156365188656222956942581148261215383669051163428569549533
+        square_assign_multi(&mut t0, 6); // 419: 4586633066781447838397351130354898011556197698122007372073998269244325193488717784554819274459428451170112
+        t0 *= &t4; //                       420: 4586633066781447838397351130354898011556197698122007372073998269244325193488717784554819274459428451170119
+        square_assign_multi(&mut t0, 8); // 428: 1174178065096050646629721889370853890958386610719233887250943556926547249533111752846033734261613683499550464
+        t0 *= &t3; //                       429: 1174178065096050646629721889370853890958386610719233887250943556926547249533111752846033734261613683499550485
+        square_assign_multi(&mut t0, 6); // 435: 75147396166147241384302200919734649021336743086030968784060387643299023970119152182146158992743275743971231040
+        t0 *= &t2; //                       436: 75147396166147241384302200919734649021336743086030968784060387643299023970119152182146158992743275743971231065
+        square_assign_multi(&mut t0, 7); // 443: 9618866709266846897190681717726035074731103115011964004359729618342275068175251479314708351071139295228317576320
+        t0 *= &t1; //                       444: 9618866709266846897190681717726035074731103115011964004359729618342275068175251479314708351071139295228317576331 = M - 2
 
         CtOption::new(t0, !self.ct_eq(&Self::zero()))
     }
 
     /// Computes a random `Scalar` element
     pub fn random(mut rng: impl RngCore + CryptoRng) -> Self {
-        let mut buf = [0; 64];
+        let mut buf = [0; 96];
         rng.fill_bytes(&mut buf);
         Self::from_bytes_wide(&buf)
     }
@@ -575,7 +742,7 @@ impl Scalar {
     #[allow(unused)]
     /// Constructs a `Scalar` element without checking that it is
     /// canonical.
-    pub const fn from_raw_unchecked(v: [u64; 4]) -> Self {
+    pub const fn from_raw_unchecked(v: [u64; 6]) -> Self {
         Scalar(v)
     }
 }
@@ -656,35 +823,35 @@ impl From<u128> for Scalar {
     fn from(value: u128) -> Self {
         let value_high: u64 = (value >> 64).try_into().unwrap();
         let value_low: u64 = (value & (u64::MAX as u128)).try_into().unwrap();
-        Scalar::new([value_low, value_high, 0, 0])
+        Scalar::new([value_low, value_high, 0, 0, 0, 0])
     }
 }
 
 impl From<u64> for Scalar {
     /// Converts a 64-bit value into a field element.
     fn from(value: u64) -> Self {
-        Scalar([value, 0, 0, 0]) * R2
+        Scalar([value, 0, 0, 0, 0, 0]) * R2
     }
 }
 
 impl From<u32> for Scalar {
     /// Converts a 32-bit value into a field element.
     fn from(value: u32) -> Self {
-        Scalar([value as u64, 0, 0, 0]) * R2
+        Scalar([value as u64, 0, 0, 0, 0, 0]) * R2
     }
 }
 
 impl From<u16> for Scalar {
     /// Converts a 16-bit value into a field element.
     fn from(value: u16) -> Self {
-        Scalar([value as u64, 0, 0, 0]) * R2
+        Scalar([value as u64, 0, 0, 0, 0, 0]) * R2
     }
 }
 
 impl From<u8> for Scalar {
     /// Converts an 8-bit value into a field element.
     fn from(value: u8) -> Self {
-        Scalar([value as u64, 0, 0, 0]) * R2
+        Scalar([value as u64, 0, 0, 0, 0, 0]) * R2
     }
 }
 
@@ -695,10 +862,12 @@ mod tests {
     use rand::thread_rng;
 
     const LARGEST: Scalar = Scalar([
-        0x02f096739c941650,
-        0x2ef8715df33bd3e0,
-        0x46b09ca43418b591,
-        0x00fffc8804831564,
+        0x6210a856e8e2ac8c,
+        0x2774ffd1eeca0208,
+        0x833c7cca5f5735d0,
+        0x72a71e3a69c7b80f,
+        0x52f1b32fc5d4ddf9,
+        0x000fffacc0b47aef,
     ]);
 
     // DISPLAY
@@ -708,25 +877,31 @@ mod tests {
     fn test_debug() {
         assert_eq!(
             format!("{:?}", Scalar::zero()),
-            "0x0000000000000000000000000000000000000000000000000000000000000000"
+            "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
         );
         assert_eq!(
             format!("{:?}", Scalar::one()),
-            "0x0000000000000000000000000000000000000000000000000000000000000001"
+            "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001"
         );
         assert_eq!(
             format!("{:?}", R2),
-            "0x000377fb7cea9bb94f635bcbe74a6ed1078ea20cc42c1ffd0f698c636be9af00"
+            "0x000533f4b8510ad0e4cd03a2b22068d58e1c5963847f07cc38335a0a8ca2fd88b002e1135fdf79def57a9171d5373000"
         );
     }
 
     #[test]
     fn test_to_repr() {
-        assert_eq!(format!("{:?}", Scalar::zero().to_repr()), "[0, 0, 0, 0]");
-        assert_eq!(format!("{:?}", Scalar::one().to_repr()), "[1, 0, 0, 0]");
+        assert_eq!(
+            format!("{:?}", Scalar::zero().to_repr()),
+            "[0, 0, 0, 0, 0, 0]"
+        );
+        assert_eq!(
+            format!("{:?}", Scalar::one().to_repr()),
+            "[1, 0, 0, 0, 0, 0]"
+        );
         assert_eq!(
             format!("{:?}", R2.to_repr()),
-            "[1110573141763665664, 544550780672942077, 5720516883007565521, 976346946378681]"
+            "[17688610404545540096, 12682946973957847518, 4049679491291872648, 10240157936693217228, 16486837808181307605, 1464501040909008]"
         );
     }
 
@@ -754,17 +929,19 @@ mod tests {
         assert_eq!(
             tmp,
             Scalar([
-                0x02f096739c94164f,
-                0x2ef8715df33bd3e0,
-                0x46b09ca43418b591,
-                0x00fffc8804831564,
+                0x6210a856e8e2ac8b,
+                0x2774ffd1eeca0208,
+                0x833c7cca5f5735d0,
+                0x72a71e3a69c7b80f,
+                0x52f1b32fc5d4ddf9,
+                0x000fffacc0b47aef,
             ])
         );
 
         assert_eq!(tmp, LARGEST.double());
 
         let mut tmp = LARGEST;
-        tmp += &Scalar([1, 0, 0, 0]);
+        tmp += &Scalar([1, 0, 0, 0, 0, 0]);
 
         assert_eq!(tmp, Scalar::zero());
     }
@@ -789,11 +966,11 @@ mod tests {
     fn test_negation() {
         let tmp = -&LARGEST;
 
-        assert_eq!(tmp, Scalar([1, 0, 0, 0]));
+        assert_eq!(tmp, Scalar([1, 0, 0, 0, 0, 0]));
 
         let tmp = -&Scalar::zero();
         assert_eq!(tmp, Scalar::zero());
-        let tmp = -&Scalar([1, 0, 0, 0]);
+        let tmp = -&Scalar([1, 0, 0, 0, 0, 0]);
         assert_eq!(tmp, LARGEST);
     }
 
@@ -850,7 +1027,7 @@ mod tests {
 
         for _ in 0..100 {
             let mut tmp = cur;
-            let pow2 = tmp.exp(&[2, 0, 0, 0]);
+            let pow2 = tmp.exp(&[2, 0, 0, 0, 0, 0]);
             tmp = tmp.square();
 
             let mut tmp2 = Scalar::zero();
@@ -878,10 +1055,12 @@ mod tests {
     #[test]
     fn test_invert_is_pow() {
         let q_minus_2 = [
-            0x02f096739c94164f,
-            0x2ef8715df33bd3e0,
-            0x46b09ca43418b591,
-            0x00fffc8804831564,
+            0x6210a856e8e2ac8b,
+            0x2774ffd1eeca0208,
+            0x833c7cca5f5735d0,
+            0x72a71e3a69c7b80f,
+            0x52f1b32fc5d4ddf9,
+            0x000fffacc0b47aef,
         ];
 
         let mut r1 = R;
@@ -911,7 +1090,7 @@ mod tests {
             Scalar::zero().to_bytes(),
             [
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             ]
         );
 
@@ -919,23 +1098,25 @@ mod tests {
             Scalar::one().to_bytes(),
             [
                 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             ]
         );
 
         assert_eq!(
             R2.to_bytes(),
             [
-                0, 175, 233, 107, 99, 140, 105, 15, 253, 31, 44, 196, 12, 162, 142, 7, 209, 110,
-                74, 231, 203, 91, 99, 79, 185, 155, 234, 124, 251, 119, 3, 0
+                0, 48, 55, 213, 113, 145, 122, 245, 222, 121, 223, 95, 19, 225, 2, 176, 136, 253,
+                162, 140, 10, 90, 51, 56, 204, 7, 127, 132, 99, 89, 28, 142, 213, 104, 32, 178,
+                162, 3, 205, 228, 208, 10, 81, 184, 244, 51, 5, 0
             ]
         );
 
         assert_eq!(
             (-&Scalar::one()).to_bytes(),
             [
-                80, 22, 148, 156, 115, 150, 240, 2, 224, 211, 59, 243, 93, 113, 248, 46, 145, 181,
-                24, 52, 164, 156, 176, 70, 100, 21, 131, 4, 136, 252, 255, 0
+                140, 172, 226, 232, 86, 168, 16, 98, 8, 2, 202, 238, 209, 255, 116, 39, 208, 53,
+                87, 95, 202, 124, 60, 131, 15, 184, 199, 105, 58, 30, 167, 114, 249, 221, 212, 197,
+                47, 179, 241, 82, 239, 122, 180, 192, 172, 255, 15, 0
             ]
         );
     }
@@ -945,7 +1126,7 @@ mod tests {
         assert_eq!(
             Scalar::from_bytes(&[
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             ])
             .unwrap(),
             Scalar::zero()
@@ -954,7 +1135,7 @@ mod tests {
         assert_eq!(
             Scalar::from_bytes(&[
                 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             ])
             .unwrap(),
             Scalar::one()
@@ -962,8 +1143,9 @@ mod tests {
 
         assert_eq!(
             Scalar::from_bytes(&[
-                0, 175, 233, 107, 99, 140, 105, 15, 253, 31, 44, 196, 12, 162, 142, 7, 209, 110,
-                74, 231, 203, 91, 99, 79, 185, 155, 234, 124, 251, 119, 3, 0
+                0, 48, 55, 213, 113, 145, 122, 245, 222, 121, 223, 95, 19, 225, 2, 176, 136, 253,
+                162, 140, 10, 90, 51, 56, 204, 7, 127, 132, 99, 89, 28, 142, 213, 104, 32, 178,
+                162, 3, 205, 228, 208, 10, 81, 184, 244, 51, 5, 0
             ])
             .unwrap(),
             R2
@@ -972,8 +1154,9 @@ mod tests {
         // -1 should work
         assert_eq!(
             Scalar::from_bytes(&[
-                80, 22, 148, 156, 115, 150, 240, 2, 224, 211, 59, 243, 93, 113, 248, 46, 145, 181,
-                24, 52, 164, 156, 176, 70, 100, 21, 131, 4, 136, 252, 255, 0
+                140, 172, 226, 232, 86, 168, 16, 98, 8, 2, 202, 238, 209, 255, 116, 39, 208, 53,
+                87, 95, 202, 124, 60, 131, 15, 184, 199, 105, 58, 30, 167, 114, 249, 221, 212, 197,
+                47, 179, 241, 82, 239, 122, 180, 192, 172, 255, 15, 0
             ])
             .unwrap(),
             -Scalar::one(),
@@ -982,8 +1165,9 @@ mod tests {
         // M is invalid
         assert!(bool::from(
             Scalar::from_bytes(&[
-                81, 22, 148, 156, 115, 150, 240, 2, 224, 211, 59, 243, 93, 113, 248, 46, 145, 181,
-                24, 52, 164, 156, 176, 70, 100, 21, 131, 4, 136, 252, 255, 0
+                141, 172, 226, 232, 86, 168, 16, 98, 8, 2, 202, 238, 209, 255, 116, 39, 208, 53,
+                87, 95, 202, 124, 60, 131, 15, 184, 199, 105, 58, 30, 167, 114, 249, 221, 212, 197,
+                47, 179, 241, 82, 239, 122, 180, 192, 172, 255, 15, 0
             ])
             .is_none()
         ));
@@ -991,15 +1175,17 @@ mod tests {
         // Anything larger than the M is invalid
         assert!(bool::from(
             Scalar::from_bytes(&[
-                82, 22, 148, 156, 115, 150, 240, 2, 224, 211, 59, 243, 93, 113, 248, 46, 145, 181,
-                24, 52, 164, 156, 176, 70, 100, 21, 131, 4, 136, 252, 255, 0
+                142, 172, 226, 232, 86, 168, 16, 98, 8, 2, 202, 238, 209, 255, 116, 39, 208, 53,
+                87, 95, 202, 124, 60, 131, 15, 184, 199, 105, 58, 30, 167, 114, 249, 221, 212, 197,
+                47, 179, 241, 82, 239, 122, 180, 192, 172, 255, 15, 0
             ])
             .is_none()
         ));
         assert!(bool::from(
             Scalar::from_bytes(&[
-                81, 22, 148, 156, 115, 150, 240, 2, 224, 211, 59, 243, 93, 113, 248, 46, 145, 181,
-                24, 52, 164, 156, 176, 70, 100, 21, 131, 4, 136, 252, 255, 1
+                141, 172, 226, 232, 86, 168, 16, 98, 8, 2, 202, 238, 209, 255, 116, 39, 208, 53,
+                87, 95, 202, 124, 60, 131, 15, 184, 199, 105, 58, 30, 167, 114, 249, 221, 212, 197,
+                47, 179, 241, 82, 239, 122, 180, 192, 172, 255, 255, 255
             ])
             .is_none()
         ));
@@ -1031,8 +1217,9 @@ mod tests {
 
         // Modulus results in Scalar::zero()
         let bytes = [
-            81, 22, 148, 156, 115, 150, 240, 2, 224, 211, 59, 243, 93, 113, 248, 46, 145, 181, 24,
-            52, 164, 156, 176, 70, 100, 21, 131, 4, 136, 252, 255, 0,
+            141, 172, 226, 232, 86, 168, 16, 98, 8, 2, 202, 238, 209, 255, 116, 39, 208, 53, 87,
+            95, 202, 124, 60, 131, 15, 184, 199, 105, 58, 30, 167, 114, 249, 221, 212, 197, 47,
+            179, 241, 82, 239, 122, 180, 192, 172, 255, 15, 0,
         ];
         assert_eq!(
             Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
@@ -1041,30 +1228,31 @@ mod tests {
     }
 
     #[test]
-    fn test_from_u512_zero() {
+    fn test_from_u768_zero() {
         assert_eq!(
             Scalar::zero(),
-            Scalar::from_u512([M.0[0], M.0[1], M.0[2], M.0[3], 0, 0, 0, 0])
+            Scalar::from_u768([M.0[0], M.0[1], M.0[2], M.0[3], M.0[4], M.0[5], 0, 0, 0, 0, 0, 0])
         );
     }
 
     #[test]
-    fn test_from_u512_r() {
-        assert_eq!(R, Scalar::from_u512([1, 0, 0, 0, 0, 0, 0, 0]));
+    fn test_from_u768_r() {
+        assert_eq!(R, Scalar::from_u768([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]));
     }
 
     #[test]
-    fn test_from_u512_r2() {
-        assert_eq!(R2, Scalar::from_u512([0, 0, 0, 0, 1, 0, 0, 0]));
+    fn test_from_u768_r2() {
+        assert_eq!(R2, Scalar::from_u768([0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]));
     }
 
     #[test]
-    fn test_from_u512_max() {
+    fn test_from_u768_max() {
         let max_u64 = 0xffff_ffff_ffff_ffff;
         assert_eq!(
             R3 - R,
-            Scalar::from_u512([
-                max_u64, max_u64, max_u64, max_u64, max_u64, max_u64, max_u64, max_u64
+            Scalar::from_u768([
+                max_u64, max_u64, max_u64, max_u64, max_u64, max_u64, max_u64, max_u64, max_u64,
+                max_u64, max_u64, max_u64
             ])
         );
     }
@@ -1074,9 +1262,11 @@ mod tests {
         assert_eq!(
             R2,
             Scalar::from_bytes_wide(&[
-                0, 175, 233, 107, 99, 140, 105, 15, 253, 31, 44, 196, 12, 162, 142, 7, 209, 110,
-                74, 231, 203, 91, 99, 79, 185, 155, 234, 124, 251, 119, 3, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 48, 55, 213, 113, 145, 122, 245, 222, 121, 223, 95, 19, 225, 2, 176, 136, 253,
+                162, 140, 10, 90, 51, 56, 204, 7, 127, 132, 99, 89, 28, 142, 213, 104, 32, 178,
+                162, 3, 205, 228, 208, 10, 81, 184, 244, 51, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0,
             ])
         );
     }
@@ -1086,9 +1276,11 @@ mod tests {
         assert_eq!(
             -&Scalar::one(),
             Scalar::from_bytes_wide(&[
-                80, 22, 148, 156, 115, 150, 240, 2, 224, 211, 59, 243, 93, 113, 248, 46, 145, 181,
-                24, 52, 164, 156, 176, 70, 100, 21, 131, 4, 136, 252, 255, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                140, 172, 226, 232, 86, 168, 16, 98, 8, 2, 202, 238, 209, 255, 116, 39, 208, 53,
+                87, 95, 202, 124, 60, 131, 15, 184, 199, 105, 58, 30, 167, 114, 249, 221, 212, 197,
+                47, 179, 241, 82, 239, 122, 180, 192, 172, 255, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             ])
         );
     }
@@ -1097,31 +1289,37 @@ mod tests {
     fn test_from_bytes_wide_maximum() {
         assert_eq!(
             Scalar([
-                0xe1ad557bb165ca94,
-                0x710642caf19db439,
-                0x5f769ac31b1073d6,
-                0x0011c8187f7c1b0d,
+                0xca85652242a66d74,
+                0x900add215229df2b,
+                0x2b063c4f9b979d54,
+                0x72669a8ab069ea77,
+                0x56f3c296b743abd7,
+                0x000562c9b45ccf6f,
             ]),
-            Scalar::from_bytes_wide(&[0xff; 64])
+            Scalar::from_bytes_wide(&[0xff; 96])
         );
     }
 
     #[test]
     fn test_lexicographically_largest() {
-        // a = 103745092170913632337395666750586378382978886801660409715261768932739876504
-        let a = Scalar([
-            0x0bdea22ae33b8697,
-            0x05aff6ecd268cc65,
-            0x9400646c57a18ebb,
-            0x00d1058d04b33452,
+        // a = 3270721541412937332678431542494659405168602257955891291263700876781669849818040027313410211252413088299582187994
+        let a = Scalar::new([
+            0x96230c7e33c769da,
+            0x9d952e94df9317e9,
+            0x4f918f79f9ae9b6a,
+            0x17613e631e56f5b1,
+            0xd80e0b7e3e1ebc99,
+            0x000570a8fc1ff080,
         ]);
 
-        // b = 348543816454886142336703114498709427188181419117146853289011501868604886969
-        let b = Scalar([
-            0xf711f448b9588fba,
-            0x29487a7120d3077a,
-            0xb2b03837dc7726d6,
-            0x002ef6faffcfe111,
+        // b = 6348145167853909564512250175231375669562500857056072713096028741560605218357211452001298139818726206928735388339
+        let b = Scalar::new([
+            0xcbed9bd8b51b42b3,
+            0x89dfd13d0f36ea1e,
+            0x33aaed5065a89a65,
+            0x5b45dfd74b70c25e,
+            0x7ae3a7b187b62160,
+            0x000a8f03c4948a6e,
         ]);
 
         assert_eq!(a.square(), b.square());
@@ -1150,33 +1348,5 @@ mod tests {
         assert_eq!(element, Scalar::from(n as u32));
         assert_eq!(element, Scalar::from(n as u64));
         assert_eq!(element, Scalar::from(n as u128));
-    }
-
-    // SERDE SERIALIZATIOIN
-    // ================================================================================================
-
-    #[test]
-    #[cfg(feature = "serialize")]
-    fn test_serde_scalar() {
-        let mut rng = thread_rng();
-        let scalar = Scalar::random(&mut rng);
-        let encoded = bincode::serialize(&scalar).unwrap();
-        let parsed: Scalar = bincode::deserialize(&encoded).unwrap();
-        assert_eq!(parsed, scalar);
-
-        // Check that the encoding is 32 bytes exactly
-        assert_eq!(encoded.len(), 32);
-
-        // Check that the encoding itself matches the usual one
-        assert_eq!(scalar, bincode::deserialize(&scalar.to_bytes()).unwrap());
-
-        // Check that invalid encodings fail
-        let scalar = Scalar::random(&mut rng);
-        let mut encoded = bincode::serialize(&scalar).unwrap();
-        encoded[31] = 127;
-        assert!(bincode::deserialize::<Scalar>(&encoded).is_err());
-
-        let encoded = bincode::serialize(&scalar).unwrap();
-        assert!(bincode::deserialize::<Scalar>(&encoded[0..31]).is_err());
     }
 }

@@ -22,10 +22,13 @@ x = K2.gen()
 poly3 = x**3 - x - 2
 Fp6 = Fp2.extension(poly3, 'v')
 
+q = 0xfffacc0b47aef52f1b32fc5d4ddf972a71e3a69c7b80f833c7cca5f5735d02774ffd1eeca02086210a856e8e2ac8d
+Fq = GF(q)  # scalar field of the curve
 
 ##################################
 # FIELD UTILITY FUNCTIONS
 ##################################
+
 
 def repr_fp(n, output_hex=False, allow_neg=False, no_computations=False):
     assert(n in Fp)
@@ -40,9 +43,9 @@ def repr_fp(n, output_hex=False, allow_neg=False, no_computations=False):
     else:
         output += "Fp::new("
     if is_neg:
-        output += f"{n})).neg()"
+        output += f"{hex(n) if output_hex else n})).neg()"
     else:
-        output += f"{n})"
+        output += f"{hex(n) if output_hex else n})"
 
     return output
 
@@ -74,6 +77,20 @@ def repr_fp6(n, output_hex=False, allow_neg=False, no_computations=False):
     return (output)
 
 
+def repr_scalar(n, output_hex=True):
+    assert(n in Fq)
+    output = "Scalar([\n"
+    n = str(hex(Integer(n)))[2:]
+    while len(n) < 96:
+        n = "0" + n
+    for i in range((96//16) - 1, -1, -1):
+        string = "0x" + n[i*16:i*16+16]
+        output += f"    {string if output_hex else Integer(string)},\n"
+
+    output += "]);"
+    return output
+
+
 def print_fp(n, output_hex=False, allow_neg=False, no_computations=False):
     print(repr_fp(n, output_hex, allow_neg, no_computations))
 
@@ -84,6 +101,10 @@ def print_fp2(n, output_hex=False, allow_neg=False, no_computations=False):
 
 def print_fp6(n, output_hex=False, allow_neg=False, no_computations=False):
     print(repr_fp6(n, output_hex, allow_neg, no_computations))
+
+
+def print_scalar(n, output_hex=False, allow_neg=False, no_computations=False):
+    print(repr_scalar(n, output_hex))
 
 
 def twoadicity(x):
@@ -191,7 +212,7 @@ def print_fp_constants():
     output += f"pub(crate) const R: Fp = Fp({Fp(2^64)});\n\n"
 
     output += "/// 2^128 mod M; this is used for conversion of elements into Montgomery representation.\n"
-    output += f"pub(crate) const R: Fp = Fp({Fp(2^128)});\n\n"
+    output += f"pub(crate) const R2: Fp = Fp({Fp(2^128)});\n\n"
 
     output += f"/// Two-adicity of the field: (p-1) % 2^{twoadicity(p)} = 0\n"
     output += f"const TWO_ADICITY: u32 = {twoadicity(p)};\n\n"
@@ -282,9 +303,38 @@ def print_fp6_constants():
     print(output)
 
 
+def print_scalar_constants():
+    output = "\n// ******************************** //\n"
+    output += "// ********* FQ CONSTANTS ********* //\n"
+    output += "// ******************************** //\n"
+    output += f"\n// Field modulus = {q}\n"
+    output += f"const M: Scalar = {repr_scalar(q)}\n\n"
+
+    output += "/// 2^384 mod M; this is used for conversion of elements into Montgomery representation.\n"
+    output += f"pub(crate) const R: Scalar = {repr_scalar(Fq(2^384))}\n\n"
+
+    output += "/// 2^768 mod M; this is used for conversion of elements into Montgomery representation.\n"
+    output += f"pub(crate) const R2: Scalar = {repr_scalar(Fq(2^768))}\n\n"
+
+    output += "/// 2^1152 mod M; this is used for conversion of elements into Montgomery representation.\n"
+    output += f"pub(crate) const R3: Scalar = {repr_scalar(Fq(2^1152))}\n\n"
+
+    output += f"/// Two-adicity of the field: (q-1) % 2^{twoadicity(q)} = 0\n"
+    output += f"const TWO_ADICITY: u32 = {twoadicity(q)};\n\n"
+
+    output += f"// 2^{twoadicity(q)} root of unity  = {Fq(2^twoadicity(q))}\n"
+    output += f"//                    = {Fq(2^twoadicity(q) * 2^384)} in Montgomery form\n"
+    output += f"const TWO_ADIC_ROOT_OF_UNITY: Scalar = {repr_scalar(Fq(2^twoadicity(q) * 2^384))}\n\n"
+
+    output += f"/// -M^{{-1}} mod 2^64; this is used during element multiplication.\n"
+    output += f"const U: u64 = {Fq(-q^(-1) % 2^64)};\n\n"
+
+    print(output)
+
 ##################################
 # FIELD INVERSION FUNCTIONS
 ##################################
+
 
 def find_inverse_formula_fp2():
     """Non-optimized formula for inversion in Fp2"""
@@ -548,11 +598,14 @@ def print_squaring_formula_fp6():
     print(output)
 
 
+print_fp_constants()
+
+print_scalar_constants()
+
 print_fp2_constants()
 print_multiplication_formula_fp2()
 print_squaring_formula_fp2()
 find_inverse_formula_fp2()
-
 
 print_fp6_constants()
 print_multiplication_formula_fp6()
