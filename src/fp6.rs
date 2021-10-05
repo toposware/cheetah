@@ -1,7 +1,7 @@
 //! This module implements arithmetic over the extension field Fp6,
 //! defined with irreducible polynomial v^3 - v - 2.
 
-use core::convert::TryInto;
+use core::convert::TryFrom;
 use core::fmt;
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use rand_core::{CryptoRng, RngCore};
@@ -66,6 +66,35 @@ impl From<Fp2> for Fp6 {
 impl From<Fp> for Fp6 {
     fn from(f: Fp) -> Self {
         Fp6::from(Fp2::from(f))
+    }
+}
+
+impl From<u64> for Fp6 {
+    /// Converts a 64-bit value into a filed element. If the value is greater than or equal to
+    /// the field modulus, modular reduction is silently preformed.
+    fn from(value: u64) -> Self {
+        Fp6::from(Fp::new(value))
+    }
+}
+
+impl From<u32> for Fp6 {
+    /// Converts a 32-bit value into a filed element.
+    fn from(value: u32) -> Self {
+        Fp6::from(Fp::new(value as u64))
+    }
+}
+
+impl From<u16> for Fp6 {
+    /// Converts a 16-bit value into a filed element.
+    fn from(value: u16) -> Self {
+        Fp6::from(Fp::new(value as u64))
+    }
+}
+
+impl From<u8> for Fp6 {
+    /// Converts an 8-bit value into a filed element.
+    fn from(value: u8) -> Self {
+        Fp6::from(Fp::new(value as u64))
     }
 }
 
@@ -142,6 +171,26 @@ impl_binops_additive!(Fp6, Fp6);
 impl_binops_multiplicative!(Fp6, Fp6);
 
 impl Fp6 {
+    /// Creates a new field element from a [u64; 6] value.
+    /// The value is converted to Montgomery form by computing
+    /// (a.R^0 * R^2) / R = a.R
+    pub const fn new(value: [u64; 6]) -> Self {
+        Fp6 {
+            c0: Fp2 {
+                c0: Fp::new(value[0]),
+                c1: Fp::new(value[1]),
+            },
+            c1: Fp2 {
+                c0: Fp::new(value[2]),
+                c1: Fp::new(value[3]),
+            },
+            c2: Fp2 {
+                c0: Fp::new(value[4]),
+                c1: Fp::new(value[5]),
+            },
+        }
+    }
+
     #[inline]
     /// The additive identity
     pub const fn zero() -> Self {
@@ -195,28 +244,33 @@ impl Fp6 {
     /// Computes the multiplication of two Fp6 elements
     pub const fn mul(&self, other: &Fp6) -> Fp6 {
         let aa = (&self.c0).mul(&other.c0);
-        let ab = (&self.c0).mul(&other.c1);
-        let ac = (&self.c0).mul(&other.c2);
-
-        let ba = (&self.c1).mul(&other.c0);
         let bb = (&self.c1).mul(&other.c1);
-        let bc = (&self.c1).mul(&other.c2);
-
-        let ca = (&self.c2).mul(&other.c0);
-        let cb = (&self.c2).mul(&other.c1);
         let cc = (&self.c2).mul(&other.c2);
 
-        let tmp = (&bc).add(&cb);
-        let c0 = (&tmp).double();
+        let tmp0 = (&self.c1).add(&self.c2);
+        let tmp0b = (&other.c1).add(&other.c2);
+        let tmp0 = (&tmp0).mul(&tmp0b);
+
+        let tmp1 = (&self.c0).add(&self.c1);
+        let tmp1b = (&other.c0).add(&other.c1);
+        let tmp1 = (&tmp1).mul(&tmp1b);
+
+        let tmp2 = (&self.c0).add(&self.c2);
+        let tmp2b = (&other.c0).add(&other.c2);
+        let tmp2 = (&tmp2).mul(&tmp2b);
+
+        let c0 = (&tmp0).sub(&bb);
+        let c0 = (&c0).sub(&cc);
+        let c0 = (&c0).double();
         let c0 = (&c0).add(&aa);
 
-        let t1 = (&cc).double();
-        let c1 = (&tmp).add(&t1);
-        let c1 = (&c1).add(&ab);
-        let c1 = (&c1).add(&ba);
+        let c1 = (&tmp0).add(&tmp1);
+        let c1 = (&c1).sub(&aa);
+        let c1 = (&c1).sub(&bb);
+        let c1 = (&c1).sub(&bb);
+        let c1 = (&c1).add(&cc);
 
-        let c2 = (&cc).add(&ca);
-        let c2 = (&c2).add(&ac);
+        let c2 = (&tmp2).sub(&aa);
         let c2 = (&c2).add(&bb);
 
         Fp6 { c0, c1, c2 }
@@ -226,24 +280,30 @@ impl Fp6 {
     #[inline]
     pub const fn square(&self) -> Self {
         let aa = (&self.c0).mul(&self.c0);
-        let ab = (&self.c0).mul(&self.c1);
-        let ac = (&self.c0).mul(&self.c2);
-
         let bb = (&self.c1).mul(&self.c1);
-        let bc = (&self.c1).mul(&self.c2);
-
         let cc = (&self.c2).mul(&self.c2);
 
-        let c0 = (&bc).double();
+        let tmp0 = (&self.c1).add(&self.c2);
+        let tmp0 = (&tmp0).mul(&tmp0);
+
+        let tmp1 = (&self.c0).add(&self.c1);
+        let tmp1 = (&tmp1).mul(&tmp1);
+
+        let tmp2 = (&self.c0).add(&self.c2);
+        let tmp2 = (&tmp2).mul(&tmp2);
+
+        let c0 = (&tmp0).sub(&bb);
+        let c0 = (&c0).sub(&cc);
         let c0 = (&c0).double();
         let c0 = (&c0).add(&aa);
 
-        let c1 = (&bc).add(&ab);
+        let c1 = (&tmp0).add(&tmp1);
+        let c1 = (&c1).sub(&aa);
+        let c1 = (&c1).sub(&bb);
+        let c1 = (&c1).sub(&bb);
         let c1 = (&c1).add(&cc);
-        let c1 = (&c1).double();
 
-        let c2 = (&cc).add(&ac);
-        let c2 = (&c2).add(&ac);
+        let c2 = (&tmp2).sub(&aa);
         let c2 = (&c2).add(&bb);
 
         Fp6 { c0, c1, c2 }
@@ -440,14 +500,53 @@ impl Fp6 {
     pub fn from_bytes(bytes: &[u8; 48]) -> Fp6 {
         let mut res = Fp6::zero();
 
-        let mut array: [u8; 16] = bytes[0..16].try_into().unwrap();
-        res.c0 = Fp2::from_bytes(&array);
-        array = bytes[16..32].try_into().unwrap();
-        res.c1 = Fp2::from_bytes(&array);
-        array = bytes[32..48].try_into().unwrap();
-        res.c2 = Fp2::from_bytes(&array);
+        res.c0.c0 = Fp::new(u64::from_le_bytes(
+            <[u8; 8]>::try_from(&bytes[0..8]).unwrap(),
+        ));
+        res.c0.c1 = Fp::new(u64::from_le_bytes(
+            <[u8; 8]>::try_from(&bytes[8..16]).unwrap(),
+        ));
+        res.c1.c0 = Fp::new(u64::from_le_bytes(
+            <[u8; 8]>::try_from(&bytes[16..24]).unwrap(),
+        ));
+        res.c1.c1 = Fp::new(u64::from_le_bytes(
+            <[u8; 8]>::try_from(&bytes[24..32]).unwrap(),
+        ));
+        res.c2.c0 = Fp::new(u64::from_le_bytes(
+            <[u8; 8]>::try_from(&bytes[32..40]).unwrap(),
+        ));
+        res.c2.c1 = Fp::new(u64::from_le_bytes(
+            <[u8; 8]>::try_from(&bytes[40..48]).unwrap(),
+        ));
 
         res
+    }
+
+    /// Constructs an element of `Fp6` without checking that it is
+    /// canonical.
+    pub const fn from_raw_unchecked(value: [u64; 6]) -> Self {
+        Fp6 {
+            c0: Fp2 {
+                c0: Fp::from_raw_unchecked(value[0]),
+                c1: Fp::from_raw_unchecked(value[1]),
+            },
+            c1: Fp2 {
+                c0: Fp::from_raw_unchecked(value[2]),
+                c1: Fp::from_raw_unchecked(value[3]),
+            },
+            c2: Fp2 {
+                c0: Fp::from_raw_unchecked(value[4]),
+                c1: Fp::from_raw_unchecked(value[5]),
+            },
+        }
+    }
+
+    #[inline(always)]
+    /// Normalizes the internal representation of an `Fp6` element
+    pub fn normalize(&mut self) {
+        self.c0.normalize();
+        self.c1.normalize();
+        self.c2.normalize();
     }
 }
 

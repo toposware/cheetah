@@ -1,7 +1,6 @@
 //! This module implements arithmetic over the extension field Fp2,
 //! defined with irreducible polynomial u^2 - x - 1.
 
-use core::convert::TryInto;
 use core::fmt;
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 use rand_core::{CryptoRng, RngCore};
@@ -351,30 +350,11 @@ impl Fp2 {
         ]
     }
 
-    /// Converts a `Fp` element into a byte representation in
-    /// little-endian byte order.
-    pub fn to_bytes(&self) -> [u8; 16] {
-        // Turn into canonical form by computing
-        // (a.R) / R = a
-        let tmp = self.to_repr();
-
-        let mut res = [0u8; 16];
-        res[0..8].copy_from_slice(&tmp[0].to_le_bytes());
-        res[8..16].copy_from_slice(&tmp[1].to_le_bytes());
-
-        res
-    }
-
-    /// Converts an array of bytes into an `Fp2` element
-    pub fn from_bytes(bytes: &[u8; 16]) -> Fp2 {
-        let mut res = Fp2::zero();
-
-        let mut array: [u8; 8] = bytes[0..8].try_into().unwrap();
-        res.c0 = Fp::from(array);
-        array = bytes[8..16].try_into().unwrap();
-        res.c1 = Fp::from(array);
-
-        res
+    #[inline(always)]
+    /// Normalizes the internal representation of a `Fp2` element
+    pub fn normalize(&mut self) {
+        self.c0.normalize();
+        self.c1.normalize();
     }
 }
 
@@ -594,16 +574,6 @@ mod test {
             }
             .lexicographically_largest()
         ));
-    }
-
-    #[test]
-    fn test_bytes() {
-        let mut rng = thread_rng();
-        for _ in 0..100 {
-            let a = Fp2::random(&mut rng);
-            let bytes = a.to_bytes();
-            assert_eq!(a, Fp2::from_bytes(&bytes));
-        }
     }
 
     #[test]

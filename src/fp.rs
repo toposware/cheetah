@@ -287,9 +287,9 @@ impl Fp {
     }
 
     #[inline(always)]
-    /// Normalizes the internal representation of a `Fp` element
-    pub fn normalize(&self) -> Self {
-        self * R2
+    /// Normalizes the internal representation of an `Fp` element
+    pub fn normalize(&mut self) {
+        *self *= &R2
     }
 
     /// Constructs an element of `Fp` without checking that it is
@@ -685,7 +685,7 @@ mod tests {
         let element_normalized = Fp::new(244091581366268);
 
         assert_eq!(element, Fp::one());
-        element = element.normalize();
+        element.normalize();
 
         assert!(element != Fp::one());
         assert_eq!(element, element_normalized);
