@@ -150,8 +150,6 @@ impl Fp {
     /// Computes the multiplication of two field elements
     #[inline]
     pub const fn mul(&self, rhs: &Self) -> Self {
-        // Schoolbook multiplication
-
         let (r0, r1) = mul64_with_carry(0, self.0, rhs.0, 0);
 
         Fp::montgomery_reduce(r0, r1)

@@ -172,25 +172,24 @@ impl Fp2 {
 
     #[inline]
     /// Computes the multiplication of two Fp2 elements
-    // TODO: check how to reduce number of multiplications
     pub const fn mul(&self, other: &Fp2) -> Fp2 {
         let aa = (&self.c0).mul(&other.c0);
-        let ab = (&self.c0).mul(&other.c1);
-
-        let ba = (&self.c1).mul(&other.c0);
         let bb = (&self.c1).mul(&other.c1);
 
-        let c0 = (&bb).add(&aa);
+        let tmp = (&self.c0).add(&self.c1);
+        let tmp2 = (&other.c0).add(&other.c1);
+        let tmp = (&tmp).mul(&tmp2);
 
-        let c1 = (&bb).add(&ab);
-        let c1 = (&c1).add(&ba);
+        let c1 = (&tmp).sub(&aa);
+
+        let c0 = (&c1).sub(&bb);
+        let c0 = (&tmp).sub(&c0);
 
         Fp2 { c0, c1 }
     }
 
     /// Square this element
     #[inline]
-    // TODO: check how to reduce number of multiplications
     pub const fn square(&self) -> Self {
         let aa = &self.c0.square();
         let ab = (&self.c0).mul(&self.c1);
