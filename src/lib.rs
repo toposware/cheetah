@@ -37,4 +37,4 @@ pub use fp2::Fp2;
 pub use fp4::Fp4;
 pub use fp6::Fp6;
 
-pub use curve::{AffinePoint, ProjectivePoint};
+pub use curve::{AffinePoint, ProjectivePoint, B};

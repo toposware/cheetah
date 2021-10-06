@@ -14,9 +14,9 @@ impl_binops_additive!(ProjectivePoint, AffinePoint);
 impl_binops_additive_specify_output!(AffinePoint, ProjectivePoint, ProjectivePoint);
 
 // A = 1
-// B = (4198454498232167043*u + 1236584124511164798)*v^2
-//          + (109675342022917428*u + 2744078705171299893)*v
-//          + 4212198449936917436*u + 2883908786857436727
+/// B = (4198454498232167043*u + 1236584124511164798)*v^2
+///          + (109675342022917428*u + 2744078705171299893)*v
+///          + 4212198449936917436*u + 2883908786857436727
 pub const B: Fp6 = Fp6 {
     c0: Fp2 {
         c0: Fp::new(2883908786857436727),
