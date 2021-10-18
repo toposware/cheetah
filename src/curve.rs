@@ -14,23 +14,27 @@ impl_binops_additive!(ProjectivePoint, AffinePoint);
 impl_binops_additive_specify_output!(AffinePoint, ProjectivePoint, ProjectivePoint);
 
 // A = 1
-/// B = (4198454498232167043*u + 1236584124511164798)*v^2
-///          + (109675342022917428*u + 2744078705171299893)*v
-///          + 4212198449936917436*u + 2883908786857436727
+/// B = (3960779010852551083 * u + 936702401985103221) * v^2
+///     + (2317454856288651766 * u + 3506243645506711312) * v
+///     + 3824048103880329999 * u + 3163132581539869369
 pub const B: Fp6 = Fp6 {
     c0: Fp2 {
-        c0: Fp::new(2883908786857436727),
-        c1: Fp::new(4212198449936917436),
+        c0: Fp(305070973015324860),
+        c1: Fp(3072581345079567389),
     },
     c1: Fp2 {
-        c0: Fp::new(2744078705171299893),
-        c1: Fp::new(109675342022917428),
+        c0: Fp(544924710797361358),
+        c1: Fp(2484375424696276163),
     },
     c2: Fp2 {
-        c0: Fp::new(1236584124511164798),
-        c1: Fp::new(4198454498232167043),
+        c0: Fp(1456151331423673165),
+        c1: Fp(493775531933381046),
     },
 };
+
+const COFACTOR_BYTES: [u8; 15] = [
+    17, 223, 81, 0, 0, 172, 207, 118, 172, 214, 17, 190, 1, 51, 97,
+];
 
 /// An affine point
 #[derive(Copy, Clone, Debug)]
@@ -217,6 +221,7 @@ impl AffinePoint {
                     infinity: 0.into(),
                 })
             {
+                let p = p.clear_cofactor();
                 if bool::from(!p.is_identity()) {
                     return p;
                 }
@@ -229,30 +234,30 @@ impl AffinePoint {
         AffinePoint {
             x: Fp6 {
                 c0: Fp2 {
-                    c0: Fp(730138126767909282),
-                    c1: Fp(1800353199322298189),
+                    c0: Fp(3262468973183608236),
+                    c1: Fp(4243911801714047596),
                 },
                 c1: Fp2 {
-                    c0: Fp(4153420510997380065),
-                    c1: Fp(708955928727438180),
+                    c0: Fp(91763370381211627),
+                    c1: Fp(2580554484302221082),
                 },
                 c2: Fp2 {
-                    c0: Fp(1694107143642509359),
-                    c1: Fp(1410750296354795796),
+                    c0: Fp(841634162873634776),
+                    c1: Fp(3742112110678949142),
                 },
             },
             y: Fp6 {
                 c0: Fp2 {
-                    c0: Fp(2201107915166277347),
-                    c1: Fp(1266026092618437480),
+                    c0: Fp(1170289932515189210),
+                    c1: Fp(17029674189215913),
                 },
                 c1: Fp2 {
-                    c0: Fp(1508841032735730693),
-                    c1: Fp(1507048865680165352),
+                    c0: Fp(1571619423325743619),
+                    c1: Fp(422312177739363094),
                 },
                 c2: Fp2 {
-                    c0: Fp(770187364349394162),
-                    c1: Fp(4447573229887920234),
+                    c0: Fp(3509315559857344037),
+                    c1: Fp(878894181698869668),
                 },
             },
             infinity: Choice::from(0u8),
@@ -265,15 +270,18 @@ impl AffinePoint {
         // to guard against implementation mistakes we do not assume this.
         let mut res = Fp6::conditional_select(&self.x, &Fp6::zero(), self.infinity).to_bytes();
 
-        // This point is in compressed form, so we set the most significant bit.
-        res[47] |= 1u8 << 7;
+        // This point is in compressed form, so we set the most significant bit of the first Fp element.
+        res[7] |= 1u8 << 7;
+
+        // Is this point at infinity? If so, set the most significant bit of the second Fp element.
+        res[15] |= u8::conditional_select(&0u8, &(1u8 << 7), self.infinity);
 
         // Is the y-coordinate the lexicographically largest of the two associated with the
-        // x-coordinate? If so, set the third-most significant bit so long as this is not
+        // x-coordinate? If so, the most significant bit of the third Fp element so long as this is not
         // the point at infinity.
-        res[47] |= u8::conditional_select(
+        res[23] |= u8::conditional_select(
             &0u8,
-            &(1u8 << 6),
+            &(1u8 << 7),
             (!self.infinity) & self.y.lexicographically_largest(),
         );
 
@@ -292,12 +300,16 @@ impl AffinePoint {
             &Fp6::conditional_select(&self.y, &Fp6::zero(), self.infinity).to_bytes()[..],
         );
 
+        // Is this point at infinity? If so, set the most significant bit of the second Fp element.
+        res[15] |= u8::conditional_select(&0u8, &(1u8 << 7), self.infinity);
+
         res
     }
 
     /// Attempts to deserialize an uncompressed element.
     pub fn from_uncompressed(bytes: &[u8; 96]) -> CtOption<Self> {
-        Self::from_uncompressed_unchecked(bytes).and_then(|p| CtOption::new(p, p.is_on_curve()))
+        Self::from_uncompressed_unchecked(bytes)
+            .and_then(|p| CtOption::new(p, p.is_on_curve() & p.is_torsion_free()))
     }
 
     /// Attempts to deserialize an uncompressed element, not checking if the
@@ -305,14 +317,20 @@ impl AffinePoint {
     /// **This is dangerous to call unless you trust the bytes you are reading; otherwise,
     /// API invariants may be broken.** Please consider using `from_uncompressed()` instead.
     pub fn from_uncompressed_unchecked(bytes: &[u8; 96]) -> CtOption<Self> {
-        // Obtain the three flags from the start of the byte sequence
-        let compression_flag_set = Choice::from((bytes[95] >> 7) & 1);
-        let sort_flag_set = Choice::from((bytes[95] >> 6) & 1);
+        // Obtain the three flags
+        let compression_flag_set = Choice::from((bytes[7] >> 7) & 1);
+        let infinity_flag_set = Choice::from((bytes[15] >> 7) & 1);
+        let sort_flag_set = Choice::from((bytes[23] >> 7) & 1);
 
         // Attempt to obtain the x-coordinate
         let x = {
             let mut tmp = [0; 48];
             tmp.copy_from_slice(&bytes[0..48]);
+
+            // Mask away the flag bits
+            tmp[7] &= 0b0111_1111;
+            tmp[15] &= 0b0111_1111;
+            tmp[23] &= 0b0111_1111;
 
             Fp6::from_bytes(&tmp)
         };
@@ -322,26 +340,23 @@ impl AffinePoint {
             let mut tmp = [0; 48];
             tmp.copy_from_slice(&bytes[48..96]);
 
-            // Mask away the flag bits
-            tmp[31] &= 0b0011_1111;
-
             Fp6::from_bytes(&tmp)
         };
 
-        let infinity_flag = x.is_zero() & y.is_zero();
-        // Create a point representing this value
         let p = AffinePoint::conditional_select(
             &AffinePoint {
                 x,
                 y,
-                infinity: infinity_flag,
+                infinity: infinity_flag_set,
             },
             &AffinePoint::identity(),
-            infinity_flag,
+            infinity_flag_set,
         );
 
         CtOption::new(
             p,
+            // If the infinity flag is set, the x and y coordinates should have been zero.
+            ((!infinity_flag_set) | (infinity_flag_set & x.is_zero() & y.is_zero())) &
             // The compression flag should not have been set, as this is an uncompressed element
             (!compression_flag_set) &
             // The sort flag should not have been set, as this is an uncompressed element
@@ -352,11 +367,26 @@ impl AffinePoint {
     /// Attempts to deserialize a compressed element.
     pub fn from_compressed(bytes: &[u8; 48]) -> Option<Self> {
         // We already know the point is on the curve because this is established
-        // by the y-coordinate recovery procedure.
+        // by the y-coordinate recovery procedure in from_compressed_unchecked().
 
-        // Obtain the three flags from the start of the byte sequence
-        let compression_flag_set = Choice::from((bytes[47] >> 7) & 1);
-        let sort_flag_set = Choice::from((bytes[47] >> 6) & 1);
+        Self::from_compressed_unchecked(bytes).and_then(|p| {
+            if bool::from(p.is_torsion_free()) {
+                Some(p)
+            } else {
+                None
+            }
+        })
+    }
+
+    /// Attempts to deserialize an uncompressed element, not checking if the
+    /// element is in the correct subgroup.
+    /// **This is dangerous to call unless you trust the bytes you are reading; otherwise,
+    /// API invariants may be broken.** Please consider using `from_compressed()` instead.
+    pub fn from_compressed_unchecked(bytes: &[u8; 48]) -> Option<Self> {
+        // Obtain the three flags
+        let compression_flag_set = Choice::from((bytes[7] >> 7) & 1);
+        let infinity_flag_set = Choice::from((bytes[15] >> 7) & 1);
+        let sort_flag_set = Choice::from((bytes[23] >> 7) & 1);
 
         // Attempt to obtain the x-coordinate
         let x = {
@@ -364,27 +394,27 @@ impl AffinePoint {
             tmp.copy_from_slice(&bytes[0..48]);
 
             // Mask away the flag bits
-            tmp[47] &= 0b0011_1111;
+            tmp[7] &= 0b0111_1111;
+            tmp[15] &= 0b0111_1111;
+            tmp[23] &= 0b0111_1111;
 
             Fp6::from_bytes(&tmp)
         };
 
-        // Return the identity assuming
-        // the x-coordinate is zero and the sort bit is not set.
+        // If the infinity flag is set, return the value assuming
+        // the x-coordinate is zero and the sort flag is not set.
         //
         // Otherwise, return a recovered point (assuming the correct
         // y-coordinate can be found) so long as the infinity flag
         // was not set.
         if bool::from(
+            infinity_flag_set & // Infinity flag should be set
             compression_flag_set & // Compression flag should be set
-                (!sort_flag_set) & // Sort flag should not be set
-                x.is_zero(),
+            (!sort_flag_set) & // Sort flag should not be set
+            x.is_zero(),
         ) {
             Some(AffinePoint::identity())
         } else {
-            None
-        }
-        .or_else(|| {
             // Recover a y-coordinate given x by y = sqrt(x^3 + x + B)
             ((x.square() * x) + x + B).sqrt_vartime().and_then(|y| {
                 // Switch to the correct y-coordinate if necessary.
@@ -392,6 +422,7 @@ impl AffinePoint {
                     Fp6::conditional_select(&y, &-y, y.lexicographically_largest() ^ sort_flag_set);
 
                 if bool::from(
+                    (!infinity_flag_set) & // Infinity flag should not be set
                     compression_flag_set, // Compression flag should be set
                 ) {
                     Some(AffinePoint {
@@ -403,7 +434,7 @@ impl AffinePoint {
                     None
                 }
             })
-        })
+        }
     }
 
     #[allow(unused)]
@@ -434,26 +465,45 @@ impl AffinePoint {
     /// Performs an affine scalar multiplication from `by`
     /// given as byte representation of a `Scalar` element.
     #[inline]
-    pub fn multiply(&self, by: &[u8; 48]) -> AffinePoint {
+    pub fn multiply(&self, by: &[u8; 32]) -> AffinePoint {
         let mut acc = ProjectivePoint::identity();
 
         // This is a simple double-and-add implementation of point
         // multiplication, moving from most significant to least
         // significant bit of the scalar.
         //
-        // We skip the first 11 leading bits because it's always unset for Fq
+        // We skip the first leading bit because it's always unset for Fq
         // elements.
         for bit in by
             .iter()
             .rev()
             .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(11)
+            .skip(1)
         {
             acc = acc.double();
             acc = if bit { acc + self } else { acc };
         }
 
         acc.into()
+    }
+
+    /// Multiplies by the curve cofactor
+    pub fn clear_cofactor(&self) -> AffinePoint {
+        let point: ProjectivePoint = self.into();
+
+        point.clear_cofactor().into()
+    }
+
+    /// Returns true if this point is free of an $h$-torsion component.
+    /// This should always return true unless an "unchecked" API was used.
+    pub fn is_torsion_free(&self) -> Choice {
+        const FQ_MODULUS_BYTES: [u8; 32] = [
+            17, 174, 241, 37, 126, 218, 148, 254, 1, 55, 185, 100, 102, 166, 128, 72, 214, 108, 4,
+            148, 72, 75, 96, 235, 121, 162, 161, 147, 213, 11, 35, 42,
+        ];
+
+        // Clear the r-torsion from the point and check if it is the identity
+        self.multiply(&FQ_MODULUS_BYTES).is_identity()
     }
 }
 
@@ -844,20 +894,39 @@ impl ProjectivePoint {
 
     /// Performs a projective scalar multiplication from `by`
     /// given as byte representation of a `Scalar` element
-    pub fn multiply(&self, by: &[u8; 48]) -> ProjectivePoint {
+    pub fn multiply(&self, by: &[u8; 32]) -> ProjectivePoint {
         let mut acc = ProjectivePoint::identity();
 
         // This is a simple double-and-add implementation of point
         // multiplication, moving from most significant to least
         // significant bit of the scalar.
         //
-        // We skip the first 11 leading bits because it's always unset for Fq
+        // We skip the first leading bit because it's always unset for Fq
         // elements.
         for bit in by
             .iter()
             .rev()
             .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(11)
+            .skip(1)
+        {
+            acc = acc.double();
+            acc = if bit { acc + self } else { acc };
+        }
+
+        acc
+    }
+
+    /// Multiplies by the curve cofactor
+    pub fn clear_cofactor(&self) -> ProjectivePoint {
+        let mut acc = ProjectivePoint::identity();
+
+        // This is a simple double-and-add implementation of point
+        // multiplication, moving from most significant to least
+        // significant bit of the scalar.
+        for bit in COFACTOR_BYTES
+            .iter()
+            .rev()
+            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
         {
             acc = acc.double();
             acc = if bit { acc + self } else { acc };
@@ -1098,30 +1167,30 @@ mod tests {
                 AffinePoint {
                     x: Fp6 {
                         c0: Fp2 {
-                            c0: Fp::new(2368005627405841347),
-                            c1: Fp::new(4417121005744086358),
+                            c0: Fp::new(2832170391262416754),
+                            c1: Fp::new(134707826110969097),
                         },
                         c1: Fp2 {
-                            c0: Fp::new(1904266335491832399),
-                            c1: Fp::new(3118344327275065295),
+                            c0: Fp::new(4149871814391112415),
+                            c1: Fp::new(588861537006445977),
                         },
                         c2: Fp2 {
-                            c0: Fp::new(2371186958654937561),
-                            c1: Fp::new(3483353124598221828),
+                            c0: Fp::new(4173385264204666886),
+                            c1: Fp::new(1744313431563351161),
                         },
                     },
                     y: Fp6 {
                         c0: Fp2 {
-                            c0: Fp::new(4055054789578821601),
-                            c1: Fp::new(1827987781889996659),
+                            c0: Fp::new(799402773595341943),
+                            c1: Fp::new(4384665993236818619),
                         },
                         c1: Fp2 {
-                            c0: Fp::new(3710460803203667617),
-                            c1: Fp::new(204166200606131262),
+                            c0: Fp::new(1199336312931996805),
+                            c1: Fp::new(3908842890749331791),
                         },
                         c2: Fp2 {
-                            c0: Fp::new(2761090084349096891),
-                            c1: Fp::new(542028309821466638),
+                            c0: Fp::new(919534094663606527),
+                            c1: Fp::new(64201016434738342),
                         },
                     },
                     infinity: Choice::from(0u8),
@@ -1294,20 +1363,16 @@ mod tests {
     fn test_projective_scalar_multiplication() {
         let g = ProjectivePoint::generator();
         let a = Scalar::new([
-            0xe03c90dfa30aa0c3,
-            0x9c35a3adec00ae5d,
-            0xb00cd6ce83140ed0,
-            0x52587e22f5cae4ec,
-            0xa5af2d23a1b045db,
-            0x000e83334d526feb,
+            0x1fe3ac3d0fde1429,
+            0xd1ab3020993395ec,
+            0x7b05ba9afe7bb36a,
+            0x1a52ef1d2291d9bc,
         ]);
         let b = Scalar::new([
-            0xd7be14cdac116cdf,
-            0xc22abf51f5b2cd64,
-            0x1fee745cd0ebe12d,
-            0x0910e9ab5192de12,
-            0x02bc226f32af53a2,
-            0x000c0a9b7d39fe14,
+            0xb2a7f9f8569e3b44,
+            0x1f9ada6e71c9167b,
+            0xb73915944013806b,
+            0x090e3287fea5247a,
         ]);
         let c = a * b;
 
@@ -1326,20 +1391,16 @@ mod tests {
     fn test_affine_scalar_multiplication() {
         let g = AffinePoint::generator();
         let a = Scalar::new([
-            0xe03c90dfa30aa0c3,
-            0x9c35a3adec00ae5d,
-            0xb00cd6ce83140ed0,
-            0x52587e22f5cae4ec,
-            0xa5af2d23a1b045db,
-            0x000e83334d526feb,
+            0x1fe3ac3d0fde1429,
+            0xd1ab3020993395ec,
+            0x7b05ba9afe7bb36a,
+            0x1a52ef1d2291d9bc,
         ]);
         let b = Scalar::new([
-            0xd7be14cdac116cdf,
-            0xc22abf51f5b2cd64,
-            0x1fee745cd0ebe12d,
-            0x0910e9ab5192de12,
-            0x02bc226f32af53a2,
-            0x000c0a9b7d39fe14,
+            0xb2a7f9f8569e3b44,
+            0x1f9ada6e71c9167b,
+            0xb73915944013806b,
+            0x090e3287fea5247a,
         ]);
         let c = a * b;
 
@@ -1352,6 +1413,94 @@ mod tests {
 
             assert_eq!((g * a) * b, g * c);
         }
+    }
+
+    #[test]
+    fn test_clear_cofactor() {
+        // the generator (and the identity) are always on the curve
+        let generator = ProjectivePoint::generator();
+        assert!(bool::from(generator.clear_cofactor().is_on_curve()));
+        let id = ProjectivePoint::identity();
+        assert!(bool::from(id.clear_cofactor().is_on_curve()));
+
+        let point = ProjectivePoint {
+            x: Fp6 {
+                c0: Fp2 {
+                    c0: Fp(0x29b0d5c1a7d1a62b),
+                    c1: Fp(0x1588eed15421e4ad),
+                },
+                c1: Fp2 {
+                    c0: Fp(0xe4e2f64f9aec96c),
+                    c1: Fp(0x308155f80418966b),
+                },
+                c2: Fp2 {
+                    c0: Fp(0x365520a731474562),
+                    c1: Fp(0xaef54140cf49055),
+                },
+            },
+            y: Fp6 {
+                c0: Fp2 {
+                    c0: Fp(0x121f2c0a4dcbf431),
+                    c1: Fp(0x2e4ad2ffc953d262),
+                },
+                c1: Fp2 {
+                    c0: Fp(0x10b23aa37f651623),
+                    c1: Fp(0x33f7d606ac43661b),
+                },
+                c2: Fp2 {
+                    c0: Fp(0x27d95437d2f84848),
+                    c1: Fp(0x2ad7166cde656c25),
+                },
+            },
+            z: Fp6::one(),
+        };
+
+        assert!(bool::from(point.is_on_curve()));
+        assert!(!bool::from(AffinePoint::from(point).is_torsion_free()));
+        let cleared_point = point.clear_cofactor();
+        assert!(bool::from(cleared_point.is_on_curve()));
+        assert!(bool::from(
+            AffinePoint::from(cleared_point).is_torsion_free()
+        ));
+    }
+
+    #[test]
+    fn test_is_torsion_free() {
+        let a = AffinePoint {
+            x: Fp6 {
+                c0: Fp2 {
+                    c0: Fp(0x29b0d5c1a7d1a62b),
+                    c1: Fp(0x1588eed15421e4ad),
+                },
+                c1: Fp2 {
+                    c0: Fp(0xe4e2f64f9aec96c),
+                    c1: Fp(0x308155f80418966b),
+                },
+                c2: Fp2 {
+                    c0: Fp(0x365520a731474562),
+                    c1: Fp(0xaef54140cf49055),
+                },
+            },
+            y: Fp6 {
+                c0: Fp2 {
+                    c0: Fp(0x121f2c0a4dcbf431),
+                    c1: Fp(0x2e4ad2ffc953d262),
+                },
+                c1: Fp2 {
+                    c0: Fp(0x10b23aa37f651623),
+                    c1: Fp(0x33f7d606ac43661b),
+                },
+                c2: Fp2 {
+                    c0: Fp(0x27d95437d2f84848),
+                    c1: Fp(0x2ad7166cde656c25),
+                },
+            },
+            infinity: Choice::from(0u8),
+        };
+        assert!(bool::from(a.is_on_curve()));
+        assert!(!bool::from(a.is_torsion_free()));
+        assert!(bool::from(AffinePoint::identity().is_torsion_free()));
+        assert!(bool::from(AffinePoint::generator().is_torsion_free()));
     }
 
     #[test]
@@ -1445,12 +1594,12 @@ mod tests {
             };
             let bytes = point.to_compressed();
             let point_decompressed = AffinePoint::from_compressed(&bytes);
-            assert_eq!(point_decompressed.unwrap(), AffinePoint::identity());
+            assert!(point_decompressed.is_none());
 
             let point = ProjectivePoint::from(&point);
             let bytes = point.to_compressed();
             let point_decompressed = ProjectivePoint::from_compressed(&bytes);
-            assert_eq!(point_decompressed.unwrap(), ProjectivePoint::identity());
+            assert!(point_decompressed.is_none());
         }
     }
 
@@ -1491,12 +1640,12 @@ mod tests {
             };
             let bytes = point.to_uncompressed();
             let point_decompressed = AffinePoint::from_uncompressed(&bytes);
-            assert_eq!(point_decompressed.unwrap(), AffinePoint::identity());
+            assert!(bool::from(point_decompressed.is_none()));
 
             let point = ProjectivePoint::from(&point);
             let bytes = point.to_uncompressed();
             let point_decompressed = ProjectivePoint::from_uncompressed(&bytes);
-            assert_eq!(point_decompressed.unwrap(), ProjectivePoint::identity());
+            assert!(bool::from(point_decompressed.is_none()));
         }
     }
 }

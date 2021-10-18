@@ -22,8 +22,15 @@ x = K2.gen()
 poly3 = x**3 - x - 2
 Fp6 = Fp2.extension(poly3, 'v')
 
-q = 0xfffacc0b47aef52f1b32fc5d4ddf972a71e3a69c7b80f833c7cca5f5735d02774ffd1eeca02086210a856e8e2ac8d
+u = Fp2.gen()
+v = Fp6.gen()
+
+q = 19059060964990286085476939486711779813624322081295683206882804078282896682513
 Fq = GF(q)  # scalar field of the curve
+
+# curve equation constant (y^2 = x^3 + x + B)
+B = (3960779010852551083*u + 936702401985103221)*v ^ 2 + (2317454856288651766 *
+                                                          u + 3506243645506711312)*v + 3824048103880329999*u + 3163132581539869369
 
 ##################################
 # FIELD UTILITY FUNCTIONS
@@ -77,13 +84,18 @@ def repr_fp6(n, output_hex=False, allow_neg=False, no_computations=False):
     return (output)
 
 
-def repr_scalar(n, output_hex=True):
+def repr_scalar(n, output_hex=True, no_computations=False):
     assert(n in Fq)
-    output = "Scalar([\n"
+    output = ""
+    if no_computations:
+        output += "Scalar([\n"
+        n = Fq(n) * 2 ^ 256
+    else:
+        output += "Scalar::new([\n"
     n = str(hex(Integer(n)))[2:]
-    while len(n) < 96:
+    while len(n) < 64:
         n = "0" + n
-    for i in range((96//16) - 1, -1, -1):
+    for i in range((64//16) - 1, -1, -1):
         string = "0x" + n[i*16:i*16+16]
         output += f"    {string if output_hex else Integer(string)},\n"
 
@@ -103,8 +115,8 @@ def print_fp6(n, output_hex=False, allow_neg=False, no_computations=False):
     print(repr_fp6(n, output_hex, allow_neg, no_computations))
 
 
-def print_scalar(n, output_hex=False, allow_neg=False, no_computations=False):
-    print(repr_scalar(n, output_hex))
+def print_scalar(n, output_hex=False, no_computations=False):
+    print(repr_scalar(n, output_hex, no_computations))
 
 
 def twoadicity(x):
@@ -310,21 +322,14 @@ def print_scalar_constants():
     output += f"\n// Field modulus = {q}\n"
     output += f"const M: Scalar = {repr_scalar(q)}\n\n"
 
-    output += "/// 2^384 mod M; this is used for conversion of elements into Montgomery representation.\n"
-    output += f"pub(crate) const R: Scalar = {repr_scalar(Fq(2^384))}\n\n"
+    output += "/// 2^256 mod M; this is used for conversion of elements into Montgomery representation.\n"
+    output += f"pub(crate) const R: Scalar = {repr_scalar(Fq(2^256))}\n\n"
+
+    output += "/// 2^512 mod M; this is used for conversion of elements into Montgomery representation.\n"
+    output += f"pub(crate) const R2: Scalar = {repr_scalar(Fq(2^512))}\n\n"
 
     output += "/// 2^768 mod M; this is used for conversion of elements into Montgomery representation.\n"
-    output += f"pub(crate) const R2: Scalar = {repr_scalar(Fq(2^768))}\n\n"
-
-    output += "/// 2^1152 mod M; this is used for conversion of elements into Montgomery representation.\n"
-    output += f"pub(crate) const R3: Scalar = {repr_scalar(Fq(2^1152))}\n\n"
-
-    output += f"/// Two-adicity of the field: (q-1) % 2^{twoadicity(q)} = 0\n"
-    output += f"const TWO_ADICITY: u32 = {twoadicity(q)};\n\n"
-
-    output += f"// 2^{twoadicity(q)} root of unity  = {Fq(2^twoadicity(q))}\n"
-    output += f"//                    = {Fq(2^twoadicity(q) * 2^384)} in Montgomery form\n"
-    output += f"const TWO_ADIC_ROOT_OF_UNITY: Scalar = {repr_scalar(Fq(2^twoadicity(q) * 2^384))}\n\n"
+    output += f"pub(crate) const R3: Scalar = {repr_scalar(Fq(2^768))}\n\n"
 
     output += f"/// -M^{{-1}} mod 2^64; this is used during element multiplication.\n"
     output += f"const U: u64 = {Fq(-q^(-1) % 2^64)};\n\n"
