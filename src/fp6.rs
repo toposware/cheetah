@@ -405,9 +405,9 @@ impl Fp6 {
     /// element, returning None in the case that this element
     /// is zero.
     pub fn invert(&self) -> CtOption<Self> {
-        let three = Fp2::new(3);
-        let two = Fp2::new(2);
-        let four = Fp2::new(4);
+        let three = Fp2::new([3, 0]);
+        let two = Fp2::new([2, 0]);
+        let four = Fp2::new([4, 0]);
 
         let c0_sq = self.c0.square();
         let c1_sq = self.c1.square();
@@ -724,6 +724,12 @@ mod test {
                 },
             }
         ));
+
+        assert!(bool::from(Fp6::default().is_zero()));
+        assert!(!bool::from(Fp6::zero().ct_eq(&Fp6::one())));
+
+        assert_eq!(Fp6::zero(), Fp6::new([0, 0, 0, 0, 0, 0]));
+        assert_eq!(Fp6::one(), Fp6::new([1, 0, 0, 0, 0, 0]));
     }
 
     #[test]
@@ -947,6 +953,8 @@ mod test {
 
     #[test]
     fn test_negation() {
+        let mut rng = thread_rng();
+
         let a = Fp6 {
             c0: Fp2 {
                 c0: Fp::one(),
@@ -977,6 +985,13 @@ mod test {
         };
 
         assert_eq!(-a, b);
+
+        for _ in 0..100 {
+            let a = Fp6::random(&mut rng);
+            let b = -a;
+
+            assert_eq!(a + b, Fp6::zero());
+        }
     }
 
     #[test]
@@ -1086,5 +1101,18 @@ mod test {
         let mut a = Fp6::one();
         a.zeroize();
         assert!(bool::from(a.is_zero()));
+    }
+
+    #[test]
+    fn test_from_raw_unchecked() {
+        let mut element = Fp6::from_raw_unchecked([244091581366268, 0, 0, 0, 0, 0]);
+
+        let element_normalized = Fp6::new([244091581366268, 0, 0, 0, 0, 0]);
+
+        assert_eq!(element, Fp6::one());
+        element.normalize();
+
+        assert!(element != Fp6::one());
+        assert_eq!(element, element_normalized);
     }
 }

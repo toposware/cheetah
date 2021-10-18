@@ -579,7 +579,12 @@ impl Scalar {
         Self::from_bytes_wide(&buf)
     }
 
-    #[allow(unused)]
+    #[inline(always)]
+    /// Normalizes the internal representation of an `Fp` element
+    pub fn normalize(&mut self) {
+        *self *= &R2
+    }
+
     /// Constructs a `Scalar` element without checking that it is
     /// canonical.
     pub const fn from_raw_unchecked(v: [u64; 4]) -> Self {
@@ -794,6 +799,8 @@ mod tests {
 
     #[test]
     fn test_negation() {
+        let mut rng = thread_rng();
+
         let tmp = -&LARGEST;
 
         assert_eq!(tmp, Scalar([1, 0, 0, 0]));
@@ -802,6 +809,13 @@ mod tests {
         assert_eq!(tmp, Scalar::zero());
         let tmp = -&Scalar([1, 0, 0, 0]);
         assert_eq!(tmp, LARGEST);
+
+        for _ in 0..100 {
+            let a = Scalar::random(&mut rng);
+            let b = -a;
+
+            assert_eq!(a + b, Scalar::zero());
+        }
     }
 
     #[test]
@@ -1171,5 +1185,28 @@ mod tests {
         assert_eq!(element, Scalar::from(n as u32));
         assert_eq!(element, Scalar::from(n as u64));
         assert_eq!(element, Scalar::from(n as u128));
+    }
+
+    #[test]
+    fn test_from_raw_unchecked() {
+        let mut element = Scalar::from_raw_unchecked([
+            613299937112091546,
+            5547336988680041972,
+            8916630611635303162,
+            229042559445774628,
+        ]);
+
+        let element_normalized = Scalar::new([
+            613299937112091546,
+            5547336988680041972,
+            8916630611635303162,
+            229042559445774628,
+        ]);
+
+        assert_eq!(element, Scalar::one());
+        element.normalize();
+
+        assert!(element != Scalar::one());
+        assert_eq!(element, element_normalized);
     }
 }

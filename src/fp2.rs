@@ -8,10 +8,6 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 use crate::fp::Fp;
 
-const MODULUS_MINUS_ONE_DIV_TWO: [u64; 2] = [0x3fffc88000000000, 0x07fff22006042000];
-
-const MODULUS_PLUS_ONE_DIV_TWO: [u64; 2] = [0x3fffc88000000001, 0x07fff22006042000];
-
 #[derive(Copy, Clone)]
 /// An element of the extension GF(p^2)
 pub struct Fp2 {
@@ -119,10 +115,10 @@ impl Fp2 {
     /// Creates a new field element from a `u64` value.
     /// The value is converted to Montgomery form by computing
     /// (a.R^0 * R^2) / R = a.R
-    pub const fn new(value: u64) -> Self {
+    pub const fn new(value: [u64; 2]) -> Self {
         Fp2 {
-            c0: Fp::new(value),
-            c1: Fp::zero(),
+            c0: Fp::new(value[0]),
+            c1: Fp::new(value[1]),
         }
     }
     #[inline]
@@ -207,68 +203,6 @@ impl Fp2 {
     /// Double this element
     pub const fn double(&self) -> Self {
         self.add(self)
-    }
-
-    /// Computes the square root of this element, if it exists.
-    /// This operation is not constant time, as it requires going
-    /// through a non-constant number of field elements until we reach
-    /// a non-square.
-    // TODO: Should rng be passed as argument?
-    pub fn sqrt_vartime(&self) -> Option<Self> {
-        // Cipolla's algorithm
-        // https://en.wikipedia.org/wiki/Cipolla%27s_algorithm
-
-        fn mul_in_fp4(a: &[Fp2; 2], b: &[Fp2; 2], beta: &Fp2) -> [Fp2; 2] {
-            let v0 = (&a[0]).mul(&b[0]);
-            let v1 = (&a[1]).mul(&b[1]);
-            let c0 = (&v0).add(&(beta.mul(&v1)));
-            let c1 = (&a[0]).add(&a[1]);
-            let c1 = (&c1).mul(&b[0].add(&b[1]));
-            let c1 = (&c1).sub(&v0);
-            let c1 = (&c1).sub(&v1);
-
-            [c0, c1]
-        }
-
-        fn exp_vartime_in_fp4(a: &[Fp2; 2], by: &[u64; 2], beta: &Fp2) -> [Fp2; 2] {
-            let mut res = [Fp2::one(), Fp2::zero()];
-            for e in by.iter().rev() {
-                for i in (0..64).rev() {
-                    res = mul_in_fp4(&res, &res, beta);
-
-                    if ((*e >> i) & 1) == 1 {
-                        res = mul_in_fp4(&res, a, beta);
-                    }
-                }
-            }
-            res
-        }
-
-        // check = self^((p^2 - 1) // 2)
-        //       = self^0x7fff220060420003fffc88000000000
-        let check = self.exp_vartime(&MODULUS_MINUS_ONE_DIV_TWO);
-
-        if check != Fp2::one() {
-            return None;
-        }
-
-        let mut a = Fp2::from(Fp::one().double());
-        while (a.square() - self).exp_vartime(&MODULUS_MINUS_ONE_DIV_TWO) != -Fp2::one() {
-            a += Fp2::one();
-        }
-
-        let beta = a.square() - self;
-
-        let res = exp_vartime_in_fp4(&[a, Fp2::one()], &MODULUS_PLUS_ONE_DIV_TWO, &beta);
-        if res[1] != Fp2::zero() {
-            return None;
-        }
-
-        if bool::from(self.ct_eq(&res[0].square())) {
-            Some(res[0])
-        } else {
-            None
-        }
     }
 
     /// Add two elements together
@@ -360,6 +294,15 @@ impl Fp2 {
         bytes
     }
 
+    /// Constructs an element of `Fp2` without checking that it is
+    /// canonical.
+    pub const fn from_raw_unchecked(value: [u64; 2]) -> Self {
+        Fp2 {
+            c0: Fp::from_raw_unchecked(value[0]),
+            c1: Fp::from_raw_unchecked(value[1]),
+        }
+    }
+
     #[inline(always)]
     /// Normalizes the internal representation of a `Fp2` element
     pub fn normalize(&mut self) {
@@ -372,6 +315,39 @@ impl Fp2 {
 mod test {
     use super::*;
     use rand::thread_rng;
+
+    // DISPLAY
+    // ================================================================================================
+
+    #[test]
+    fn test_debug() {
+        assert_eq!(format!("{:?}", Fp2::zero()), "0 + 0*u");
+        assert_eq!(format!("{:?}", Fp2::one()), "1 + 0*u");
+        assert_eq!(
+            format!(
+                "{:?}",
+                Fp2 {
+                    c0: Fp::zero(),
+                    c1: Fp::one()
+                }
+            ),
+            "0 + 1*u"
+        );
+
+        let a = Fp2::one().neg();
+        assert_eq!(format!("{:?}", a), "4611624995532046336 + 0*u");
+    }
+
+    #[test]
+    fn test_to_repr() {
+        assert_eq!(format!("{:?}", Fp2::zero().to_repr()), "[0, 0]");
+        assert_eq!(format!("{:?}", Fp2::one().to_repr()), "[1, 0]");
+        let a = Fp2::one().neg();
+        assert_eq!(format!("{:?}", a.to_repr()), "[4611624995532046336, 0]");
+    }
+
+    // BASIC ALGEBRA
+    // ================================================================================================
 
     #[test]
     fn test_conditional_selection() {
@@ -437,6 +413,12 @@ mod test {
                 c1: Fp::from_raw_unchecked(2),
             }
         ));
+
+        assert!(bool::from(Fp2::default().is_zero()));
+        assert!(!bool::from(Fp2::zero().ct_eq(&Fp2::one())));
+
+        assert_eq!(Fp2::zero(), Fp2::new([0, 0]));
+        assert_eq!(Fp2::one(), Fp2::new([1, 0]));
     }
 
     #[test]
@@ -451,15 +433,6 @@ mod test {
         };
 
         assert_eq!(a.square(), b);
-    }
-
-    #[test]
-    fn test_sqrt() {
-        for _ in 0..10 {
-            let a = Fp2::random(&mut thread_rng()).square();
-            let b = a.sqrt_vartime().unwrap();
-            assert_eq!(a, b.square());
-        }
     }
 
     #[test]
@@ -530,6 +503,8 @@ mod test {
 
     #[test]
     fn test_negation() {
+        let mut rng = thread_rng();
+
         let a = Fp2 {
             c0: Fp::one(),
             c1: Fp::new(2),
@@ -540,6 +515,13 @@ mod test {
         };
 
         assert_eq!(-a, b);
+
+        for _ in 0..100 {
+            let a = Fp2::random(&mut rng);
+            let b = -a;
+
+            assert_eq!(a + b, Fp2::zero());
+        }
     }
 
     #[test]
@@ -593,5 +575,18 @@ mod test {
         let mut a = Fp2::one();
         a.zeroize();
         assert!(bool::from(a.is_zero()));
+    }
+
+    #[test]
+    fn test_from_raw_unchecked() {
+        let mut element = Fp2::from_raw_unchecked([244091581366268, 0]);
+
+        let element_normalized = Fp2::new([244091581366268, 0]);
+
+        assert_eq!(element, Fp2::one());
+        element.normalize();
+
+        assert!(element != Fp2::one());
+        assert_eq!(element, element_normalized);
     }
 }

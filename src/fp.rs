@@ -451,6 +451,21 @@ mod tests {
     // ================================================================================================
 
     #[test]
+    fn test_conditional_selection() {
+        let a = Fp::from_raw_unchecked(1);
+        let b = Fp::from_raw_unchecked(2);
+
+        assert_eq!(
+            ConditionallySelectable::conditional_select(&a, &b, Choice::from(0u8)),
+            a
+        );
+        assert_eq!(
+            ConditionallySelectable::conditional_select(&a, &b, Choice::from(1u8)),
+            b
+        );
+    }
+
+    #[test]
     fn test_equality() {
         assert_eq!(Fp::default(), Fp::zero());
         assert_eq!(Fp::zero(), Fp::zero());
@@ -461,6 +476,9 @@ mod tests {
 
         assert!(Fp::zero() != Fp::one());
         assert!(Fp::one() != R2);
+
+        assert_eq!(Fp::zero(), Fp::new(0));
+        assert_eq!(Fp::one(), Fp::new(1));
     }
 
     #[test]
@@ -496,6 +514,8 @@ mod tests {
 
     #[test]
     fn test_negation() {
+        let mut rng = thread_rng();
+
         let tmp = -&LARGEST;
 
         assert_eq!(tmp, Fp(1));
@@ -504,6 +524,13 @@ mod tests {
         assert_eq!(tmp, Fp::zero());
         let tmp = -&Fp(1);
         assert_eq!(tmp, LARGEST);
+
+        for _ in 0..100 {
+            let a = Fp::random(&mut rng);
+            let b = -a;
+
+            assert_eq!(a + b, Fp::zero());
+        }
     }
 
     #[test]
