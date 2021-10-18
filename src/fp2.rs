@@ -349,6 +349,17 @@ impl Fp2 {
         ]
     }
 
+    /// Converts an `Fp2` element into a byte representation in
+    /// little-endian byte order.
+    pub fn to_bytes(&self) -> [u8; 16] {
+        let mut bytes = [0u8; 16];
+
+        bytes[0..8].copy_from_slice(&self.c0.to_bytes());
+        bytes[8..16].copy_from_slice(&self.c1.to_bytes());
+
+        bytes
+    }
+
     #[inline(always)]
     /// Normalizes the internal representation of a `Fp2` element
     pub fn normalize(&mut self) {

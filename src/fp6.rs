@@ -478,22 +478,16 @@ impl Fp6 {
         ]
     }
 
-    /// Converts a `Fp` element into a byte representation in
+    /// Converts an `Fp6` element into a byte representation in
     /// little-endian byte order.
     pub fn to_bytes(&self) -> [u8; 48] {
-        // Turn into canonical form by computing
-        // (a.R) / R = a
-        let tmp = self.to_repr();
+        let mut bytes = [0u8; 48];
 
-        let mut res = [0u8; 48];
-        res[0..8].copy_from_slice(&tmp[0].to_le_bytes());
-        res[8..16].copy_from_slice(&tmp[1].to_le_bytes());
-        res[16..24].copy_from_slice(&tmp[2].to_le_bytes());
-        res[24..32].copy_from_slice(&tmp[3].to_le_bytes());
-        res[32..40].copy_from_slice(&tmp[4].to_le_bytes());
-        res[40..48].copy_from_slice(&tmp[5].to_le_bytes());
+        bytes[0..16].copy_from_slice(&self.c0.to_bytes());
+        bytes[16..32].copy_from_slice(&self.c1.to_bytes());
+        bytes[32..48].copy_from_slice(&self.c2.to_bytes());
 
-        res
+        bytes
     }
 
     /// Converts an array of bytes into an `Fp6` element

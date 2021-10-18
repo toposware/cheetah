@@ -35,7 +35,7 @@ const U: u64 = 4611624995532046335;
 
 /// Represents a base field element.
 ///
-/// Internal values are stored in Montgomery representation and can be in the range [0; 2M).
+/// Internal values are stored in Montgomery representation.
 /// The backing type is `u64`.
 #[derive(Copy, Clone, Eq, Default)]
 pub struct Fp(pub(crate) u64);
@@ -173,7 +173,7 @@ impl Fp {
         Fp::montgomery_reduce(self.0, 0).0
     }
 
-    /// Converts a `Fp` element into a byte representation in
+    /// Converts an `Fp` element into a byte representation in
     /// little-endian byte order.
     pub fn to_bytes(&self) -> [u8; 8] {
         // Turn into canonical form by computing
