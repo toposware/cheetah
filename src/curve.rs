@@ -213,15 +213,14 @@ impl AffinePoint {
             let flip_sign = rng.next_u32() % 2 != 0;
 
             // Obtain the corresponding y-coordinate given x as y = sqrt(x^3 + x + B)
-            if let Some(p) = ((x.square() * x) + x + B)
-                .sqrt_vartime()
-                .map(|y| AffinePoint {
-                    x,
-                    y: if flip_sign { -y } else { y },
-                    infinity: 0.into(),
-                })
-            {
-                let p = p.clear_cofactor();
+            let p = ((x.square() * x) + x + B).sqrt().map(|y| AffinePoint {
+                x,
+                y: if flip_sign { -y } else { y },
+                infinity: 0.into(),
+            });
+
+            if p.is_some().into() {
+                let p = p.unwrap().clear_cofactor();
                 if bool::from(!p.is_identity()) {
                     return p;
                 }
@@ -365,24 +364,18 @@ impl AffinePoint {
     }
 
     /// Attempts to deserialize a compressed element.
-    pub fn from_compressed(bytes: &[u8; 48]) -> Option<Self> {
+    pub fn from_compressed(bytes: &[u8; 48]) -> CtOption<Self> {
         // We already know the point is on the curve because this is established
         // by the y-coordinate recovery procedure in from_compressed_unchecked().
 
-        Self::from_compressed_unchecked(bytes).and_then(|p| {
-            if bool::from(p.is_torsion_free()) {
-                Some(p)
-            } else {
-                None
-            }
-        })
+        Self::from_compressed_unchecked(bytes).and_then(|p| CtOption::new(p, p.is_torsion_free()))
     }
 
     /// Attempts to deserialize an uncompressed element, not checking if the
     /// element is in the correct subgroup.
     /// **This is dangerous to call unless you trust the bytes you are reading; otherwise,
     /// API invariants may be broken.** Please consider using `from_compressed()` instead.
-    pub fn from_compressed_unchecked(bytes: &[u8; 48]) -> Option<Self> {
+    pub fn from_compressed_unchecked(bytes: &[u8; 48]) -> CtOption<Self> {
         // Obtain the three flags
         let compression_flag_set = Choice::from((bytes[7] >> 7) & 1);
         let infinity_flag_set = Choice::from((bytes[15] >> 7) & 1);
@@ -407,34 +400,31 @@ impl AffinePoint {
         // Otherwise, return a recovered point (assuming the correct
         // y-coordinate can be found) so long as the infinity flag
         // was not set.
-        if bool::from(
+        CtOption::new(
+            AffinePoint::identity(),
             infinity_flag_set & // Infinity flag should be set
             compression_flag_set & // Compression flag should be set
             (!sort_flag_set) & // Sort flag should not be set
-            x.is_zero(),
-        ) {
-            Some(AffinePoint::identity())
-        } else {
+            x.is_zero(), // The x-coordinate should be zero
+        )
+        .or_else(|| {
             // Recover a y-coordinate given x by y = sqrt(x^3 + x + B)
-            ((x.square() * x) + x + B).sqrt_vartime().and_then(|y| {
+            ((x.square() * x) + x + B).sqrt().and_then(|y| {
                 // Switch to the correct y-coordinate if necessary.
                 let y =
                     Fp6::conditional_select(&y, &-y, y.lexicographically_largest() ^ sort_flag_set);
 
-                if bool::from(
-                    (!infinity_flag_set) & // Infinity flag should not be set
-                    compression_flag_set, // Compression flag should be set
-                ) {
-                    Some(AffinePoint {
+                CtOption::new(
+                    AffinePoint {
                         x,
                         y,
-                        infinity: Choice::from(0u8),
-                    })
-                } else {
-                    None
-                }
+                        infinity: infinity_flag_set,
+                    },
+                    (!infinity_flag_set) & // Infinity flag should not be set
+                        compression_flag_set, // Compression flag should be set
+                )
             })
-        }
+        })
     }
 
     #[allow(unused)]
@@ -710,7 +700,7 @@ impl ProjectivePoint {
     }
 
     /// Attempts to deserialize a compressed element.
-    pub fn from_compressed(bytes: &[u8; 48]) -> Option<Self> {
+    pub fn from_compressed(bytes: &[u8; 48]) -> CtOption<Self> {
         AffinePoint::from_compressed(bytes).map(ProjectivePoint::from)
     }
 
@@ -1594,12 +1584,12 @@ mod tests {
             };
             let bytes = point.to_compressed();
             let point_decompressed = AffinePoint::from_compressed(&bytes);
-            assert!(point_decompressed.is_none());
+            assert!(bool::from(point_decompressed.is_none()));
 
             let point = ProjectivePoint::from(&point);
             let bytes = point.to_compressed();
             let point_decompressed = ProjectivePoint::from_compressed(&bytes);
-            assert!(point_decompressed.is_none());
+            assert!(bool::from(point_decompressed.is_none()));
         }
     }
 

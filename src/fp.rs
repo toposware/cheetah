@@ -21,11 +21,11 @@ pub(crate) const R: Fp = Fp(244091581366268);
 pub(crate) const R2: Fp = Fp(630444561284293700);
 
 /// Two-adicity of the field: (p-1) % 2^39 = 0
-const TWO_ADICITY: u32 = 39;
+pub(crate) const TWO_ADICITY: u32 = 39;
 
 // 2^39 root of unity = 4421547261963328785
 //                    = 117700978803869913 in Montgomery form
-const TWO_ADIC_ROOT_OF_UNITY: Fp = Fp(117700978803869913);
+pub(crate) const TWO_ADIC_ROOT_OF_UNITY: Fp = Fp(117700978803869913);
 
 /// -M^{-1} mod 2^64; this is used during element multiplication.
 const U: u64 = 4611624995532046335;

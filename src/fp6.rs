@@ -10,23 +10,7 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use crate::fp::Fp;
 use crate::fp2::Fp2;
 
-const MODULUS_MINUS_ONE_DIV_TWO: [u64; 6] = [
-    0xbfff598000000000,
-    0x953f2fe05a3de000,
-    0xc22d66eed23dc5ea,
-    0xb9538f1d34e3dc07,
-    0xa978d997e2ea6efc,
-    0x0007ffd6605a3d77,
-];
-
-const MODULUS_PLUS_ONE_DIV_TWO: [u64; 6] = [
-    0xbfff598000000001,
-    0x953f2fe05a3de000,
-    0xc22d66eed23dc5ea,
-    0xb9538f1d34e3dc07,
-    0xa978d997e2ea6efc,
-    0x0007ffd6605a3d77,
-];
+use crate::fp::TWO_ADICITY;
 
 #[derive(Copy, Clone)]
 /// An element of the extension GF(p^6)
@@ -279,18 +263,18 @@ impl Fp6 {
     /// Square this element
     #[inline]
     pub const fn square(&self) -> Self {
-        let aa = (&self.c0).mul(&self.c0);
-        let bb = (&self.c1).mul(&self.c1);
-        let cc = (&self.c2).mul(&self.c2);
+        let aa = (&self.c0).square();
+        let bb = (&self.c1).square();
+        let cc = (&self.c2).square();
 
         let tmp0 = (&self.c1).add(&self.c2);
-        let tmp0 = (&tmp0).mul(&tmp0);
+        let tmp0 = (&tmp0).square();
 
         let tmp1 = (&self.c0).add(&self.c1);
-        let tmp1 = (&tmp1).mul(&tmp1);
+        let tmp1 = (&tmp1).square();
 
         let tmp2 = (&self.c0).add(&self.c2);
-        let tmp2 = (&tmp2).mul(&tmp2);
+        let tmp2 = (&tmp2).square();
 
         let c0 = (&tmp0).sub(&bb);
         let c0 = (&c0).sub(&cc);
@@ -310,65 +294,63 @@ impl Fp6 {
     }
 
     /// Computes the square root of this element, if it exists.
-    /// This operation is not constant time, as it requires going
-    /// through a non-constant number of field elements until we reach
-    /// a non-square.
-    // TODO: Should rng be passed as argument?
-    pub fn sqrt_vartime(&self) -> Option<Self> {
-        // Cipolla's algorithm
-        // https://en.wikipedia.org/wiki/Cipolla%27s_algorithm
+    pub fn sqrt(&self) -> CtOption<Self> {
+        // Tonelli-Shank's algorithm for q mod 16 = 1
 
-        fn mul_in_fp12(a: &[Fp6; 2], b: &[Fp6; 2], beta: &Fp6) -> [Fp6; 2] {
-            let v0 = (&a[0]).mul(&b[0]);
-            let v1 = (&a[1]).mul(&b[1]);
-            let c0 = (&v0).add(&(beta.mul(&v1)));
-            let c1 = (&a[0]).add(&a[1]);
-            let c1 = (&c1).mul(&b[0].add(&b[1]));
-            let c1 = (&c1).sub(&v0);
-            let c1 = (&c1).sub(&v1);
+        // We construct t and z from Fp6 seen as a direct extension
+        // of Fp, and then use the isomorphism to go back to the tower extension.
 
-            [c0, c1]
-        }
+        // w = self^((t - 1) // 2)
+        //   = self^0x7ffd6605a3d77a978d997e2ea6efcb9538f1d34e3dc07c22d66eed23dc5ea953f2fe05a3de000bfff59
+        let w = self.exp_vartime(&[
+            0xe05a3de000bfff59,
+            0xeed23dc5ea953f2f,
+            0x1d34e3dc07c22d66,
+            0x97e2ea6efcb9538f,
+            0xd6605a3d77a978d9,
+            0x00000000000007ff,
+        ]);
 
-        fn exp_vartime_in_fp12(a: &[Fp6; 2], by: &[u64; 6], beta: &Fp6) -> [Fp6; 2] {
-            let mut res = [Fp6::one(), Fp6::zero()];
-            for e in by.iter().rev() {
-                for i in (0..64).rev() {
-                    res = mul_in_fp12(&res, &res, beta);
+        let two_adicity_p6 = TWO_ADICITY + 1; // p^6 - 1 has higher two-adicity than p - 1.
 
-                    if ((*e >> i) & 1) == 1 {
-                        res = mul_in_fp12(&res, a, beta);
-                    }
-                }
+        let mut v = two_adicity_p6;
+        let mut x = self * w;
+        let mut b = x * w;
+
+        // Initialize z as the 2^s root of unity.
+        let mut z = Fp6 {
+            c0: Fp2 {
+                c0: Fp(0x33c86f93240b900c),
+                c1: Fp(0x186eb1d9b7e8dfea),
+            },
+            c1: Fp2::zero(),
+            c2: Fp2::zero(),
+        };
+
+        for max_v in (1..=two_adicity_p6).rev() {
+            let mut k = 1;
+            let mut tmp = b.square();
+            let mut j_less_than_v: Choice = 1.into();
+
+            for j in 2..max_v {
+                let tmp_is_one = tmp.ct_eq(&Fp6::one());
+                let squared = Fp6::conditional_select(&tmp, &z, tmp_is_one).square();
+                tmp = Fp6::conditional_select(&squared, &tmp, tmp_is_one);
+
+                let new_z = Fp6::conditional_select(&z, &squared, tmp_is_one);
+                j_less_than_v &= !j.ct_eq(&v);
+                k = u32::conditional_select(&j, &k, tmp_is_one);
+                z = Fp6::conditional_select(&z, &new_z, j_less_than_v);
             }
-            res
+
+            let result = x * z;
+            x = Fp6::conditional_select(&result, &x, b.ct_eq(&Fp6::one()));
+            z = z.square();
+            b *= z;
+            v = k;
         }
 
-        // check = self^((p^6 - 1) // 2)
-        //       = self^0x7ffd6605a3d77a978d997e2ea6efcb9538f1d34e3dc07c22d66eed23dc5ea953f2fe05a3de000bfff598000000000
-        let check = self.exp_vartime(&MODULUS_MINUS_ONE_DIV_TWO);
-
-        if check != Fp6::one() {
-            return None;
-        }
-
-        let mut a = Fp6::from(Fp2::one().double());
-        while (a.square() - self).exp_vartime(&MODULUS_MINUS_ONE_DIV_TWO) != -Fp6::one() {
-            a += Fp6::one();
-        }
-
-        let beta = a.square() - self;
-
-        let res = exp_vartime_in_fp12(&[a, Fp6::one()], &MODULUS_PLUS_ONE_DIV_TWO, &beta);
-        if res[1] != Fp6::zero() {
-            return None;
-        }
-
-        if bool::from(self.ct_eq(&res[0].square())) {
-            Some(res[0])
-        } else {
-            None
-        }
+        CtOption::new(x, (x * x).ct_eq(self))
     }
 
     /// Add two elements together
@@ -770,7 +752,7 @@ mod test {
     fn test_sqrt() {
         for _ in 0..10 {
             let a = Fp6::random(&mut thread_rng()).square();
-            let b = a.sqrt_vartime().unwrap();
+            let b = a.sqrt().unwrap();
             assert_eq!(a, b.square());
         }
     }

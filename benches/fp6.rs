@@ -41,6 +41,11 @@ fn criterion_benchmark(c: &mut Criterion) {
         bench.iter(|| black_box(x) * black_box(x))
     });
 
+    c.bench_function("fp6 sqrt", |bench| {
+        let x = Fp6::random(&mut rng).square();
+        bench.iter(|| Fp6::sqrt(black_box(&x)))
+    });
+
     c.bench_function("fp6 exp", |bench| {
         let x = Fp6::random(&mut rng);
         let y = Fp6::random(&mut rng).to_repr();
