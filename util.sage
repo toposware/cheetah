@@ -28,13 +28,38 @@ v = Fp6.gen()
 q = 19059060964990286085476939486711779813624322081295683206882804078282896682513
 Fq = GF(q)  # scalar field of the curve
 
+p_len_bound = 16 * min(i for i in range(0, 32) if p.nbits() < i*16)
+q_len_bound = 16 * min(i for i in range(0, 32) if q.nbits() < i*16)
+
 # curve equation constant (y^2 = x^3 + x + B)
 B = (3960779010852551083*u + 936702401985103221)*v ^ 2 + (2317454856288651766 *
                                                           u + 3506243645506711312)*v + 3824048103880329999*u + 3163132581539869369
 
+
 ##################################
 # FIELD UTILITY FUNCTIONS
 ##################################
+
+def repr_arbitrary_element(n, output_hex=True, nb_hex=64):
+    assert nb_hex % 16 == 0
+    n_hex_len = len(hex(Integer(n)))
+    if nb_hex < n_hex_len - 2:
+        nb_hex = 4 * min(i for i in range(4, 2 * n_hex_len, 4)
+                         if n_hex_len < i*4)
+    n = str(hex(Integer(n)))[2:]
+    while len(n) < nb_hex:
+        n = "0" + n
+    num_list = reversed(range(nb_hex//16))
+
+    output = "[\n"
+    for i in num_list:
+        if output_hex:
+            output += f"    0x{n[i*16:i*16+16]},\n"
+        else:
+            output += f"    {Integer(n[i*16:i*16+16])},\n"
+    output += "]"
+
+    return output
 
 
 def repr_fp(n, output_hex=False, allow_neg=False, no_computations=False):
@@ -46,7 +71,7 @@ def repr_fp(n, output_hex=False, allow_neg=False, no_computations=False):
         n = p - n
     if no_computations:
         output += "Fp("
-        n = Fp(n) * 2 ^ 64
+        n = Fp(n) * 2 ^ p_len_bound
     else:
         output += "Fp::new("
     if is_neg:
@@ -89,17 +114,17 @@ def repr_scalar(n, output_hex=True, no_computations=False):
     output = ""
     if no_computations:
         output += "Scalar([\n"
-        n = Fq(n) * 2 ^ 256
+        n = Fq(n) * 2 ^ q_len_bound
     else:
         output += "Scalar::new([\n"
     n = str(hex(Integer(n)))[2:]
-    while len(n) < 64:
+    while len(n) < q_len_bound//4:
         n = "0" + n
-    for i in range((64//16) - 1, -1, -1):
+    for i in range((q_len_bound//64) - 1, -1, -1):
         string = "0x" + n[i*16:i*16+16]
         output += f"    {string if output_hex else Integer(string)},\n"
 
-    output += "]);"
+    output += "])"
     return output
 
 
@@ -214,27 +239,37 @@ def remove_duplicates(string):
 def print_fp_constants():
     p_repr = p_string.replace("**", "^")
 
+    s = twoadicity(p)
+    t = (p-1) // 2 ^ s
+    g = Fp.multiplicative_generator()
+    root_of_unity = g ^ t
+
     output = "\n// ******************************** //\n"
     output += "// ********* FP CONSTANTS ********* //\n"
     output += "// ******************************** //\n"
     output += f"\n// Field modulus = {p_repr}\n"
     output += f"const M: Fp = Fp({p});\n\n"
 
-    output += "/// 2^64 mod M; this is used for conversion of elements into Montgomery representation.\n"
-    output += f"pub(crate) const R: Fp = Fp({Fp(2^64)});\n\n"
+    output += f"// 2^{p_len_bound} mod M; this is used for conversion of elements into Montgomery representation.\n"
+    output += f"pub(crate) const R: Fp = {repr_fp(Fp(1), False, False, True)};\n\n"
 
-    output += "/// 2^128 mod M; this is used for conversion of elements into Montgomery representation.\n"
-    output += f"pub(crate) const R2: Fp = Fp({Fp(2^128)});\n\n"
+    output += f"// 2^{p_len_bound * 2} mod M; this is used for conversion of elements into Montgomery representation.\n"
+    output += f"pub(crate) const R2: Fp = {repr_fp(Fp(2^p_len_bound), False, False, True)};\n\n"
 
-    output += f"/// Two-adicity of the field: (p-1) % 2^{twoadicity(p)} = 0\n"
-    output += f"const TWO_ADICITY: u32 = {twoadicity(p)};\n\n"
+    output += f"// Multiplicative generator g of order p-1\n"
+    output += f"// g = {g}\n"
+    output += f"//   = {g * 2^p_len_bound} in Montgomery form\n"
+    output += f"const GENERATOR: Fp = {repr_fp(g, False, False, True)};\n\n"
 
-    output += f"// 2^{twoadicity(p)} root of unity = {Fp(2^twoadicity(p))}\n"
-    output += f"//                    = {Fp(2^twoadicity(p) * 2^64)} in Montgomery form\n"
-    output += f"const TWO_ADIC_ROOT_OF_UNITY: Fp = Fp({Fp(2^twoadicity(p) * 2^64)});\n\n"
+    output += f"// Two-adicity of the field: (p-1) % 2^{s} = 0\n"
+    output += f"pub(crate) const TWO_ADICITY: u32 = {s};\n\n"
 
-    output += f"/// -M^{{-1}} mod 2^64; this is used during element multiplication.\n"
-    output += f"const U: u64 = {Fp(-p^(-1) % 2^64)};\n\n"
+    output += f"// 2^{s} root of unity = {root_of_unity}\n"
+    output += f"//                    = {root_of_unity * 2^p_len_bound} in Montgomery form\n"
+    output += f"const TWO_ADIC_ROOT_OF_UNITY: Fp = {repr_fp(root_of_unity, False, False, True)};\n\n"
+
+    output += f"// -M^{{-1}} mod 2^{p_len_bound}; this is used during element multiplication.\n"
+    output += f"const U: u64 = {-p^(-1) % 2^p_len_bound};\n\n"
 
     print(output)
 
@@ -243,37 +278,15 @@ def print_fp2_constants():
     poly = -Fp2.modulus()
     coeffs = poly.coefficients(sparse=False)
 
-    p2 = p ^ 2
-    pm1d2 = (p2-1) // 2
-    pp1d2 = (p2+1) // 2
-
     output = "\n// ******************************** //\n"
     output += "// ******** FP2  CONSTANTS ******** //\n"
     output += "// ******************************** //\n\n"
 
-    output1 = "const MODULUS_MINUS_ONE_DIV_TWO: [u64; 2] = [\n"
-    output2 = "const MODULUS_PLUS_ONE_DIV_TWO: [u64; 2] = [\n"
-    for i in range(2):
-        tmp1 = str(hex(pm1d2 % 2 ^ 64))[2:]
-        tmp2 = str(hex(pp1d2 % 2 ^ 64))[2:]
-        while len(tmp1) < 16:
-            tmp1 = "0" + tmp1
-        while len(tmp2) < 16:
-            tmp2 = "0" + tmp2
-        output1 += f"    0x{tmp1},\n"
-        output2 += f"    0x{tmp2},\n"
-        pm1d2 = pm1d2 // 2 ^ 64
-        pp1d2 = pp1d2 // 2 ^ 64
-
-    output1 += "];\n\n"
-    output2 += "];\n\n"
-
     for i in range(len(coeffs)-1):
         if coeffs[i] != 0:
             output += f"// Necessary for multiplication by u^2\n"
-            output += f"const U{i}: Fp = {repr_fp(coeffs[i], False, True)};\n\n"
+            output += f"const U{i}: {repr_fp(coeffs[i], False, True)};\n\n"
 
-    output += output1 + output2
     print(output)
 
 
@@ -281,58 +294,53 @@ def print_fp6_constants():
     poly = -Fp6.modulus()
     coeffs = poly.coefficients(sparse=False)
 
-    p6 = p ^ 6
-    pm1d2 = (p6-1) // 2
-    pp1d2 = (p6+1) // 2
-
     output = "\n// ******************************** //\n"
     output += "// ******** FP6  CONSTANTS ******** //\n"
     output += "// ******************************** //\n\n"
 
-    output1 = "const MODULUS_MINUS_ONE_DIV_TWO: [u64; 6] = [\n"
-    output2 = "const MODULUS_PLUS_ONE_DIV_TWO: [u64; 6] = [\n"
-    for i in range(6):
-        tmp1 = str(hex(pm1d2 % 2 ^ 64))[2:]
-        tmp2 = str(hex(pp1d2 % 2 ^ 64))[2:]
-        while len(tmp1) < 16:
-            tmp1 = "0" + tmp1
-        while len(tmp2) < 16:
-            tmp2 = "0" + tmp2
-        output1 += f"    0x{tmp1},\n"
-        output2 += f"    0x{tmp2},\n"
-        pm1d2 = pm1d2 // 2 ^ 64
-        pp1d2 = pp1d2 // 2 ^ 64
-
-    output1 += "];\n\n"
-    output2 += "];\n\n"
-
     for i in range(len(coeffs)-1):
         if coeffs[i] != 0:
             output += f"// Necessary for multiplication by v^3\n"
-            output += f"const V{i}: Fp2 = {repr_fp2(coeffs[i], False, True)};\n\n"
+            output += f"const V{i}: {repr_fp2(coeffs[i], False, True)};\n\n"
 
-    output += output1 + output2
     print(output)
 
 
 def print_scalar_constants():
+    s = twoadicity(q)
+    t = (q-1) // 2 ^ s
+    g = Fq.multiplicative_generator()
+    root_of_unity = g ^ t
+
     output = "\n// ******************************** //\n"
     output += "// ********* FQ CONSTANTS ********* //\n"
     output += "// ******************************** //\n"
     output += f"\n// Field modulus = {q}\n"
-    output += f"const M: Scalar = {repr_scalar(q)}\n\n"
+    output += f"const M: Scalar = Scalar({repr_arbitrary_element(q, True)});\n\n"
 
-    output += "/// 2^256 mod M; this is used for conversion of elements into Montgomery representation.\n"
-    output += f"pub(crate) const R: Scalar = {repr_scalar(Fq(2^256))}\n\n"
+    output += f"// 2^{q_len_bound} mod M; this is used for conversion of elements into Montgomery representation.\n"
+    output += f"pub(crate) const R: Scalar = {repr_scalar(Fq(1), True, True)};\n\n"
 
-    output += "/// 2^512 mod M; this is used for conversion of elements into Montgomery representation.\n"
-    output += f"pub(crate) const R2: Scalar = {repr_scalar(Fq(2^512))}\n\n"
+    output += f"// 2^{q_len_bound * 2} mod M; this is used for conversion of elements into Montgomery representation.\n"
+    output += f"pub(crate) const R2: Scalar = {repr_scalar(Fq(2^q_len_bound), True, True)};\n\n"
 
-    output += "/// 2^768 mod M; this is used for conversion of elements into Montgomery representation.\n"
-    output += f"pub(crate) const R3: Scalar = {repr_scalar(Fq(2^768))}\n\n"
+    output += f"// 2^{q_len_bound * 3} mod M; this is used for conversion of elements into Montgomery representation.\n"
+    output += f"pub(crate) const R3: Scalar = {repr_scalar(Fq(2^(q_len_bound * 2)), True, True)};\n\n"
 
-    output += f"/// -M^{{-1}} mod 2^64; this is used during element multiplication.\n"
-    output += f"const U: u64 = {Fq(-q^(-1) % 2^64)};\n\n"
+    output += f"// Multiplicative generator g of order q-1\n"
+    output += f"// g = {g}\n"
+    output += f"//   = {hex(g * 2^q_len_bound)} in Montgomery form\n"
+    output += f"const GENERATOR: Scalar = {repr_scalar(g, True, True)};\n\n"
+
+    output += f"// Two-adicity of the field: (q-1) % 2^{s} = 0\n"
+    output += f"const TWO_ADICITY: u32 = {s};\n\n"
+
+    output += f"// 2^{s} root of unity = {hex(root_of_unity)}\n"
+    output += f"//                   = {hex(root_of_unity * 2^q_len_bound)} in Montgomery form\n"
+    output += f"const TWO_ADIC_ROOT_OF_UNITY: Scalar = {repr_scalar(root_of_unity, True, True)};\n\n"
+
+    output += f"// -M^{{-1}} mod 2^{p_len_bound}; this is used during element multiplication.\n"
+    output += f"const U: u64 = {Fq(-q^(-1) % 2^p_len_bound)};\n\n"
 
     print(output)
 

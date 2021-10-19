@@ -22,7 +22,7 @@ const M: Scalar = Scalar([
     0x2a230bd593a1a279,
 ]);
 
-/// 2^256 mod M; this is used for conversion of elements into Montgomery representation.
+// 2^256 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R: Scalar = Scalar([
     0x0882e10b1c55eb9a,
     0x4cfc1999a3a8b5f4,
@@ -30,7 +30,7 @@ pub(crate) const R: Scalar = Scalar([
     0x032db8fe8a363124,
 ]);
 
-/// 2^512 mod M; this is used for conversion of elements into Montgomery representation.
+// 2^512 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R2: Scalar = Scalar([
     0xa2fad5b0ff7248f5,
     0x50d020a7612c2ebd,
@@ -38,7 +38,7 @@ pub(crate) const R2: Scalar = Scalar([
     0x165ef986d0bcb87e,
 ]);
 
-/// 2^768 mod M; this is used for conversion of elements into Montgomery representation.
+// 2^768 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R3: Scalar = Scalar([
     0xe9d7977686156655,
     0x473cd715cf34db3f,
@@ -46,13 +46,21 @@ pub(crate) const R3: Scalar = Scalar([
     0x03e4cc1ae7863573,
 ]);
 
-/// Multiplicative generator of order q-1
-const GENERATOR: Scalar = Scalar::new([5, 0, 0, 0]);
+// Multiplicative generator g of order q-1
+// g = 5
+//   = 0xfe49cf8b30ef5b66ab72d7ea77b3ee380ec8000324b8dc42a8e65378dad9a02 in Montgomery form
+const GENERATOR: Scalar = Scalar([
+    0x2a8e65378dad9a02,
+    0x80ec8000324b8dc4,
+    0x6ab72d7ea77b3ee3,
+    0x0fe49cf8b30ef5b6,
+]);
 
-/// Two-adicity of the field: (q-1) % 2^4 = 0
+// Two-adicity of the field: (q-1) % 2^4 = 0
 const TWO_ADICITY: u32 = 4;
 
 // 2^4 root of unity = 0xb89c7221d6ffc2bc0f548e825b15c6337727a16c3dca7b87df3bedcfea25fee
+//                   = 0xaaa534ded054530efa0e08b631ae066ca4a0afe638ae93c21d02c60c8519ff0 in Montgomery form
 const TWO_ADIC_ROOT_OF_UNITY: Scalar = Scalar([
     0x21d02c60c8519ff0,
     0xca4a0afe638ae93c,
@@ -60,7 +68,7 @@ const TWO_ADIC_ROOT_OF_UNITY: Scalar = Scalar([
     0x0aaa534ded054530,
 ]);
 
-/// -M^{-1} mod 2^64; this is used during element multiplication.
+// -M^{-1} mod 2^64; this is used during element multiplication.
 const U: u64 = 11876065156671798543;
 
 // SCALAR FIELD ELEMENT

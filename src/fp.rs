@@ -12,26 +12,32 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 // CONSTANTS
 // ================================================================================================
 
+// ******************************** //
+// ********* FP CONSTANTS ********* //
+// ******************************** //
+
 // Field modulus = 2^62 - 111 * 2^39 + 1
 const M: Fp = Fp(4611624995532046337);
 
-/// 2^64 mod M; this is used for conversion of elements into Montgomery representation.
+// 2^64 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R: Fp = Fp(244091581366268);
 
-/// 2^128 mod M; this is used for conversion of elements into Montgomery representation.
+// 2^128 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R2: Fp = Fp(630444561284293700);
 
-/// Multiplicative generator of order p-1
-const GENERATOR: Fp = Fp::new(3);
+// Multiplicative generator g of order p-1
+// g = 3
+//   = 732274744098804 in Montgomery form
+const GENERATOR: Fp = Fp(732274744098804);
 
-/// Two-adicity of the field: (p-1) % 2^39 = 0
+// Two-adicity of the field: (p-1) % 2^39 = 0
 pub(crate) const TWO_ADICITY: u32 = 39;
 
 // 2^39 root of unity = 4421547261963328785
 //                    = 117700978803869913 in Montgomery form
-pub(crate) const TWO_ADIC_ROOT_OF_UNITY: Fp = Fp(117700978803869913);
+const TWO_ADIC_ROOT_OF_UNITY: Fp = Fp(117700978803869913);
 
-/// -M^{-1} mod 2^64; this is used during element multiplication.
+// -M^{-1} mod 2^64; this is used during element multiplication.
 const U: u64 = 4611624995532046335;
 
 // FIELD ELEMENT
