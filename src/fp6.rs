@@ -4,7 +4,9 @@
 use core::convert::TryFrom;
 use core::fmt;
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
-use rand_core::{CryptoRng, RngCore};
+
+use group::ff::Field;
+use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 use crate::fp::Fp;
@@ -200,15 +202,6 @@ impl Fp6 {
         self.c0.is_zero() & self.c1.is_zero() & self.c2.is_zero()
     }
 
-    /// Generates a random element
-    pub fn random(mut rng: impl CryptoRng + RngCore) -> Self {
-        Fp6 {
-            c0: Fp2::random(&mut rng),
-            c1: Fp2::random(&mut rng),
-            c2: Fp2::random(&mut rng),
-        }
-    }
-
     /// Returns whether or not this element is strictly lexicographically
     /// larger than its negation.
     #[inline]
@@ -351,6 +344,11 @@ impl Fp6 {
         }
 
         CtOption::new(x, (x * x).ct_eq(self))
+    }
+
+    /// Double this element
+    pub const fn double(&self) -> Self {
+        self.add(self)
     }
 
     /// Add two elements together
@@ -523,6 +521,49 @@ impl Fp6 {
         self.c0.normalize();
         self.c1.normalize();
         self.c2.normalize();
+    }
+}
+
+// FIELD TRAITS IMPLEMENTATION
+// ================================================================================================
+
+impl Field for Fp6 {
+    fn random(mut rng: impl RngCore) -> Self {
+        Fp6 {
+            c0: Fp2::random(&mut rng),
+            c1: Fp2::random(&mut rng),
+            c2: Fp2::random(&mut rng),
+        }
+    }
+
+    fn zero() -> Self {
+        Self::zero()
+    }
+
+    fn one() -> Self {
+        Self::one()
+    }
+
+    fn is_zero(&self) -> Choice {
+        self.ct_eq(&Self::zero())
+    }
+
+    #[must_use]
+    fn square(&self) -> Self {
+        self.square()
+    }
+
+    #[must_use]
+    fn double(&self) -> Self {
+        self.double()
+    }
+
+    fn invert(&self) -> CtOption<Self> {
+        self.invert()
+    }
+
+    fn sqrt(&self) -> CtOption<Self> {
+        self.sqrt()
     }
 }
 

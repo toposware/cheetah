@@ -9,6 +9,7 @@ use criterion::Criterion;
 extern crate cheetah;
 
 use cheetah::Scalar;
+use group::ff::Field;
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = thread_rng();
@@ -49,7 +50,7 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     c.bench_function("scalar invert", |bench| {
         let x = Scalar::random(&mut rng);
-        bench.iter(|| Scalar::invert(black_box(x)))
+        bench.iter(|| Scalar::invert(black_box(&x)))
     });
 }
 

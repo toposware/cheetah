@@ -7,7 +7,9 @@ use core::{
 
 use crate::{fp::Fp, fp2::Fp2, fp6::Fp6, scalar::Scalar};
 
-use rand_core::{CryptoRng, RngCore};
+use group::ff::Field;
+use group::{Curve, Group};
+use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 impl_binops_additive!(ProjectivePoint, AffinePoint);
@@ -207,25 +209,8 @@ impl AffinePoint {
     }
 
     /// Computes a random `AffinePoint` element
-    pub fn random(mut rng: impl RngCore + CryptoRng) -> Self {
-        loop {
-            let x = Fp6::random(&mut rng);
-            let flip_sign = rng.next_u32() % 2 != 0;
-
-            // Obtain the corresponding y-coordinate given x as y = sqrt(x^3 + x + B)
-            let p = ((x.square() * x) + x + B).sqrt().map(|y| AffinePoint {
-                x,
-                y: if flip_sign { -y } else { y },
-                infinity: 0.into(),
-            });
-
-            if p.is_some().into() {
-                let p = p.unwrap().clear_cofactor();
-                if bool::from(!p.is_identity()) {
-                    return p;
-                }
-            }
-        }
+    pub fn random(mut rng: impl RngCore) -> Self {
+        ProjectivePoint::random(&mut rng).into()
     }
 
     /// Returns a fixed generator of the curve in affine coordinates
@@ -663,11 +648,6 @@ impl ProjectivePoint {
         self.z
     }
 
-    /// Computes a random `ProjectivePoint` element
-    pub fn random(mut rng: impl RngCore + CryptoRng) -> Self {
-        AffinePoint::random(&mut rng).into()
-    }
-
     /// Returns a fixed generator of the curve in projective coordinates
     pub fn generator() -> ProjectivePoint {
         ProjectivePoint::from(AffinePoint::generator())
@@ -976,6 +956,64 @@ impl ProjectivePoint {
         (self.y.square() * self.z).ct_eq(
             &(self.x.square() * self.x + self.x * self.z.square() + self.z.square() * self.z * B),
         ) | (self.z.is_zero())
+    }
+}
+
+// GROUP TRAITS IMPLEMENTATION
+// ================================================================================================
+
+impl Group for ProjectivePoint {
+    type Scalar = Scalar;
+
+    fn random(mut rng: impl RngCore) -> Self {
+        loop {
+            let x = Fp6::random(&mut rng);
+            let flip_sign = rng.next_u32() % 2 != 0;
+
+            // Obtain the corresponding y-coordinate given x as y = sqrt(x^3 + x + B)
+            let p = ((x.square() * x) + x + B).sqrt().map(|y| AffinePoint {
+                x,
+                y: if flip_sign { -y } else { y },
+                infinity: 0.into(),
+            });
+
+            if p.is_some().into() {
+                let p = p.unwrap().clear_cofactor();
+
+                if bool::from(!p.is_identity()) {
+                    return p.into();
+                }
+            }
+        }
+    }
+
+    fn identity() -> Self {
+        Self::identity()
+    }
+
+    fn generator() -> Self {
+        Self::generator()
+    }
+
+    fn is_identity(&self) -> Choice {
+        self.is_identity()
+    }
+
+    #[must_use]
+    fn double(&self) -> Self {
+        self.double()
+    }
+}
+
+impl Curve for ProjectivePoint {
+    type AffineRepr = AffinePoint;
+
+    fn batch_normalize(p: &[Self], q: &mut [Self::AffineRepr]) {
+        Self::batch_normalize(p, q);
+    }
+
+    fn to_affine(&self) -> Self::AffineRepr {
+        self.into()
     }
 }
 

@@ -20,6 +20,9 @@
 #[macro_use]
 extern crate std;
 
+// Re-export group (which re-exports ff)
+pub use group;
+
 #[macro_use]
 mod utils;
 

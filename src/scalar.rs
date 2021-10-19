@@ -7,7 +7,8 @@ use core::{
 use crate::utils::{add64_with_carry, mul64_with_carry, sub64_with_carry};
 
 use bitvec::{order::Lsb0, slice::BitSlice};
-use rand_core::{CryptoRng, RngCore};
+use group::ff::{Field, PrimeField};
+use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 // CONSTANTS
@@ -43,6 +44,20 @@ pub(crate) const R3: Scalar = Scalar([
     0x473cd715cf34db3f,
     0xd8d14d270e51010f,
     0x03e4cc1ae7863573,
+]);
+
+/// Multiplicative generator of order q-1
+const GENERATOR: Scalar = Scalar::new([5, 0, 0, 0]);
+
+/// Two-adicity of the field: (q-1) % 2^4 = 0
+const TWO_ADICITY: u32 = 4;
+
+// 2^4 root of unity = 0xb89c7221d6ffc2bc0f548e825b15c6337727a16c3dca7b87df3bedcfea25fee
+const TWO_ADIC_ROOT_OF_UNITY: Scalar = Scalar([
+    0x21d02c60c8519ff0,
+    0xca4a0afe638ae93c,
+    0xefa0e08b631ae066,
+    0x0aaa534ded054530,
 ]);
 
 /// -M^{-1} mod 2^64; this is used during element multiplication.
@@ -289,6 +304,52 @@ impl Scalar {
         Scalar::montgomery_reduce(r0, r1, r2, r3, r4, r5, r6, r7)
     }
 
+    /// Computes the square root of this element, if it exists.
+    pub fn sqrt(&self) -> CtOption<Self> {
+        // Tonelli-Shank's algorithm for q mod 16 = 1
+
+        // w = self^((t - 1) // 2)
+        //   = self^0x151185eac9d0d13cf5b025a44a02366b24405333325c9b80ff4a6d3f12f8d70
+        let w = self.exp_vartime(&[
+            0xfa5369f897c6b844,
+            0x2202999992e4dc07,
+            0xad812d225011b359,
+            0x208c2f564e8689e7,
+        ]);
+
+        let mut v = TWO_ADICITY;
+        let mut x = self * w;
+        let mut b = x * w;
+
+        // Initialize z as the 2^S root of unity.
+        let mut z = TWO_ADIC_ROOT_OF_UNITY;
+
+        for max_v in (1..=TWO_ADICITY).rev() {
+            let mut k = 1;
+            let mut tmp = b.square();
+            let mut j_less_than_v: Choice = 1.into();
+
+            for j in 2..max_v {
+                let tmp_is_one = tmp.ct_eq(&Scalar::one());
+                let squared = Scalar::conditional_select(&tmp, &z, tmp_is_one).square();
+                tmp = Scalar::conditional_select(&squared, &tmp, tmp_is_one);
+
+                let new_z = Scalar::conditional_select(&z, &squared, tmp_is_one);
+                j_less_than_v &= !j.ct_eq(&v);
+                k = u32::conditional_select(&j, &k, tmp_is_one);
+                z = Scalar::conditional_select(&z, &new_z, j_less_than_v);
+            }
+
+            let result = x * z;
+            x = Scalar::conditional_select(&result, &x, b.ct_eq(&Scalar::one()));
+            z = z.square();
+            b *= z;
+            v = k;
+        }
+
+        CtOption::new(x, (x * x).ct_eq(self))
+    }
+
     /// Computes the double of a scalar element
     // Can be faster via bitshift
     #[inline]
@@ -462,7 +523,7 @@ impl Scalar {
 
     /// Computes the multiplicative inverse of this element,
     /// failing if the element is zero.
-    pub fn invert(self) -> CtOption<Self> {
+    pub fn invert(&self) -> CtOption<Self> {
         #[inline(always)]
         fn square_assign_multi(n: &mut Scalar, num_times: usize) {
             for _ in 0..num_times {
@@ -570,13 +631,6 @@ impl Scalar {
     /// Computes the conjugate of a `Scalar` element
     pub fn conjugate(&self) -> Self {
         Scalar(self.0)
-    }
-
-    /// Computes a random `Scalar` element
-    pub fn random(mut rng: impl RngCore + CryptoRng) -> Self {
-        let mut buf = [0; 64];
-        rng.fill_bytes(&mut buf);
-        Self::from_bytes_wide(&buf)
     }
 
     #[inline(always)]
@@ -697,6 +751,76 @@ impl From<u8> for Scalar {
     /// Converts an 8-bit value into a field element.
     fn from(value: u8) -> Self {
         Scalar([value as u64, 0, 0, 0]) * R2
+    }
+}
+
+// FIELD TRAITS IMPLEMENTATION
+// ================================================================================================
+
+impl Field for Scalar {
+    fn random(mut rng: impl RngCore) -> Self {
+        let mut buf = [0; 64];
+        rng.fill_bytes(&mut buf);
+        Self::from_bytes_wide(&buf)
+    }
+
+    fn zero() -> Self {
+        Self::zero()
+    }
+
+    fn one() -> Self {
+        Self::one()
+    }
+
+    fn is_zero(&self) -> Choice {
+        self.ct_eq(&Self::zero())
+    }
+
+    #[must_use]
+    fn square(&self) -> Self {
+        self.square()
+    }
+
+    #[must_use]
+    fn double(&self) -> Self {
+        self.double()
+    }
+
+    fn invert(&self) -> CtOption<Self> {
+        self.invert()
+    }
+
+    fn sqrt(&self) -> CtOption<Self> {
+        self.sqrt()
+    }
+}
+
+impl PrimeField for Scalar {
+    type Repr = [u8; 32];
+
+    fn from_repr(r: Self::Repr) -> CtOption<Self> {
+        Self::from_bytes(&r)
+    }
+
+    fn to_repr(&self) -> Self::Repr {
+        self.to_bytes()
+    }
+
+    fn is_odd(&self) -> Choice {
+        (self.to_bytes()[0] & 1).ct_eq(&1)
+    }
+
+    const NUM_BITS: u32 = 254;
+    const CAPACITY: u32 = Self::NUM_BITS - 1;
+
+    fn multiplicative_generator() -> Self {
+        GENERATOR
+    }
+
+    const S: u32 = TWO_ADICITY;
+
+    fn root_of_unity() -> Self {
+        TWO_ADIC_ROOT_OF_UNITY
     }
 }
 

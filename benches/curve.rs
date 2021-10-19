@@ -10,6 +10,8 @@ extern crate cheetah;
 
 use cheetah::Scalar;
 use cheetah::{AffinePoint, ProjectivePoint};
+use group::ff::Field;
+use group::Group;
 
 static BATCH_SIZES: [u32; 5] = [1, 2, 4, 8, 16];
 

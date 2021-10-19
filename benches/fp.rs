@@ -9,6 +9,7 @@ use criterion::Criterion;
 extern crate cheetah;
 
 use cheetah::Fp;
+use group::ff::Field;
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = thread_rng();
@@ -49,7 +50,7 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     c.bench_function("fp invert", |bench| {
         let x = Fp::random(&mut rng);
-        bench.iter(|| Fp::invert(black_box(x)))
+        bench.iter(|| Fp::invert(black_box(&x)))
     });
 }
 

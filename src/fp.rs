@@ -5,7 +5,8 @@ use core::{
 
 use crate::utils::{add64_with_carry, mul64_with_carry, sub64_with_carry};
 
-use rand_core::{CryptoRng, RngCore};
+use group::ff::{Field, PrimeField};
+use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 // CONSTANTS
@@ -19,6 +20,9 @@ pub(crate) const R: Fp = Fp(244091581366268);
 
 /// 2^128 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R2: Fp = Fp(630444561284293700);
+
+/// Multiplicative generator of order p-1
+const GENERATOR: Fp = Fp::new(3);
 
 /// Two-adicity of the field: (p-1) % 2^39 = 0
 pub(crate) const TWO_ADICITY: u32 = 39;
@@ -161,6 +165,47 @@ impl Fp {
         self.mul(self)
     }
 
+    /// Computes the square root of this element, if it exists.
+    pub fn sqrt(&self) -> CtOption<Self> {
+        // Tonelli-Shank's algorithm for q mod 16 = 1
+
+        // w = self^((t - 1) // 2)
+        //   = self^0x3fffc8
+        let w = self.exp_vartime(0x3fffc8);
+
+        let mut v = TWO_ADICITY;
+        let mut x = self * w;
+        let mut b = x * w;
+
+        // Initialize z as the 2^s root of unity.
+        let mut z = TWO_ADIC_ROOT_OF_UNITY;
+
+        for max_v in (1..=TWO_ADICITY).rev() {
+            let mut k = 1;
+            let mut tmp = b.square();
+            let mut j_less_than_v: Choice = 1.into();
+
+            for j in 2..max_v {
+                let tmp_is_one = tmp.ct_eq(&Fp::one());
+                let squared = Fp::conditional_select(&tmp, &z, tmp_is_one).square();
+                tmp = Fp::conditional_select(&squared, &tmp, tmp_is_one);
+
+                let new_z = Fp::conditional_select(&z, &squared, tmp_is_one);
+                j_less_than_v &= !j.ct_eq(&v);
+                k = u32::conditional_select(&j, &k, tmp_is_one);
+                z = Fp::conditional_select(&z, &new_z, j_less_than_v);
+            }
+
+            let result = x * z;
+            x = Fp::conditional_select(&result, &x, b.ct_eq(&Fp::one()));
+            z = z.square();
+            b *= z;
+            v = k;
+        }
+
+        CtOption::new(x, (x * x).ct_eq(self))
+    }
+
     /// Computes the double of a field element
     // Can be faster via bitshift
     #[inline]
@@ -181,6 +226,26 @@ impl Fp {
         let tmp = Fp::montgomery_reduce(self.0, 0);
 
         tmp.0.to_le_bytes()
+    }
+
+    /// Attempts to convert a little-endian byte representation of
+    /// a scalar into a `Fp` element, failing if the input is not canonical.
+    pub fn from_bytes(bytes: &[u8; 8]) -> CtOption<Self> {
+        let mut tmp = Fp(u64::from_le_bytes(*bytes));
+
+        // Try to subtract the modulus M
+        let (_, borrow) = sub64_with_carry(tmp.0, M.0, 0);
+
+        // If the element is smaller than M then the
+        // subtraction will underflow, producing a borrow value
+        // of 0xffff...ffff. Otherwise, it'll be zero.
+        let is_some = (borrow as u8) & 1;
+
+        // Convert to Montgomery form by computing
+        // (a.R^0 * R^2) / R = a.R
+        tmp *= &R2;
+
+        CtOption::new(tmp, Choice::from(is_some))
     }
 
     /// Returns whether or not this element is strictly lexicographically
@@ -238,7 +303,7 @@ impl Fp {
 
     /// Computes the multiplicative inverse of this element,
     /// failing if the element is zero.
-    pub fn invert(self) -> CtOption<Self> {
+    pub fn invert(&self) -> CtOption<Self> {
         #[inline(always)]
         fn square_assign_multi(n: &mut Fp, num_times: usize) {
             for _ in 0..num_times {
@@ -277,11 +342,6 @@ impl Fp {
     /// Computes the conjugate of a `Fp` element
     pub fn conjugate(&self) -> Self {
         Fp(self.0)
-    }
-
-    /// Computes a random `FieldElement` element
-    pub fn random(mut rng: impl RngCore + CryptoRng) -> Self {
-        Fp::new(rng.next_u64())
     }
 
     #[inline(always)]
@@ -405,14 +465,71 @@ impl From<u8> for Fp {
     }
 }
 
-impl From<[u8; 8]> for Fp {
-    /// Converts the value encoded in an array of 8 bytes into a field element. The bytes are
-    /// assumed to encode the element in the canonical representation in little-endian byte order.
-    /// If the value is greater than or equal to the field modulus, modular reduction is silently
-    /// preformed.
-    fn from(bytes: [u8; 8]) -> Self {
-        let value = u64::from_le_bytes(bytes);
-        Fp::new(value)
+// FIELD TRAITS IMPLEMENTATION
+// ================================================================================================
+
+impl Field for Fp {
+    fn random(mut rng: impl RngCore) -> Self {
+        Fp::new(rng.next_u64())
+    }
+
+    fn zero() -> Self {
+        Self::zero()
+    }
+
+    fn one() -> Self {
+        Self::one()
+    }
+
+    fn is_zero(&self) -> Choice {
+        self.ct_eq(&Self::zero())
+    }
+
+    #[must_use]
+    fn square(&self) -> Self {
+        self.square()
+    }
+
+    #[must_use]
+    fn double(&self) -> Self {
+        self.double()
+    }
+
+    fn invert(&self) -> CtOption<Self> {
+        self.invert()
+    }
+
+    fn sqrt(&self) -> CtOption<Self> {
+        self.sqrt()
+    }
+}
+
+impl PrimeField for Fp {
+    type Repr = [u8; 8];
+
+    fn from_repr(r: Self::Repr) -> CtOption<Self> {
+        Self::from_bytes(&r)
+    }
+
+    fn to_repr(&self) -> Self::Repr {
+        self.to_bytes()
+    }
+
+    fn is_odd(&self) -> Choice {
+        (self.to_bytes()[0] & 1).ct_eq(&1)
+    }
+
+    const NUM_BITS: u32 = 62;
+    const CAPACITY: u32 = Self::NUM_BITS - 1;
+
+    fn multiplicative_generator() -> Self {
+        GENERATOR
+    }
+
+    const S: u32 = TWO_ADICITY;
+
+    fn root_of_unity() -> Self {
+        TWO_ADIC_ROOT_OF_UNITY
     }
 }
 
@@ -609,6 +726,15 @@ mod tests {
             assert_eq!(tmp, pow2);
 
             cur.add_assign(&LARGEST);
+        }
+    }
+
+    #[test]
+    fn test_sqrt() {
+        for _ in 0..100 {
+            let a = Fp::random(&mut thread_rng()).square();
+            let b = a.sqrt().unwrap();
+            assert_eq!(a, b.square());
         }
     }
 

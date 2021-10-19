@@ -9,6 +9,7 @@ use criterion::Criterion;
 extern crate cheetah;
 
 use cheetah::Fp2;
+use group::ff::Field;
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = thread_rng();
