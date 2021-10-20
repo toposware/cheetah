@@ -10,6 +10,7 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 use crate::fp::Fp;
 use crate::fp::TWO_ADICITY;
+use crate::utils::square_assign_multi;
 
 #[derive(Copy, Clone)]
 /// An element of the extension GF(p^2)
@@ -198,47 +199,38 @@ impl Fp2 {
     /// Computes the square root of this element, if it exists.
     pub fn sqrt(&self) -> CtOption<Self> {
         // Tonelli-Shank's algorithm for q mod 16 = 1
+        // See https://eprint.iacr.org/2020/1497.pdf, page 3 for a
+        // constant time specification of the algorithm.
 
-        // w = self^((t - 1) // 2)
+        // Compute the progenitor y of self
+        // y = self^((t - 1) // 2)
         //   = self^0x7fff220060420003fffc8
-        let w = self.exp_vartime(&[0x20060420003fffc8, 0x000000000007fff2]);
+        let y = self.exp_vartime(&[0x20060420003fffc8, 0x000000000007fff2]);
 
-        let two_adicity_p2 = TWO_ADICITY + 1; // p^2 - 1 has higher two-adicity than p - 1.
+        let mut s = self * y;
+        let mut t = s * y;
 
-        let mut v = two_adicity_p2;
-        let mut x = self * w;
-        let mut b = x * w;
-
-        // Initialize z as the 2^s root of unity.
         let mut z = Fp2 {
             c0: Fp(0x285e60ade3cc165),
             c1: Fp(0x3af3fc6a43867d37),
         };
 
-        for max_v in (1..=two_adicity_p2).rev() {
-            let mut k = 1;
-            let mut tmp = b.square();
-            let mut j_less_than_v: Choice = 1.into();
+        // p^2 - 1 has higher two-adicity than p - 1.
+        let two_adicity_p2 = TWO_ADICITY + 1;
 
-            for j in 2..max_v {
-                let tmp_is_one = tmp.ct_eq(&Fp2::one());
-                let squared = Fp2::conditional_select(&tmp, &z, tmp_is_one).square();
-                tmp = Fp2::conditional_select(&squared, &tmp, tmp_is_one);
+        for k in (2..=two_adicity_p2).rev() {
+            let mut b = t;
 
-                let new_z = Fp2::conditional_select(&z, &squared, tmp_is_one);
-                j_less_than_v &= !j.ct_eq(&v);
-                k = u32::conditional_select(&j, &k, tmp_is_one);
-                z = Fp2::conditional_select(&z, &new_z, j_less_than_v);
-            }
+            square_assign_multi(&mut b, (k - 2) as usize);
 
-            let result = x * z;
-            x = Fp2::conditional_select(&result, &x, b.ct_eq(&Fp2::one()));
+            let new_s = s * z;
+            s = Fp2::conditional_select(&new_s, &s, b.ct_eq(&Fp2::one()));
             z = z.square();
-            b *= z;
-            v = k;
+            let new_t = t * z;
+            t = Fp2::conditional_select(&new_t, &t, b.ct_eq(&Fp2::one()));
         }
 
-        CtOption::new(x, (x * x).ct_eq(self))
+        CtOption::new(s, (s * s).ct_eq(self))
     }
 
     /// Double this element

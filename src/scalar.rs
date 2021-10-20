@@ -4,7 +4,7 @@ use core::{
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
-use crate::utils::{add64_with_carry, mul64_with_carry, sub64_with_carry};
+use crate::utils::{add64_with_carry, mul64_with_carry, square_assign_multi, sub64_with_carry};
 
 use bitvec::{order::Lsb0, slice::BitSlice};
 use group::ff::{Field, PrimeField};
@@ -532,12 +532,6 @@ impl Scalar {
     /// Computes the multiplicative inverse of this element,
     /// failing if the element is zero.
     pub fn invert(&self) -> CtOption<Self> {
-        #[inline(always)]
-        fn square_assign_multi(n: &mut Scalar, num_times: usize) {
-            for _ in 0..num_times {
-                *n = n.square();
-            }
-        }
         // found using https://github.com/kwantam/addchain for M - 2
         let mut t0 = self.square(); //       1:   2
         let t15 = t0 * self; //              2:   3

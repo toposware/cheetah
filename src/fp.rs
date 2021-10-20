@@ -3,7 +3,7 @@ use core::{
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
-use crate::utils::{add64_with_carry, mul64_with_carry, sub64_with_carry};
+use crate::utils::{add64_with_carry, mul64_with_carry, square_assign_multi, sub64_with_carry};
 
 use group::ff::{Field, PrimeField};
 use rand_core::RngCore;
@@ -174,42 +174,32 @@ impl Fp {
     /// Computes the square root of this element, if it exists.
     pub fn sqrt(&self) -> CtOption<Self> {
         // Tonelli-Shank's algorithm for q mod 16 = 1
+        // See https://eprint.iacr.org/2020/1497.pdf, page 3 for a
+        // constant time specification of the algorithm.
 
-        // w = self^((t - 1) // 2)
+        // Compute the progenitor y of self
+        // y = self^((t - 1) // 2)
         //   = self^0x3fffc8
-        let w = self.exp_vartime(0x3fffc8);
+        let y = self.exp_vartime(0x3fffc8);
 
-        let mut v = TWO_ADICITY;
-        let mut x = self * w;
-        let mut b = x * w;
+        let mut s = self * y;
+        let mut t = s * y;
 
-        // Initialize z as the 2^s root of unity.
         let mut z = TWO_ADIC_ROOT_OF_UNITY;
 
-        for max_v in (1..=TWO_ADICITY).rev() {
-            let mut k = 1;
-            let mut tmp = b.square();
-            let mut j_less_than_v: Choice = 1.into();
+        for k in (2..=TWO_ADICITY).rev() {
+            let mut b = t;
 
-            for j in 2..max_v {
-                let tmp_is_one = tmp.ct_eq(&Fp::one());
-                let squared = Fp::conditional_select(&tmp, &z, tmp_is_one).square();
-                tmp = Fp::conditional_select(&squared, &tmp, tmp_is_one);
+            square_assign_multi(&mut b, (k - 2) as usize);
 
-                let new_z = Fp::conditional_select(&z, &squared, tmp_is_one);
-                j_less_than_v &= !j.ct_eq(&v);
-                k = u32::conditional_select(&j, &k, tmp_is_one);
-                z = Fp::conditional_select(&z, &new_z, j_less_than_v);
-            }
-
-            let result = x * z;
-            x = Fp::conditional_select(&result, &x, b.ct_eq(&Fp::one()));
+            let new_s = s * z;
+            s = Fp::conditional_select(&new_s, &s, b.ct_eq(&Fp::one()));
             z = z.square();
-            b *= z;
-            v = k;
+            let new_t = t * z;
+            t = Fp::conditional_select(&new_t, &t, b.ct_eq(&Fp::one()));
         }
 
-        CtOption::new(x, (x * x).ct_eq(self))
+        CtOption::new(s, (s * s).ct_eq(self))
     }
 
     /// Computes the double of a field element
@@ -310,12 +300,6 @@ impl Fp {
     /// Computes the multiplicative inverse of this element,
     /// failing if the element is zero.
     pub fn invert(&self) -> CtOption<Self> {
-        #[inline(always)]
-        fn square_assign_multi(n: &mut Fp, num_times: usize) {
-            for _ in 0..num_times {
-                *n = n.square();
-            }
-        }
         // found using https://github.com/kwantam/addchain for M - 2
         let mut t2 = self.square(); //       1:   2
         let mut t1 = t2.square(); //         2:   4
