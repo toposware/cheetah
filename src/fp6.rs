@@ -19,6 +19,17 @@ use crate::utils::square_assign_multi;
 
 use crate::fp::TWO_ADICITY;
 
+const TWO_ADIC_ROOT_OF_UNITY_P6: Fp6 = Fp6 {
+    c0: Fp2 {
+        c0: Fp(0x33c86f93240b900c),
+        c1: Fp(0x186eb1d9b7e8dfea),
+    },
+    c1: Fp2::zero(),
+    c2: Fp2::zero(),
+};
+
+const TWO_ADICITY_P6: u32 = TWO_ADICITY + 1;
+
 #[derive(Copy, Clone)]
 /// An element of the extension GF(p^6)
 pub struct Fp6 {
@@ -315,19 +326,9 @@ impl Fp6 {
         let mut s = self * y;
         let mut t = s * y;
 
-        let mut z = Fp6 {
-            c0: Fp2 {
-                c0: Fp(0x33c86f93240b900c),
-                c1: Fp(0x186eb1d9b7e8dfea),
-            },
-            c1: Fp2::zero(),
-            c2: Fp2::zero(),
-        };
+        let mut z = TWO_ADIC_ROOT_OF_UNITY_P6;
 
-        // p^6 - 1 has higher two-adicity than p - 1.
-        let two_adicity_p6 = TWO_ADICITY + 1;
-
-        for k in (2..=two_adicity_p6).rev() {
+        for k in (2..=TWO_ADICITY_P6).rev() {
             let mut b = t;
 
             square_assign_multi(&mut b, (k - 2) as usize);
@@ -624,6 +625,51 @@ mod test {
     use super::*;
     use rand::thread_rng;
 
+    // DISPLAY
+    // ================================================================================================
+
+    #[test]
+    fn test_debug() {
+        assert_eq!(
+            format!("{:?}", Fp6::zero()),
+            "0 + 0*u + (0 + 0*u)*v + (0 + 0*u)*v^2"
+        );
+        assert_eq!(
+            format!("{:?}", Fp6::one()),
+            "1 + 0*u + (0 + 0*u)*v + (0 + 0*u)*v^2"
+        );
+        assert_eq!(
+            format!("{:?}", Fp6::new([1, 2, 3, 4, 5, 6])),
+            "1 + 2*u + (3 + 4*u)*v + (5 + 6*u)*v^2"
+        );
+
+        let a = Fp6::one().neg();
+        assert_eq!(
+            format!("{:?}", a),
+            "4611624995532046336 + 0*u + (0 + 0*u)*v + (0 + 0*u)*v^2"
+        );
+    }
+
+    #[test]
+    fn test_output_limbs() {
+        assert_eq!(
+            format!("{:?}", Fp6::zero().output_limbs()),
+            "[0, 0, 0, 0, 0, 0]"
+        );
+        assert_eq!(
+            format!("{:?}", Fp6::one().output_limbs()),
+            "[1, 0, 0, 0, 0, 0]"
+        );
+        let a = Fp6::one().neg();
+        assert_eq!(
+            format!("{:?}", a.output_limbs()),
+            "[4611624995532046336, 0, 0, 0, 0, 0]"
+        );
+    }
+
+    // BASIC ALGEBRA
+    // ================================================================================================
+
     #[test]
     fn test_conditional_selection() {
         let a = Fp6 {
@@ -843,11 +889,37 @@ mod test {
 
     #[test]
     fn test_sqrt() {
-        for _ in 0..10 {
+        for _ in 0..100 {
             let a = Fp6::random(&mut thread_rng()).square();
             let b = a.sqrt().unwrap();
             assert_eq!(a, b.square());
         }
+
+        assert_eq!(Fp6::zero().sqrt().unwrap(), Fp6::zero());
+        assert_eq!(Fp6::one().sqrt().unwrap(), Fp6::one());
+
+        // (3732399247313726919 * u + 4310061443266019898) * v^2
+        //      + (2669503629927535146 * u + 3375741866740416989) * v
+        //      + 1679900466465613293 * u + 4383462042190447206
+        // is not a quadratic residue in Fp6
+        assert!(bool::from(
+            Fp6 {
+                c0: Fp2 {
+                    c0: Fp::new(4383462042190447206),
+                    c1: Fp::new(1679900466465613293),
+                },
+                c1: Fp2 {
+                    c0: Fp::new(3375741866740416989),
+                    c1: Fp::new(2669503629927535146),
+                },
+                c2: Fp2 {
+                    c0: Fp::new(4310061443266019898),
+                    c1: Fp::new(3732399247313726919),
+                },
+            }
+            .sqrt()
+            .is_none()
+        ));
     }
 
     #[test]
@@ -1109,6 +1181,54 @@ mod test {
     }
 
     #[test]
+    fn test_invert_is_pow() {
+        let mut rng = thread_rng();
+
+        let p6_minus_2 = [
+            0x7ffeb2ffffffffff,
+            0x2a7e5fc0b47bc001,
+            0x845acddda47b8bd5,
+            0x72a71e3a69c7b80f,
+            0x52f1b32fc5d4ddf9,
+            0x000fffacc0b47aef,
+        ];
+
+        let mut r1 = Fp6::random(&mut rng);
+        let mut r2 = r1;
+        let mut r3 = r2;
+
+        for _ in 0..100 {
+            r1 = r1.invert().unwrap();
+            r2 = r2.exp(&p6_minus_2);
+            r3 = r3.exp_vartime(&p6_minus_2);
+
+            assert_eq!(r1, r2);
+            assert_eq!(r2, r3);
+
+            // Double so we check a different element each time
+            r1 = r1.double();
+            r2 = r1;
+            r3 = r1;
+        }
+    }
+
+    // ROOTS OF UNITY
+    // ================================================================================================
+
+    #[test]
+    fn test_get_root_of_unity() {
+        let two_pow_40 = 1 << TWO_ADICITY_P6 as u64;
+        assert_eq!(
+            Fp6::one(),
+            TWO_ADIC_ROOT_OF_UNITY_P6.exp(&[two_pow_40, 0, 0, 0, 0, 0])
+        );
+        assert_ne!(
+            Fp6::one(),
+            TWO_ADIC_ROOT_OF_UNITY_P6.exp(&[two_pow_40 - 1, 0, 0, 0, 0, 0])
+        );
+    }
+
+    #[test]
     fn test_lexicographic_largest() {
         assert!(!bool::from(Fp6::zero().lexicographically_largest()));
         assert!(!bool::from(Fp6::one().lexicographically_largest()));
@@ -1160,16 +1280,6 @@ mod test {
     }
 
     #[test]
-    fn test_bytes() {
-        let mut rng = thread_rng();
-        for _ in 0..100 {
-            let a = Fp6::random(&mut rng);
-            let bytes = a.to_bytes();
-            assert_eq!(a, Fp6::from_bytes(&bytes).unwrap());
-        }
-    }
-
-    #[test]
     fn test_zeroize() {
         use zeroize::Zeroize;
 
@@ -1191,12 +1301,134 @@ mod test {
         assert_eq!(element, element_normalized);
     }
 
-    // SERDE SERIALIZATIOIN
+    // SERIALIZATION / DESERIALIZATION
     // ================================================================================================
 
     #[test]
+    fn test_to_bytes() {
+        assert_eq!(
+            Fp6::zero().to_bytes(),
+            [
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ]
+        );
+
+        assert_eq!(
+            Fp6::one().to_bytes(),
+            [
+                1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ]
+        );
+
+        assert_eq!(
+            (-&Fp6::one()).to_bytes(),
+            [
+                0, 0, 0, 0, 128, 200, 255, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ]
+        );
+    }
+
+    #[test]
+    fn test_from_bytes() {
+        let mut rng = thread_rng();
+        for _ in 0..100 {
+            let a = Fp6::random(&mut rng);
+            let bytes = a.to_bytes();
+            assert_eq!(a, Fp6::from_bytes(&bytes).unwrap());
+        }
+
+        assert_eq!(
+            Fp6::from_bytes(&[
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ])
+            .unwrap(),
+            Fp6::zero()
+        );
+
+        assert_eq!(
+            Fp6::from_bytes(&[
+                1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ])
+            .unwrap(),
+            Fp6::one()
+        );
+
+        // -1 should work
+        assert_eq!(
+            Fp6::from_bytes(&[
+                0, 0, 0, 0, 128, 200, 255, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ])
+            .unwrap(),
+            -Fp6::one()
+        );
+
+        // Anything larger than M in one of the members is invalid
+        assert!(bool::from(
+            Fp6::from_bytes(&[
+                2, 0, 0, 0, 128, 200, 255, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ])
+            .is_none()
+        ));
+
+        assert!(bool::from(
+            Fp6::from_bytes(&[
+                0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ])
+            .is_none()
+        ));
+
+        assert!(bool::from(
+            Fp6::from_bytes(&[
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ])
+            .is_none()
+        ));
+
+        assert!(bool::from(
+            Fp6::from_bytes(&[
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ])
+            .is_none()
+        ));
+
+        assert!(bool::from(
+            Fp6::from_bytes(&[
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            ])
+            .is_none()
+        ));
+
+        assert!(bool::from(
+            Fp6::from_bytes(&[
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0
+            ])
+            .is_none()
+        ));
+
+        assert!(bool::from(
+            Fp6::from_bytes(&[
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255
+            ])
+            .is_none()
+        ));
+    }
+
+    #[test]
     #[cfg(feature = "serialize")]
-    fn test_serde_field() {
+    fn test_serde() {
         let mut rng = thread_rng();
         let element = Fp6::random(&mut rng);
         let encoded = bincode::serialize(&element).unwrap();

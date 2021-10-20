@@ -17,6 +17,13 @@ use crate::fp::Fp;
 use crate::fp::TWO_ADICITY;
 use crate::utils::square_assign_multi;
 
+const TWO_ADIC_ROOT_OF_UNITY_P2: Fp2 = Fp2 {
+    c0: Fp(0x285e60ade3cc165),
+    c1: Fp(0x3af3fc6a43867d37),
+};
+
+const TWO_ADICITY_P2: u32 = TWO_ADICITY + 1;
+
 #[derive(Copy, Clone)]
 /// An element of the extension GF(p^2)
 pub struct Fp2 {
@@ -215,15 +222,9 @@ impl Fp2 {
         let mut s = self * y;
         let mut t = s * y;
 
-        let mut z = Fp2 {
-            c0: Fp(0x285e60ade3cc165),
-            c1: Fp(0x3af3fc6a43867d37),
-        };
+        let mut z = TWO_ADIC_ROOT_OF_UNITY_P2;
 
-        // p^2 - 1 has higher two-adicity than p - 1.
-        let two_adicity_p2 = TWO_ADICITY + 1;
-
-        for k in (2..=two_adicity_p2).rev() {
+        for k in (2..=TWO_ADICITY_P2).rev() {
             let mut b = t;
 
             square_assign_multi(&mut b, (k - 2) as usize);
@@ -597,6 +598,21 @@ mod test {
     }
 
     #[test]
+    fn test_sqrt() {
+        for _ in 0..100 {
+            let a = Fp2::random(&mut thread_rng()).square();
+            let b = a.sqrt().unwrap();
+            assert_eq!(a, b.square());
+        }
+
+        assert_eq!(Fp2::zero().sqrt().unwrap(), Fp2::zero());
+        assert_eq!(Fp2::one().sqrt().unwrap(), Fp2::one());
+
+        // u + 3 is not a quadratic residue in Fp2
+        assert!(bool::from(Fp2::new([3, 1]).sqrt().is_none()));
+    }
+
+    #[test]
     fn test_multiplication() {
         let a = Fp2 {
             c0: Fp::one(),
@@ -703,6 +719,44 @@ mod test {
     }
 
     #[test]
+    fn test_invert_is_pow() {
+        let mut rng = thread_rng();
+
+        let p2_minus_2 = [0x7fff90ffffffffff, 0x0fffe4400c084000];
+
+        let mut r1 = Fp2::random(&mut rng);
+        let mut r2 = r1;
+        let mut r3 = r2;
+
+        for _ in 0..100 {
+            r1 = r1.invert().unwrap();
+            r2 = r2.exp(&p2_minus_2);
+            r3 = r3.exp_vartime(&p2_minus_2);
+
+            assert_eq!(r1, r2);
+            assert_eq!(r2, r3);
+
+            // Double so we check a different element each time
+            r1 = r1.double();
+            r2 = r1;
+            r3 = r1;
+        }
+    }
+
+    // ROOTS OF UNITY
+    // ================================================================================================
+
+    #[test]
+    fn test_get_root_of_unity() {
+        let two_pow_40 = 1 << TWO_ADICITY_P2 as u64;
+        assert_eq!(Fp2::one(), TWO_ADIC_ROOT_OF_UNITY_P2.exp(&[two_pow_40, 0]));
+        assert_ne!(
+            Fp2::one(),
+            TWO_ADIC_ROOT_OF_UNITY_P2.exp(&[two_pow_40 - 1, 0])
+        );
+    }
+
+    #[test]
     fn test_lexicographic_largest() {
         assert!(!bool::from(Fp2::zero().lexicographically_largest()));
         assert!(!bool::from(Fp2::one().lexicographically_largest()));
@@ -751,12 +805,69 @@ mod test {
         assert_eq!(element, element_normalized);
     }
 
-    // SERDE SERIALIZATIOIN
+    // SERIALIZATION / DESERIALIZATION
     // ================================================================================================
 
     #[test]
+    fn test_to_bytes() {
+        assert_eq!(
+            Fp2::zero().to_bytes(),
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        );
+
+        assert_eq!(
+            Fp2::one().to_bytes(),
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        );
+
+        assert_eq!(
+            (-&Fp2::one()).to_bytes(),
+            [0, 0, 0, 0, 128, 200, 255, 63, 0, 0, 0, 0, 0, 0, 0, 0]
+        );
+    }
+
+    #[test]
+    fn test_from_bytes() {
+        let mut rng = thread_rng();
+        for _ in 0..100 {
+            let a = Fp2::random(&mut rng);
+            let bytes = a.to_bytes();
+            assert_eq!(a, Fp2::from_bytes(&bytes).unwrap());
+        }
+
+        assert_eq!(
+            Fp2::from_bytes(&[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]).unwrap(),
+            Fp2::zero()
+        );
+
+        assert_eq!(
+            Fp2::from_bytes(&[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]).unwrap(),
+            Fp2::one()
+        );
+
+        // -1 should work
+        assert_eq!(
+            Fp2::from_bytes(&[0, 0, 0, 0, 128, 200, 255, 63, 0, 0, 0, 0, 0, 0, 0, 0]).unwrap(),
+            -Fp2::one()
+        );
+
+        // Anything larger than M in one of the members is invalid
+        assert!(bool::from(
+            Fp2::from_bytes(&[2, 0, 0, 0, 128, 200, 255, 63, 0, 0, 0, 0, 0, 0, 0, 0]).is_none()
+        ));
+
+        assert!(bool::from(
+            Fp2::from_bytes(&[0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0]).is_none()
+        ));
+
+        assert!(bool::from(
+            Fp2::from_bytes(&[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255]).is_none()
+        ));
+    }
+
+    #[test]
     #[cfg(feature = "serialize")]
-    fn test_serde_field() {
+    fn test_serde() {
         let mut rng = thread_rng();
         let element = Fp2::random(&mut rng);
         let encoded = bincode::serialize(&element).unwrap();

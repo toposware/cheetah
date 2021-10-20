@@ -150,12 +150,12 @@ impl Fp {
     /// Computes the negation of a field element
     #[inline]
     pub const fn neg(&self) -> Self {
-        // Subtract `self` from `MODULUS` to negate. Ignore the final
+        // Subtract `self` from `M` to negate. Ignore the final
         // borrow because it cannot underflow; self is guaranteed to
         // be in the field.
         let (d0, _) = sub64_with_carry(M.0, self.0, 0);
 
-        // `tmp` could be `MODULUS` if `self` was zero. Create a mask that is
+        // `tmp` could be `M` if `self` was zero. Create a mask that is
         // zero if `self` was zero, and `u64::max_value()` if self was nonzero.
         let mask = ((self.0 == 0) as u64).wrapping_sub(1);
 
@@ -332,11 +332,6 @@ impl Fp {
         t0 *= &t1; //                        72:  4611624995532046335
 
         CtOption::new(t0, !self.ct_eq(&Self::zero()))
-    }
-
-    /// Computes the conjugate of a `Fp` element
-    pub fn conjugate(&self) -> Self {
-        Fp(self.0)
     }
 
     #[inline(always)]
@@ -734,6 +729,21 @@ mod tests {
     }
 
     #[test]
+    fn test_division() {
+        let mut rng = thread_rng();
+        let scale = Fp::random(&mut rng);
+
+        for _ in 0..100 {
+            let a = Fp::random(&mut rng);
+            let a_scaled = a * scale;
+
+            assert_eq!(a, a_scaled.div(scale));
+        }
+
+        assert_eq!(Fp::one().div(Fp::zero()), Fp::zero());
+    }
+
+    #[test]
 
     fn test_inversion() {
         assert!(bool::from(Fp::zero().invert().is_none()));
@@ -790,11 +800,17 @@ mod tests {
             let b = a.sqrt().unwrap();
             assert_eq!(a, b.square());
         }
+
+        assert_eq!(Fp::zero().sqrt().unwrap(), Fp::zero());
+        assert_eq!(Fp::one().sqrt().unwrap(), Fp::one());
+
+        // 3 is not a quadratic residue in Fp
+        assert!(bool::from(Fp::new(3).sqrt().is_none()));
     }
 
     #[test]
     fn test_invert_is_pow() {
-        let q_minus_2 = 4611624995532046335;
+        let p_minus_2 = 4611624995532046335;
 
         let mut r1 = R;
         let mut r2 = R;
@@ -802,23 +818,17 @@ mod tests {
 
         for _ in 0..100 {
             r1 = r1.invert().unwrap();
-            r2 = r2.exp(q_minus_2);
-            r3 = r3.exp_vartime(q_minus_2);
+            r2 = r2.exp(p_minus_2);
+            r3 = r3.exp_vartime(p_minus_2);
 
             assert_eq!(r1, r2);
             assert_eq!(r2, r3);
-            // Add R so we check something different next time around
-            r1.add_assign(&R);
+
+            // Double so we check a different element each time
+            r1 = r1.double();
             r2 = r1;
             r3 = r1;
         }
-    }
-
-    #[test]
-    fn test_conjugate() {
-        let a = Fp::random(&mut thread_rng());
-        let b = a.conjugate();
-        assert_eq!(a, b);
     }
 
     // ROOTS OF UNITY
@@ -834,20 +844,6 @@ mod tests {
         let expected = root_39.exp(2);
         assert_eq!(expected, root_38);
         assert_eq!(Fp::one(), root_38.exp(TWO_POW_38));
-    }
-
-    // SERIALIZATION / DESERIALIZATION
-    // ================================================================================================
-
-    #[test]
-    fn test_to_bytes() {
-        assert_eq!(Fp::zero().to_bytes(), [0, 0, 0, 0, 0, 0, 0, 0,]);
-
-        assert_eq!(Fp::one().to_bytes(), [1, 0, 0, 0, 0, 0, 0, 0,]);
-
-        assert_eq!(R2.to_bytes(), [252, 255, 255, 255, 255, 221, 0, 0]);
-
-        assert_eq!((-&Fp::one()).to_bytes(), [0, 0, 0, 0, 128, 200, 255, 63]);
     }
 
     #[test]
@@ -881,6 +877,8 @@ mod tests {
         assert_eq!(element, Fp::from(n as u16));
         assert_eq!(element, Fp::from(n as u32));
         assert_eq!(element, Fp::from(n as u64));
+
+        assert_eq!(element, Fp::new(n as u64));
     }
 
     #[test]
@@ -896,12 +894,68 @@ mod tests {
         assert_eq!(element, element_normalized);
     }
 
-    // SERDE SERIALIZATIOIN
+    // SERIALIZATION / DESERIALIZATION
     // ================================================================================================
 
     #[test]
+    fn test_to_bytes() {
+        assert_eq!(Fp::zero().to_bytes(), [0, 0, 0, 0, 0, 0, 0, 0]);
+
+        assert_eq!(Fp::one().to_bytes(), [1, 0, 0, 0, 0, 0, 0, 0]);
+
+        assert_eq!(R2.to_bytes(), [252, 255, 255, 255, 255, 221, 0, 0]);
+
+        assert_eq!((-&Fp::one()).to_bytes(), [0, 0, 0, 0, 128, 200, 255, 63]);
+    }
+
+    #[test]
+    fn test_from_bytes() {
+        let mut rng = thread_rng();
+        for _ in 0..100 {
+            let a = Fp::random(&mut rng);
+            let bytes = a.to_bytes();
+            assert_eq!(a, Fp::from_bytes(&bytes).unwrap());
+        }
+
+        assert_eq!(
+            Fp::from_bytes(&[0, 0, 0, 0, 0, 0, 0, 0]).unwrap(),
+            Fp::zero()
+        );
+
+        assert_eq!(
+            Fp::from_bytes(&[1, 0, 0, 0, 0, 0, 0, 0]).unwrap(),
+            Fp::one()
+        );
+
+        assert_eq!(
+            Fp::from_bytes(&[252, 255, 255, 255, 255, 221, 0, 0]).unwrap(),
+            R2
+        );
+
+        // -1 should work
+        assert_eq!(
+            Fp::from_bytes(&[0, 0, 0, 0, 128, 200, 255, 63]).unwrap(),
+            -Fp::one()
+        );
+
+        // M is invalid
+        assert!(bool::from(
+            Fp::from_bytes(&[1, 0, 0, 0, 128, 200, 255, 63]).is_none()
+        ));
+
+        // Anything larger than M is invalid
+        assert!(bool::from(
+            Fp::from_bytes(&[2, 0, 0, 0, 128, 200, 255, 63]).is_none()
+        ));
+
+        assert!(bool::from(
+            Fp::from_bytes(&[0, 0, 0, 0, 255, 255, 255, 255]).is_none()
+        ));
+    }
+
+    #[test]
     #[cfg(feature = "serialize")]
-    fn test_serde_field() {
+    fn test_serde() {
         let mut rng = thread_rng();
         let element = Fp::random(&mut rng);
         let encoded = bincode::serialize(&element).unwrap();

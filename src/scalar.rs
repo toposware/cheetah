@@ -242,7 +242,7 @@ impl Scalar {
     /// Computes the negation of a scalar element
     #[inline]
     pub const fn neg(&self) -> Self {
-        // Subtract `self` from `MODULUS` to negate. Ignore the final
+        // Subtract `self` from `M` to negate. Ignore the final
         // borrow because it cannot underflow; self is guaranteed to
         // be in the field.
         let (d0, borrow) = sub64_with_carry(M.0[0], self.0[0], 0);
@@ -250,7 +250,7 @@ impl Scalar {
         let (d2, borrow) = sub64_with_carry(M.0[2], self.0[2], borrow);
         let (d3, _) = sub64_with_carry(M.0[3], self.0[3], borrow);
 
-        // `tmp` could be `MODULUS` if `self` was zero. Create a mask that is
+        // `tmp` could be `M` if `self` was zero. Create a mask that is
         // zero if `self` was zero, and `u64::max_value()` if self was nonzero.
         let mask = (((self.0[0] | self.0[1] | self.0[2] | self.0[3]) == 0) as u64).wrapping_sub(1);
 
@@ -386,7 +386,7 @@ impl Scalar {
         let (_, borrow) = sub64_with_carry(tmp.0[2], M.0[2], borrow);
         let (_, borrow) = sub64_with_carry(tmp.0[3], M.0[3], borrow);
 
-        // If the element is smaller than MODULUS then the
+        // If the element is smaller than M then the
         // subtraction will underflow, producing a borrow value
         // of 0xffff...ffff. Otherwise, it'll be zero.
         let is_some = (borrow as u8) & 1;
@@ -635,13 +635,8 @@ impl Scalar {
         CtOption::new(t0, !self.ct_eq(&Self::zero()))
     }
 
-    /// Computes the conjugate of a `Scalar` element
-    pub fn conjugate(&self) -> Self {
-        Scalar(self.0)
-    }
-
     #[inline(always)]
-    /// Normalizes the internal representation of an `Fp` element
+    /// Normalizes the internal representation of an `Scalar` element
     pub fn normalize(&mut self) {
         *self *= &R2
     }
@@ -650,6 +645,15 @@ impl Scalar {
     /// canonical.
     pub const fn from_raw_unchecked(v: [u64; 4]) -> Self {
         Scalar(v)
+    }
+
+    /// Outputs a `Scalar` element of multiplicative order equals to 2^n
+    pub fn get_root_of_unity(n: u32) -> Self {
+        assert!(n != 0, "cannot get root of unity for n = 0");
+        assert!(n <= TWO_ADICITY, "order cannot exceed 2^{}", TWO_ADICITY);
+        let power = 1u64 << (TWO_ADICITY - n);
+
+        TWO_ADIC_ROOT_OF_UNITY.exp(&[power, 0, 0, 0])
     }
 }
 
@@ -1116,11 +1120,90 @@ mod tests {
         }
     }
 
+    // ROOTS OF UNITY
+    // ================================================================================================
+
     #[test]
-    fn test_conjugate() {
-        let a = Scalar::random(&mut thread_rng());
-        let b = a.conjugate();
-        assert_eq!(a, b);
+    fn test_get_root_of_unity() {
+        let root_4 = Scalar::get_root_of_unity(4);
+        assert_eq!(TWO_ADIC_ROOT_OF_UNITY, root_4);
+        assert_eq!(Scalar::one(), root_4.exp(&[16, 0, 0, 0]));
+
+        let root_3 = Scalar::get_root_of_unity(3);
+        let expected = root_4.exp(&[2, 0, 0, 0]);
+        assert_eq!(expected, root_3);
+        assert_eq!(Scalar::one(), root_3.exp(&[8, 0, 0, 0]));
+    }
+
+    #[test]
+    fn test_lexicographically_largest() {
+        // a = 3194249248449702161625907824974691224153811289682184296505134093839210143169
+        let a = Scalar([
+            0x1a27928f89f45dc1,
+            0xb0a11736719d96b6,
+            0x0a4011f33f25c7af,
+            0x070fe189977f18a3,
+        ]);
+
+        // b = 15864811716540583923851031661737088589470510791613498910377669984443686539344
+        let b = Scalar([
+            0xe46d47ee9bfd5050,
+            0x97df8f2ff31ba04b,
+            0xe120395554dea526,
+            0x23132a4bfc2289d6,
+        ]);
+
+        assert_eq!(a.square(), b.square());
+        assert!(!bool::from(a.lexicographically_largest()));
+        assert!(bool::from(b.lexicographically_largest()));
+    }
+
+    #[test]
+    fn test_zeroize() {
+        use zeroize::Zeroize;
+
+        let mut a = Scalar::one();
+        a.zeroize();
+        assert_eq!(a, Scalar::zero());
+    }
+
+    // INITIALIZATION
+    // ================================================================================================
+
+    #[test]
+    fn test_from_int() {
+        let n = 42u8;
+        let element = Scalar::from(n);
+
+        assert_eq!(element, Scalar::from(n as u16));
+        assert_eq!(element, Scalar::from(n as u32));
+        assert_eq!(element, Scalar::from(n as u64));
+        assert_eq!(element, Scalar::from(n as u128));
+
+        assert_eq!(element, Scalar::new([n as u64, 0, 0, 0]));
+    }
+
+    #[test]
+    fn test_from_raw_unchecked() {
+        let mut element = Scalar::from_raw_unchecked([
+            613299937112091546,
+            5547336988680041972,
+            8916630611635303162,
+            229042559445774628,
+        ]);
+
+        let element_normalized = Scalar::new([
+            613299937112091546,
+            5547336988680041972,
+            8916630611635303162,
+            229042559445774628,
+        ]);
+
+        assert_eq!(element, Scalar::one());
+        element.normalize();
+
+        assert!(element != Scalar::one());
+        assert_eq!(element, element_normalized);
     }
 
     // SERIALIZATION / DESERIALIZATION
@@ -1163,6 +1246,13 @@ mod tests {
 
     #[test]
     fn test_from_bytes() {
+        let mut rng = thread_rng();
+        for _ in 0..100 {
+            let a = Scalar::random(&mut rng);
+            let bytes = a.to_bytes();
+            assert_eq!(a, Scalar::from_bytes(&bytes).unwrap());
+        }
+
         assert_eq!(
             Scalar::from_bytes(&[
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1209,7 +1299,7 @@ mod tests {
             .is_none()
         ));
 
-        // Anything larger than the M is invalid
+        // Anything larger than M is invalid
         assert!(bool::from(
             Scalar::from_bytes(&[
                 18, 174, 241, 37, 126, 218, 148, 254, 1, 55, 185, 100, 102, 166, 128, 72, 214, 108,
@@ -1231,41 +1321,6 @@ mod tests {
             ])
             .is_none()
         ));
-    }
-
-    #[test]
-    fn test_from_bits_vartime() {
-        let bytes = Scalar::zero().to_bytes();
-        assert_eq!(
-            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
-            Scalar::zero()
-        );
-
-        let bytes = Scalar::one().to_bytes();
-        assert_eq!(
-            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
-            Scalar::one()
-        );
-
-        let bytes = R2.to_bytes();
-        assert_eq!(Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()), R2);
-
-        // -1 should work
-        let bytes = (-Scalar::one()).to_bytes();
-        assert_eq!(
-            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
-            -Scalar::one()
-        );
-
-        // Modulus results in Scalar::zero()
-        let bytes = [
-            17, 174, 241, 37, 126, 218, 148, 254, 1, 55, 185, 100, 102, 166, 128, 72, 214, 108, 4,
-            148, 72, 75, 96, 235, 121, 162, 161, 147, 213, 11, 35, 42,
-        ];
-        assert_eq!(
-            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
-            Scalar::zero()
-        );
     }
 
     #[test]
@@ -1335,80 +1390,43 @@ mod tests {
     }
 
     #[test]
-    fn test_lexicographically_largest() {
-        // a = 3194249248449702161625907824974691224153811289682184296505134093839210143169
-        let a = Scalar([
-            0x1a27928f89f45dc1,
-            0xb0a11736719d96b6,
-            0x0a4011f33f25c7af,
-            0x070fe189977f18a3,
-        ]);
+    fn test_from_bits_vartime() {
+        let bytes = Scalar::zero().to_bytes();
+        assert_eq!(
+            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
+            Scalar::zero()
+        );
 
-        // b = 15864811716540583923851031661737088589470510791613498910377669984443686539344
-        let b = Scalar([
-            0xe46d47ee9bfd5050,
-            0x97df8f2ff31ba04b,
-            0xe120395554dea526,
-            0x23132a4bfc2289d6,
-        ]);
+        let bytes = Scalar::one().to_bytes();
+        assert_eq!(
+            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
+            Scalar::one()
+        );
 
-        assert_eq!(a.square(), b.square());
-        assert!(!bool::from(a.lexicographically_largest()));
-        assert!(bool::from(b.lexicographically_largest()));
+        let bytes = R2.to_bytes();
+        assert_eq!(Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()), R2);
+
+        // -1 should work
+        let bytes = (-Scalar::one()).to_bytes();
+        assert_eq!(
+            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
+            -Scalar::one()
+        );
+
+        // Modulus results in Scalar::zero()
+        let bytes = [
+            17, 174, 241, 37, 126, 218, 148, 254, 1, 55, 185, 100, 102, 166, 128, 72, 214, 108, 4,
+            148, 72, 75, 96, 235, 121, 162, 161, 147, 213, 11, 35, 42,
+        ];
+        assert_eq!(
+            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
+            Scalar::zero()
+        );
     }
-
-    #[test]
-    fn test_zeroize() {
-        use zeroize::Zeroize;
-
-        let mut a = Scalar::one();
-        a.zeroize();
-        assert_eq!(a, Scalar::zero());
-    }
-
-    // INITIALIZATION
-    // ================================================================================================
-
-    #[test]
-    fn test_from_int() {
-        let n = 42u8;
-        let element = Scalar::from(n);
-
-        assert_eq!(element, Scalar::from(n as u16));
-        assert_eq!(element, Scalar::from(n as u32));
-        assert_eq!(element, Scalar::from(n as u64));
-        assert_eq!(element, Scalar::from(n as u128));
-    }
-
-    #[test]
-    fn test_from_raw_unchecked() {
-        let mut element = Scalar::from_raw_unchecked([
-            613299937112091546,
-            5547336988680041972,
-            8916630611635303162,
-            229042559445774628,
-        ]);
-
-        let element_normalized = Scalar::new([
-            613299937112091546,
-            5547336988680041972,
-            8916630611635303162,
-            229042559445774628,
-        ]);
-
-        assert_eq!(element, Scalar::one());
-        element.normalize();
-
-        assert!(element != Scalar::one());
-        assert_eq!(element, element_normalized);
-    }
-
-    // SERDE SERIALIZATIOIN
-    // ================================================================================================
 
     #[test]
     #[cfg(feature = "serialize")]
-    fn test_serde_field() {
+    fn test_serde() {
         let mut rng = thread_rng();
         let element = Scalar::random(&mut rng);
         let encoded = bincode::serialize(&element).unwrap();
