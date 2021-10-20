@@ -44,7 +44,7 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     c.bench_function("fp2 exp", |bench| {
         let x = Fp2::random(&mut rng);
-        let y = Fp2::random(&mut rng).to_repr();
+        let y = Fp2::random(&mut rng).output_limbs();
         bench.iter(|| Fp2::exp(black_box(x), black_box(&y)))
     });
 

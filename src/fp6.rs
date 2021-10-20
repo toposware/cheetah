@@ -443,7 +443,7 @@ impl Fp6 {
     }
 
     /// Outputs the internal representation as 4 64-bit limbs after Montgomery reduction
-    pub const fn to_repr(&self) -> [u64; 6] {
+    pub const fn output_limbs(&self) -> [u64; 6] {
         [
             Fp::montgomery_reduce(self.c0.c0.0, 0).0,
             Fp::montgomery_reduce(self.c0.c1.0, 0).0,

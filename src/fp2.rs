@@ -314,7 +314,7 @@ impl Fp2 {
     }
 
     /// Outputs the internal representation as 2 64-bit limbs after Montgomery reduction
-    pub const fn to_repr(&self) -> [u64; 2] {
+    pub const fn output_limbs(&self) -> [u64; 2] {
         [
             Fp::montgomery_reduce(self.c0.0, 0).0,
             Fp::montgomery_reduce(self.c1.0, 0).0,
@@ -497,11 +497,14 @@ mod test {
     }
 
     #[test]
-    fn test_to_repr() {
-        assert_eq!(format!("{:?}", Fp2::zero().to_repr()), "[0, 0]");
-        assert_eq!(format!("{:?}", Fp2::one().to_repr()), "[1, 0]");
+    fn test_output_limbs() {
+        assert_eq!(format!("{:?}", Fp2::zero().output_limbs()), "[0, 0]");
+        assert_eq!(format!("{:?}", Fp2::one().output_limbs()), "[1, 0]");
         let a = Fp2::one().neg();
-        assert_eq!(format!("{:?}", a.to_repr()), "[4611624995532046336, 0]");
+        assert_eq!(
+            format!("{:?}", a.output_limbs()),
+            "[4611624995532046336, 0]"
+        );
     }
 
     // BASIC ALGEBRA

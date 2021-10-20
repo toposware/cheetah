@@ -44,7 +44,7 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     c.bench_function("scalar exp", |bench| {
         let x = Scalar::random(&mut rng);
-        let y = Scalar::random(&mut rng).to_repr();
+        let y = Scalar::random(&mut rng).output_limbs();
         bench.iter(|| Scalar::exp(black_box(x), black_box(&y)))
     });
 

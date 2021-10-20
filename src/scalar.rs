@@ -418,7 +418,7 @@ impl Scalar {
     }
 
     /// Outputs the internal representation as 4 64-bit limbs after Montgomery reduction
-    pub const fn to_repr(&self) -> [u64; 4] {
+    pub const fn output_limbs(&self) -> [u64; 4] {
         Scalar::montgomery_reduce(self.0[0], self.0[1], self.0[2], self.0[3], 0, 0, 0, 0).0
     }
 
@@ -920,11 +920,17 @@ mod tests {
     }
 
     #[test]
-    fn test_to_repr() {
-        assert_eq!(format!("{:?}", Scalar::zero().to_repr()), "[0, 0, 0, 0]");
-        assert_eq!(format!("{:?}", Scalar::one().to_repr()), "[1, 0, 0, 0]");
+    fn test_output_limbs() {
         assert_eq!(
-            format!("{:?}", R2.to_repr()),
+            format!("{:?}", Scalar::zero().output_limbs()),
+            "[0, 0, 0, 0]"
+        );
+        assert_eq!(
+            format!("{:?}", Scalar::one().output_limbs()),
+            "[1, 0, 0, 0]"
+        );
+        assert_eq!(
+            format!("{:?}", R2.output_limbs()),
             "[613299937112091546, 5547336988680041972, 8916630611635303162, 229042559445774628]"
         );
     }
