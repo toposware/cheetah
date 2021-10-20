@@ -1,12 +1,17 @@
 //! This module implements arithmetic over the extension field Fp2,
 //! defined with irreducible polynomial u^2 - x - 1.
 
-use core::fmt;
+use core::fmt::{self, Formatter};
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 use group::ff::Field;
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
+
+#[cfg(feature = "serialize")]
+use serde::de::Visitor;
+#[cfg(feature = "serialize")]
+use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::fp::Fp;
 use crate::fp::TWO_ADICITY;
@@ -327,6 +332,28 @@ impl Fp2 {
         bytes
     }
 
+    /// Attempts to convert a little-endian byte representation of
+    /// a scalar into a `Fp2` element, failing if the input is not canonical.
+    pub fn from_bytes(bytes: &[u8; 16]) -> CtOption<Self> {
+        let mut array = [0u8; 8];
+
+        array.copy_from_slice(&bytes[0..8]);
+        let c0 = Fp::from_bytes(&array);
+
+        array.copy_from_slice(&bytes[8..16]);
+        let c1 = Fp::from_bytes(&array);
+
+        let is_some = c0.is_some() & c1.is_some();
+
+        CtOption::new(
+            Fp2 {
+                c0: c0.unwrap_or(Fp::zero()),
+                c1: c1.unwrap_or(Fp::zero()),
+            },
+            is_some,
+        )
+    }
+
     /// Constructs an element of `Fp2` without checking that it is
     /// canonical.
     pub const fn from_raw_unchecked(value: [u64; 2]) -> Self {
@@ -383,6 +410,62 @@ impl Field for Fp2 {
 
     fn sqrt(&self) -> CtOption<Self> {
         self.sqrt()
+    }
+}
+
+// SERDE SERIALIZATION
+// ================================================================================================
+
+#[cfg(feature = "serialize")]
+impl Serialize for Fp2 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeTuple;
+        let mut tup = serializer.serialize_tuple(16)?;
+        for byte in self.to_bytes().iter() {
+            tup.serialize_element(byte)?;
+        }
+        tup.end()
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl<'de> Deserialize<'de> for Fp2 {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct Fp2Visitor;
+
+        impl<'de> Visitor<'de> for Fp2Visitor {
+            type Value = Fp2;
+
+            fn expecting(&self, formatter: &mut Formatter) -> fmt::Result {
+                formatter.write_str("a valid field element")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Fp2, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut bytes = [0u8; 16];
+                for (i, byte) in bytes.iter_mut().enumerate() {
+                    *byte = seq
+                        .next_element()?
+                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 16 bytes"))?;
+                }
+                let elem = Fp2::from_bytes(&bytes);
+                if bool::from(elem.is_none()) {
+                    Err(serde::de::Error::custom("decompression failed"))
+                } else {
+                    Ok(elem.unwrap())
+                }
+            }
+        }
+
+        deserializer.deserialize_tuple(16, Fp2Visitor)
     }
 }
 
@@ -663,5 +746,33 @@ mod test {
 
         assert!(element != Fp2::one());
         assert_eq!(element, element_normalized);
+    }
+
+    // SERDE SERIALIZATIOIN
+    // ================================================================================================
+
+    #[test]
+    #[cfg(feature = "serialize")]
+    fn test_serde_field() {
+        let mut rng = thread_rng();
+        let element = Fp2::random(&mut rng);
+        let encoded = bincode::serialize(&element).unwrap();
+        let parsed: Fp2 = bincode::deserialize(&encoded).unwrap();
+        assert_eq!(parsed, element);
+
+        // Check that the encoding is 16 bytes exactly
+        assert_eq!(encoded.len(), 16);
+
+        // Check that the encoding itself matches the usual one
+        assert_eq!(element, bincode::deserialize(&element.to_bytes()).unwrap());
+
+        // Check that invalid encodings fail
+        let element = Fp2::random(&mut rng);
+        let mut encoded = bincode::serialize(&element).unwrap();
+        encoded[15] = 127;
+        assert!(bincode::deserialize::<Fp2>(&encoded).is_err());
+
+        let encoded = bincode::serialize(&element).unwrap();
+        assert!(bincode::deserialize::<Fp2>(&encoded[0..15]).is_err());
     }
 }

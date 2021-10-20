@@ -1,13 +1,17 @@
 //! This module implements arithmetic over the extension field Fp6,
 //! defined with irreducible polynomial v^3 - v - 2.
 
-use core::convert::TryFrom;
-use core::fmt;
+use core::fmt::{self, Formatter};
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 use group::ff::Field;
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
+
+#[cfg(feature = "serialize")]
+use serde::de::Visitor;
+#[cfg(feature = "serialize")]
+use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::fp::Fp;
 use crate::fp2::Fp2;
@@ -462,30 +466,30 @@ impl Fp6 {
         bytes
     }
 
-    /// Converts an array of bytes into an `Fp6` element
-    pub fn from_bytes(bytes: &[u8; 48]) -> Fp6 {
-        let mut res = Fp6::zero();
+    /// Attempts to convert a little-endian byte representation of
+    /// a scalar into a `Fp6` element, failing if the input is not canonical.
+    pub fn from_bytes(bytes: &[u8; 48]) -> CtOption<Self> {
+        let mut array = [0u8; 16];
 
-        res.c0.c0 = Fp::new(u64::from_le_bytes(
-            <[u8; 8]>::try_from(&bytes[0..8]).unwrap(),
-        ));
-        res.c0.c1 = Fp::new(u64::from_le_bytes(
-            <[u8; 8]>::try_from(&bytes[8..16]).unwrap(),
-        ));
-        res.c1.c0 = Fp::new(u64::from_le_bytes(
-            <[u8; 8]>::try_from(&bytes[16..24]).unwrap(),
-        ));
-        res.c1.c1 = Fp::new(u64::from_le_bytes(
-            <[u8; 8]>::try_from(&bytes[24..32]).unwrap(),
-        ));
-        res.c2.c0 = Fp::new(u64::from_le_bytes(
-            <[u8; 8]>::try_from(&bytes[32..40]).unwrap(),
-        ));
-        res.c2.c1 = Fp::new(u64::from_le_bytes(
-            <[u8; 8]>::try_from(&bytes[40..48]).unwrap(),
-        ));
+        array.copy_from_slice(&bytes[0..16]);
+        let c0 = Fp2::from_bytes(&array);
 
-        res
+        array.copy_from_slice(&bytes[16..32]);
+        let c1 = Fp2::from_bytes(&array);
+
+        array.copy_from_slice(&bytes[32..48]);
+        let c2 = Fp2::from_bytes(&array);
+
+        let is_some = c0.is_some() & c1.is_some() & c2.is_some();
+
+        CtOption::new(
+            Fp6 {
+                c0: c0.unwrap_or(Fp2::zero()),
+                c1: c1.unwrap_or(Fp2::zero()),
+                c2: c2.unwrap_or(Fp2::zero()),
+            },
+            is_some,
+        )
     }
 
     /// Constructs an element of `Fp6` without checking that it is
@@ -556,6 +560,62 @@ impl Field for Fp6 {
 
     fn sqrt(&self) -> CtOption<Self> {
         self.sqrt()
+    }
+}
+
+// SERDE SERIALIZATION
+// ================================================================================================
+
+#[cfg(feature = "serialize")]
+impl Serialize for Fp6 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeTuple;
+        let mut tup = serializer.serialize_tuple(48)?;
+        for byte in self.to_bytes().iter() {
+            tup.serialize_element(byte)?;
+        }
+        tup.end()
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl<'de> Deserialize<'de> for Fp6 {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct Fp6Visitor;
+
+        impl<'de> Visitor<'de> for Fp6Visitor {
+            type Value = Fp6;
+
+            fn expecting(&self, formatter: &mut Formatter) -> fmt::Result {
+                formatter.write_str("a valid field element")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Fp6, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut bytes = [0u8; 48];
+                for (i, byte) in bytes.iter_mut().enumerate() {
+                    *byte = seq
+                        .next_element()?
+                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 48 bytes"))?;
+                }
+                let elem = Fp6::from_bytes(&bytes);
+                if bool::from(elem.is_none()) {
+                    Err(serde::de::Error::custom("decompression failed"))
+                } else {
+                    Ok(elem.unwrap())
+                }
+            }
+        }
+
+        deserializer.deserialize_tuple(48, Fp6Visitor)
     }
 }
 
@@ -1105,7 +1165,7 @@ mod test {
         for _ in 0..100 {
             let a = Fp6::random(&mut rng);
             let bytes = a.to_bytes();
-            assert_eq!(a, Fp6::from_bytes(&bytes));
+            assert_eq!(a, Fp6::from_bytes(&bytes).unwrap());
         }
     }
 
@@ -1129,5 +1189,33 @@ mod test {
 
         assert!(element != Fp6::one());
         assert_eq!(element, element_normalized);
+    }
+
+    // SERDE SERIALIZATIOIN
+    // ================================================================================================
+
+    #[test]
+    #[cfg(feature = "serialize")]
+    fn test_serde_field() {
+        let mut rng = thread_rng();
+        let element = Fp6::random(&mut rng);
+        let encoded = bincode::serialize(&element).unwrap();
+        let parsed: Fp6 = bincode::deserialize(&encoded).unwrap();
+        assert_eq!(parsed, element);
+
+        // Check that the encoding is 48 bytes exactly
+        assert_eq!(encoded.len(), 48);
+
+        // Check that the encoding itself matches the usual one
+        assert_eq!(element, bincode::deserialize(&element.to_bytes()).unwrap());
+
+        // Check that invalid encodings fail
+        let element = Fp6::random(&mut rng);
+        let mut encoded = bincode::serialize(&element).unwrap();
+        encoded[47] = 127;
+        assert!(bincode::deserialize::<Fp6>(&encoded).is_err());
+
+        let encoded = bincode::serialize(&element).unwrap();
+        assert!(bincode::deserialize::<Fp6>(&encoded[0..47]).is_err());
     }
 }

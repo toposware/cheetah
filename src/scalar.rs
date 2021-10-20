@@ -11,6 +11,11 @@ use group::ff::{Field, PrimeField};
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
+#[cfg(feature = "serialize")]
+use serde::de::Visitor;
+#[cfg(feature = "serialize")]
+use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
+
 // CONSTANTS
 // ================================================================================================
 
@@ -826,6 +831,62 @@ impl PrimeField for Scalar {
     }
 }
 
+// SERDE SERIALIZATION
+// ================================================================================================
+
+#[cfg(feature = "serialize")]
+impl Serialize for Scalar {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeTuple;
+        let mut tup = serializer.serialize_tuple(32)?;
+        for byte in self.to_bytes().iter() {
+            tup.serialize_element(byte)?;
+        }
+        tup.end()
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl<'de> Deserialize<'de> for Scalar {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct ScalarVisitor;
+
+        impl<'de> Visitor<'de> for ScalarVisitor {
+            type Value = Scalar;
+
+            fn expecting(&self, formatter: &mut Formatter) -> fmt::Result {
+                formatter.write_str("a valid field element")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Scalar, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut bytes = [0u8; 32];
+                for (i, byte) in bytes.iter_mut().enumerate() {
+                    *byte = seq
+                        .next_element()?
+                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 32 bytes"))?;
+                }
+                let elem = Scalar::from_bytes(&bytes);
+                if bool::from(elem.is_none()) {
+                    Err(serde::de::Error::custom("decompression failed"))
+                } else {
+                    Ok(elem.unwrap())
+                }
+            }
+        }
+
+        deserializer.deserialize_tuple(32, ScalarVisitor)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1334,5 +1395,33 @@ mod tests {
 
         assert!(element != Scalar::one());
         assert_eq!(element, element_normalized);
+    }
+
+    // SERDE SERIALIZATIOIN
+    // ================================================================================================
+
+    #[test]
+    #[cfg(feature = "serialize")]
+    fn test_serde_field() {
+        let mut rng = thread_rng();
+        let element = Scalar::random(&mut rng);
+        let encoded = bincode::serialize(&element).unwrap();
+        let parsed: Scalar = bincode::deserialize(&encoded).unwrap();
+        assert_eq!(parsed, element);
+
+        // Check that the encoding is 32 bytes exactly
+        assert_eq!(encoded.len(), 32);
+
+        // Check that the encoding itself matches the usual one
+        assert_eq!(element, bincode::deserialize(&element.to_bytes()).unwrap());
+
+        // Check that invalid encodings fail
+        let element = Scalar::random(&mut rng);
+        let mut encoded = bincode::serialize(&element).unwrap();
+        encoded[31] = 127;
+        assert!(bincode::deserialize::<Scalar>(&encoded).is_err());
+
+        let encoded = bincode::serialize(&element).unwrap();
+        assert!(bincode::deserialize::<Scalar>(&encoded[0..31]).is_err());
     }
 }

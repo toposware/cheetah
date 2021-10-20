@@ -9,6 +9,11 @@ use group::ff::{Field, PrimeField};
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
+#[cfg(feature = "serialize")]
+use serde::de::Visitor;
+#[cfg(feature = "serialize")]
+use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
+
 // CONSTANTS
 // ================================================================================================
 
@@ -523,6 +528,62 @@ impl PrimeField for Fp {
     }
 }
 
+// SERDE SERIALIZATION
+// ================================================================================================
+
+#[cfg(feature = "serialize")]
+impl Serialize for Fp {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeTuple;
+        let mut tup = serializer.serialize_tuple(8)?;
+        for byte in self.to_bytes().iter() {
+            tup.serialize_element(byte)?;
+        }
+        tup.end()
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl<'de> Deserialize<'de> for Fp {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct FpVisitor;
+
+        impl<'de> Visitor<'de> for FpVisitor {
+            type Value = Fp;
+
+            fn expecting(&self, formatter: &mut Formatter) -> fmt::Result {
+                formatter.write_str("a valid field element")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<Fp, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut bytes = [0u8; 8];
+                for (i, byte) in bytes.iter_mut().enumerate() {
+                    *byte = seq
+                        .next_element()?
+                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 8 bytes"))?;
+                }
+                let elem = Fp::from_bytes(&bytes);
+                if bool::from(elem.is_none()) {
+                    Err(serde::de::Error::custom("decompression failed"))
+                } else {
+                    Ok(elem.unwrap())
+                }
+            }
+        }
+
+        deserializer.deserialize_tuple(8, FpVisitor)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -830,5 +891,33 @@ mod tests {
 
         assert!(element != Fp::one());
         assert_eq!(element, element_normalized);
+    }
+
+    // SERDE SERIALIZATIOIN
+    // ================================================================================================
+
+    #[test]
+    #[cfg(feature = "serialize")]
+    fn test_serde_field() {
+        let mut rng = thread_rng();
+        let element = Fp::random(&mut rng);
+        let encoded = bincode::serialize(&element).unwrap();
+        let parsed: Fp = bincode::deserialize(&encoded).unwrap();
+        assert_eq!(parsed, element);
+
+        // Check that the encoding is 8 bytes exactly
+        assert_eq!(encoded.len(), 8);
+
+        // Check that the encoding itself matches the usual one
+        assert_eq!(element, bincode::deserialize(&element.to_bytes()).unwrap());
+
+        // Check that invalid encodings fail
+        let element = Fp::random(&mut rng);
+        let mut encoded = bincode::serialize(&element).unwrap();
+        encoded[7] = 127;
+        assert!(bincode::deserialize::<Fp>(&encoded).is_err());
+
+        let encoded = bincode::serialize(&element).unwrap();
+        assert!(bincode::deserialize::<Fp>(&encoded[0..7]).is_err());
     }
 }

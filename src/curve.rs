@@ -12,6 +12,11 @@ use group::{Curve, Group};
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
+#[cfg(feature = "serialize")]
+use serde::de::Visitor;
+#[cfg(feature = "serialize")]
+use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
+
 impl_binops_additive!(ProjectivePoint, AffinePoint);
 impl_binops_additive_specify_output!(AffinePoint, ProjectivePoint, ProjectivePoint);
 
@@ -327,25 +332,29 @@ impl AffinePoint {
             Fp6::from_bytes(&tmp)
         };
 
-        let p = AffinePoint::conditional_select(
-            &AffinePoint {
-                x,
-                y,
-                infinity: infinity_flag_set,
-            },
-            &AffinePoint::identity(),
-            infinity_flag_set,
-        );
+        x.and_then(|x| {
+            y.and_then(|y| {
+                let p = AffinePoint::conditional_select(
+                    &AffinePoint {
+                        x,
+                        y,
+                        infinity: infinity_flag_set,
+                    },
+                    &AffinePoint::identity(),
+                    infinity_flag_set,
+                );
 
-        CtOption::new(
-            p,
-            // If the infinity flag is set, the x and y coordinates should have been zero.
-            ((!infinity_flag_set) | (infinity_flag_set & x.is_zero() & y.is_zero())) &
+                CtOption::new(
+                    p,
+                    // If the infinity flag is set, the x and y coordinates should have been zero.
+                    ((!infinity_flag_set) | (infinity_flag_set & x.is_zero() & y.is_zero())) &
             // The compression flag should not have been set, as this is an uncompressed element
             (!compression_flag_set) &
             // The sort flag should not have been set, as this is an uncompressed element
             (!sort_flag_set),
-        )
+                )
+            })
+        })
     }
 
     /// Attempts to deserialize a compressed element.
@@ -379,35 +388,40 @@ impl AffinePoint {
             Fp6::from_bytes(&tmp)
         };
 
-        // If the infinity flag is set, return the value assuming
-        // the x-coordinate is zero and the sort flag is not set.
-        //
-        // Otherwise, return a recovered point (assuming the correct
-        // y-coordinate can be found) so long as the infinity flag
-        // was not set.
-        CtOption::new(
-            AffinePoint::identity(),
-            infinity_flag_set & // Infinity flag should be set
+        x.and_then(|x| {
+            // If the infinity flag is set, return the value assuming
+            // the x-coordinate is zero and the sort flag is not set.
+            //
+            // Otherwise, return a recovered point (assuming the correct
+            // y-coordinate can be found) so long as the infinity flag
+            // was not set.
+            CtOption::new(
+                AffinePoint::identity(),
+                infinity_flag_set & // Infinity flag should be set
             compression_flag_set & // Compression flag should be set
             (!sort_flag_set) & // Sort flag should not be set
             x.is_zero(), // The x-coordinate should be zero
-        )
-        .or_else(|| {
-            // Recover a y-coordinate given x by y = sqrt(x^3 + x + B)
-            ((x.square() * x) + x + B).sqrt().and_then(|y| {
-                // Switch to the correct y-coordinate if necessary.
-                let y =
-                    Fp6::conditional_select(&y, &-y, y.lexicographically_largest() ^ sort_flag_set);
+            )
+            .or_else(|| {
+                // Recover a y-coordinate given x by y = sqrt(x^3 + x + B)
+                ((x.square() * x) + x + B).sqrt().and_then(|y| {
+                    // Switch to the correct y-coordinate if necessary.
+                    let y = Fp6::conditional_select(
+                        &y,
+                        &-y,
+                        y.lexicographically_largest() ^ sort_flag_set,
+                    );
 
-                CtOption::new(
-                    AffinePoint {
-                        x,
-                        y,
-                        infinity: infinity_flag_set,
-                    },
-                    (!infinity_flag_set) & // Infinity flag should not be set
+                    CtOption::new(
+                        AffinePoint {
+                            x,
+                            y,
+                            infinity: infinity_flag_set,
+                        },
+                        (!infinity_flag_set) & // Infinity flag should not be set
                         compression_flag_set, // Compression flag should be set
-                )
+                    )
+                })
             })
         })
     }
@@ -1014,6 +1028,117 @@ impl Curve for ProjectivePoint {
 
     fn to_affine(&self) -> Self::AffineRepr {
         self.into()
+    }
+}
+
+// SERDE SERIALIZATION
+// ================================================================================================
+
+#[cfg(feature = "serialize")]
+impl Serialize for AffinePoint {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeTuple;
+        let mut tup = serializer.serialize_tuple(48)?;
+        for byte in self.to_compressed().iter() {
+            tup.serialize_element(byte)?;
+        }
+        tup.end()
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl Serialize for ProjectivePoint {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeTuple;
+        let mut tup = serializer.serialize_tuple(48)?;
+        for byte in self.to_compressed().iter() {
+            tup.serialize_element(byte)?;
+        }
+        tup.end()
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl<'de> Deserialize<'de> for AffinePoint {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct AffinePointVisitor;
+
+        impl<'de> Visitor<'de> for AffinePointVisitor {
+            type Value = AffinePoint;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("a valid point in Ristretto format")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<AffinePoint, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut bytes = [0u8; 48];
+                for (i, byte) in bytes.iter_mut().enumerate() {
+                    *byte = seq
+                        .next_element()?
+                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 48 bytes"))?;
+                }
+
+                let p = AffinePoint::from_compressed(&bytes);
+                if bool::from(p.is_some()) {
+                    Ok(p.unwrap())
+                } else {
+                    Err(serde::de::Error::custom("decompression failed"))
+                }
+            }
+        }
+
+        deserializer.deserialize_tuple(48, AffinePointVisitor)
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl<'de> Deserialize<'de> for ProjectivePoint {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct ProjectivePointVisitor;
+
+        impl<'de> Visitor<'de> for ProjectivePointVisitor {
+            type Value = ProjectivePoint;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("48 bytes of data")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<ProjectivePoint, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut bytes = [0u8; 48];
+                for (i, byte) in bytes.iter_mut().enumerate() {
+                    *byte = seq
+                        .next_element()?
+                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 48 bytes"))?;
+                }
+
+                let p = ProjectivePoint::from_compressed(&bytes);
+                if bool::from(p.is_some()) {
+                    Ok(p.unwrap())
+                } else {
+                    Err(serde::de::Error::custom("decompression failed"))
+                }
+            }
+        }
+
+        deserializer.deserialize_tuple(48, ProjectivePointVisitor)
     }
 }
 
@@ -1675,5 +1800,58 @@ mod tests {
             let point_decompressed = ProjectivePoint::from_uncompressed(&bytes);
             assert!(bool::from(point_decompressed.is_none()));
         }
+    }
+
+    // SERDE SERIALIZATIOIN
+    // ================================================================================================
+
+    #[test]
+    #[cfg(feature = "serialize")]
+    fn test_serde_affine() {
+        let mut rng = thread_rng();
+        let point = AffinePoint::random(&mut rng);
+        let encoded = bincode::serialize(&point).unwrap();
+        let parsed: AffinePoint = bincode::deserialize(&encoded).unwrap();
+        assert_eq!(parsed, point);
+
+        // Check that the encoding is 48 bytes exactly
+        assert_eq!(encoded.len(), 48);
+
+        // Check that the encoding itself matches the usual one
+        assert_eq!(point, bincode::deserialize(&point.to_compressed()).unwrap());
+
+        // Check that invalid encodings fail
+        let point = AffinePoint::random(&mut rng);
+        let mut encoded = bincode::serialize(&point).unwrap();
+        encoded[47] = 127;
+        assert!(bincode::deserialize::<AffinePoint>(&encoded).is_err());
+
+        let encoded = bincode::serialize(&point).unwrap();
+        assert!(bincode::deserialize::<AffinePoint>(&encoded[0..47]).is_err());
+    }
+
+    #[test]
+    #[cfg(feature = "serialize")]
+    fn test_serde_projective() {
+        let mut rng = thread_rng();
+        let point = ProjectivePoint::random(&mut rng);
+        let encoded = bincode::serialize(&point).unwrap();
+        let parsed: ProjectivePoint = bincode::deserialize(&encoded).unwrap();
+        assert_eq!(parsed, point);
+
+        // Check that the encoding is 48 bytes exactly
+        assert_eq!(encoded.len(), 48);
+
+        // Check that the encoding itself matches the usual one
+        assert_eq!(point, bincode::deserialize(&point.to_compressed()).unwrap());
+
+        // Check that invalid encodings fail
+        let point = ProjectivePoint::random(&mut rng);
+        let mut encoded = bincode::serialize(&point).unwrap();
+        encoded[47] = 127;
+        assert!(bincode::deserialize::<ProjectivePoint>(&encoded).is_err());
+
+        let encoded = bincode::serialize(&point).unwrap();
+        assert!(bincode::deserialize::<ProjectivePoint>(&encoded[0..47]).is_err());
     }
 }

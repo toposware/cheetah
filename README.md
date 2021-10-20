@@ -7,11 +7,7 @@ This crates provide an ongoing implementation of the prime-order curve Cheetah o
 
 ## Features
 
-* None
-
-## Planned Features
-
-* `serde`
+* `serialize` (on by default): Enables Serde serialization
 
 ## Description
 
