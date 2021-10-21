@@ -399,19 +399,18 @@ impl Scalar {
     }
 
     /// Convert a little-endian bit sequence into a Scalar element
-    ///
-    /// **This operation is variable time with respect
-    /// to the bit slice.** If the slice is fixed,
-    /// this operation is effectively constant time.
-    pub fn from_bits_vartime(bit_slice: &BitSlice<Lsb0, u8>) -> Scalar {
+    pub fn from_bits(bit_slice: &BitSlice<Lsb0, u8>) -> Scalar {
         assert_eq!(bit_slice.len(), 256);
 
         let mut result = Scalar::zero();
-        for i in 0..256 {
+        for i in (0..256).rev() {
             result = result.double();
-            if bit_slice[255 - i] {
-                result += Scalar::one();
-            }
+            let tmp = Scalar::conditional_select(
+                &Scalar::zero(),
+                &Scalar::one(),
+                Choice::from(bit_slice[i] as u8),
+            );
+            result += tmp;
         }
 
         result
@@ -1390,38 +1389,26 @@ mod tests {
     }
 
     #[test]
-    fn test_from_bits_vartime() {
+    fn test_from_bits() {
         let bytes = Scalar::zero().to_bytes();
-        assert_eq!(
-            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
-            Scalar::zero()
-        );
+        assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), Scalar::zero());
 
         let bytes = Scalar::one().to_bytes();
-        assert_eq!(
-            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
-            Scalar::one()
-        );
+        assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), Scalar::one());
 
         let bytes = R2.to_bytes();
-        assert_eq!(Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()), R2);
+        assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), R2);
 
         // -1 should work
         let bytes = (-Scalar::one()).to_bytes();
-        assert_eq!(
-            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
-            -Scalar::one()
-        );
+        assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), -Scalar::one());
 
         // Modulus results in Scalar::zero()
         let bytes = [
             17, 174, 241, 37, 126, 218, 148, 254, 1, 55, 185, 100, 102, 166, 128, 72, 214, 108, 4,
             148, 72, 75, 96, 235, 121, 162, 161, 147, 213, 11, 35, 42,
         ];
-        assert_eq!(
-            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
-            Scalar::zero()
-        );
+        assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), Scalar::zero());
     }
 
     #[test]
