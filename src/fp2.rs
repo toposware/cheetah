@@ -1,5 +1,5 @@
 //! This module implements arithmetic over the extension field Fp2,
-//! defined with irreducible polynomial u^2 - x - 1.
+//! defined with irreducible polynomial u^2 - 2x - 2.
 
 use core::fmt::{self, Formatter};
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
@@ -17,9 +17,11 @@ use crate::fp::Fp;
 use crate::fp::TWO_ADICITY;
 use crate::utils::square_assign_multi;
 
+// 2^56 root of unity = 3151433596914781827*u + 1568338812569497982
+//                    = 1770206186931184045*u + 2949566222553095764 in Montgomery form
 const TWO_ADIC_ROOT_OF_UNITY_P2: Fp2 = Fp2 {
-    c0: Fp(0x285e60ade3cc165),
-    c1: Fp(0x3af3fc6a43867d37),
+    c0: Fp(0x28eef6da18c49e54),
+    c1: Fp(0x18910925e73b61ad),
 };
 
 const TWO_ADICITY_P2: u32 = TWO_ADICITY + 1;
@@ -180,14 +182,15 @@ impl Fp2 {
         let aa = (&self.c0).mul(&other.c0);
         let bb = (&self.c1).mul(&other.c1);
 
-        let tmp = (&self.c0).add(&self.c1);
-        let tmp2 = (&other.c0).add(&other.c1);
-        let tmp = (&tmp).mul(&tmp2);
+        let tmp = (&self.c0).sub(&self.c1);
+        let tmp1 = (&other.c1).sub(&other.c0);
+        let tmp = (&tmp).mul(&tmp1);
 
-        let c1 = (&tmp).sub(&aa);
+        let c0 = (&bb).double();
+        let c0 = (&c0).add(&aa);
 
-        let c0 = (&c1).sub(&bb);
-        let c0 = (&tmp).sub(&c0);
+        let c1 = (&bb).add(&c0);
+        let c1 = (&c1).add(&tmp);
 
         Fp2 { c0, c1 }
     }
@@ -195,15 +198,17 @@ impl Fp2 {
     /// Square this element
     #[inline]
     pub const fn square(&self) -> Self {
-        let aa = &self.c0.square();
-        let ab = (&self.c0).mul(&self.c1);
+        let aa = (&self.c0).square();
+        let bb = (&self.c1).square();
 
-        let bb = &self.c1.square();
+        let tmp = (&self.c0).sub(&self.c1);
+        let tmp = (&tmp).square();
 
-        let c0 = aa.add(bb);
+        let c0 = (&bb).double();
+        let c0 = (&c0).add(&aa);
 
-        let c1 = bb.add(&ab);
-        let c1 = (&c1).add(&ab);
+        let c1 = (&bb).add(&c0);
+        let c1 = (&c1).sub(&tmp);
 
         Fp2 { c0, c1 }
     }
@@ -216,8 +221,8 @@ impl Fp2 {
 
         // Compute the progenitor y of self
         // y = self^((t - 1) // 2)
-        //   = self^0x7fff220060420003fffc8
-        let y = self.exp_vartime(&[0x20060420003fffc8, 0x000000000007fff2]);
+        //   = self^0x86120000000000041
+        let y = self.exp_vartime(&[0x6120000000000041, 0x0000000000000008]);
 
         let mut s = self * y;
         let mut t = s * y;
@@ -275,11 +280,11 @@ impl Fp2 {
     /// element, returning None in the case that this element
     /// is zero.
     pub fn invert(&self) -> CtOption<Self> {
-        let inv = self.c0.square() + self.c0 * self.c1 - self.c1.square();
+        let inv = self.c0.square() + self.c0.double() * self.c1 - self.c1.square().double();
 
         inv.invert().map(|t| Fp2 {
-            c0: (self.c0 + self.c1) * t,
-            c1: -self.c1 * t,
+            c0: (self.c0 + self.c1.double()) * t,
+            c1: (-self.c1) * t,
         })
     }
 
@@ -494,7 +499,7 @@ mod test {
         );
 
         let a = Fp2::one().neg();
-        assert_eq!(format!("{:?}", a), "4611624995532046336 + 0*u");
+        assert_eq!(format!("{:?}", a), "4719772409484279808 + 0*u");
     }
 
     #[test]
@@ -504,7 +509,7 @@ mod test {
         let a = Fp2::one().neg();
         assert_eq!(
             format!("{:?}", a.output_limbs()),
-            "[4611624995532046336, 0]"
+            "[4719772409484279808, 0]"
         );
     }
 
@@ -586,12 +591,12 @@ mod test {
     #[test]
     fn test_squaring() {
         let a = Fp2 {
-            c0: Fp::new(1373422459643663482),
-            c1: Fp::new(1559760838287424487),
+            c0: Fp::new(1325350471228883001),
+            c1: Fp::new(3555613217048211822),
         };
         let b = Fp2 {
-            c0: Fp::new(4508439400065818468),
-            c1: Fp::new(3727974599246273355),
+            c0: Fp::new(4144385007586913737),
+            c1: Fp::new(1006138256509718594),
         };
 
         assert_eq!(a.square(), b);
@@ -608,8 +613,8 @@ mod test {
         assert_eq!(Fp2::zero().sqrt().unwrap(), Fp2::zero());
         assert_eq!(Fp2::one().sqrt().unwrap(), Fp2::one());
 
-        // u + 3 is not a quadratic residue in Fp2
-        assert!(bool::from(Fp2::new([3, 1]).sqrt().is_none()));
+        // u + 2 is not a quadratic residue in Fp2
+        assert!(bool::from(Fp2::new([2, 1]).sqrt().is_none()));
     }
 
     #[test]
@@ -627,16 +632,16 @@ mod test {
         assert_eq!(a * b, c);
 
         let a = Fp2 {
-            c0: Fp::new(1373422459643663482),
-            c1: Fp::new(1559760838287424487),
+            c0: Fp::new(702450889089710977),
+            c1: Fp::new(131935822767345842),
         };
         let b = Fp2 {
-            c0: Fp::new(4508439400065818468),
-            c1: Fp::new(3727974599246273355),
+            c0: Fp::new(71395483687675361),
+            c1: Fp::new(1751573960731485260),
         };
         let c = Fp2 {
-            c0: Fp::new(3944078691460293030),
-            c1: Fp::new(1622844793164244792),
+            c0: Fp::new(3870520324615741711),
+            c1: Fp::new(2105308272415798137),
         };
 
         assert_eq!(a * b, c);
@@ -704,13 +709,13 @@ mod test {
     #[test]
     fn test_inversion() {
         let a = Fp2 {
-            c0: Fp::new(2077468337887652729),
-            c1: Fp::new(3560716367442326177),
+            c0: Fp::new(1325350471228883001),
+            c1: Fp::new(3555613217048211822),
         };
 
         let b = Fp2 {
-            c0: Fp::new(293161233865469014),
-            c1: Fp::new(2017440449651245094),
+            c0: Fp::new(2842799053740762838),
+            c1: Fp::new(2614512045708308582),
         };
 
         assert_eq!(a.invert().unwrap(), b);
@@ -722,7 +727,7 @@ mod test {
     fn test_invert_is_pow() {
         let mut rng = thread_rng();
 
-        let p2_minus_2 = [0x7fff90ffffffffff, 0x0fffe4400c084000];
+        let p2_minus_2 = [0x82ffffffffffffff, 0x10c2400000000000];
 
         let mut r1 = Fp2::random(&mut rng);
         let mut r2 = r1;
@@ -748,11 +753,11 @@ mod test {
 
     #[test]
     fn test_get_root_of_unity() {
-        let two_pow_40 = 1 << TWO_ADICITY_P2 as u64;
-        assert_eq!(Fp2::one(), TWO_ADIC_ROOT_OF_UNITY_P2.exp(&[two_pow_40, 0]));
+        let two_pow_56 = 1 << TWO_ADICITY_P2 as u64;
+        assert_eq!(Fp2::one(), TWO_ADIC_ROOT_OF_UNITY_P2.exp(&[two_pow_56, 0]));
         assert_ne!(
             Fp2::one(),
-            TWO_ADIC_ROOT_OF_UNITY_P2.exp(&[two_pow_40 - 1, 0])
+            TWO_ADIC_ROOT_OF_UNITY_P2.exp(&[two_pow_56 - 1, 0])
         );
     }
 
@@ -794,9 +799,9 @@ mod test {
 
     #[test]
     fn test_from_raw_unchecked() {
-        let mut element = Fp2::from_raw_unchecked([244091581366268, 0]);
+        let mut element = Fp2::from_raw_unchecked([4287426845256712189, 0]);
 
-        let element_normalized = Fp2::new([244091581366268, 0]);
+        let element_normalized = Fp2::new([4287426845256712189, 0]);
 
         assert_eq!(element, Fp2::one());
         element.normalize();
@@ -822,7 +827,7 @@ mod test {
 
         assert_eq!(
             (-&Fp2::one()).to_bytes(),
-            [0, 0, 0, 0, 128, 200, 255, 63, 0, 0, 0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0, 128, 65, 0, 0, 0, 0, 0, 0, 0, 0]
         );
     }
 
@@ -847,13 +852,13 @@ mod test {
 
         // -1 should work
         assert_eq!(
-            Fp2::from_bytes(&[0, 0, 0, 0, 128, 200, 255, 63, 0, 0, 0, 0, 0, 0, 0, 0]).unwrap(),
+            Fp2::from_bytes(&[0, 0, 0, 0, 0, 0, 128, 65, 0, 0, 0, 0, 0, 0, 0, 0]).unwrap(),
             -Fp2::one()
         );
 
         // Anything larger than M in one of the members is invalid
         assert!(bool::from(
-            Fp2::from_bytes(&[2, 0, 0, 0, 128, 200, 255, 63, 0, 0, 0, 0, 0, 0, 0, 0]).is_none()
+            Fp2::from_bytes(&[1, 0, 0, 0, 0, 0, 128, 65, 0, 0, 0, 0, 0, 0, 0, 0]).is_none()
         ));
 
         assert!(bool::from(

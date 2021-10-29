@@ -1,5 +1,5 @@
 //! This module implements arithmetic over the extension field Fp6,
-//! defined with irreducible polynomial v^3 - v - 2.
+//! defined with irreducible polynomial v^3 + v + 1.
 
 use core::fmt::{self, Formatter};
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
@@ -19,10 +19,12 @@ use crate::utils::square_assign_multi;
 
 use crate::fp::TWO_ADICITY;
 
+// 2^56 root of unity = 3537142827676469596*u + 1182629581807810213
+//                    = 1992083664070583229*u + 2727688745413696580 in Montgomery form
 const TWO_ADIC_ROOT_OF_UNITY_P6: Fp6 = Fp6 {
     c0: Fp2 {
-        c0: Fp(0x33c86f93240b900c),
-        c1: Fp(0x186eb1d9b7e8dfea),
+        c0: Fp(0x25dab2764836dc44),
+        c1: Fp(0x1ba54d89b7c923bd),
     },
     c1: Fp2::zero(),
     c2: Fp2::zero(),
@@ -240,31 +242,30 @@ impl Fp6 {
         let bb = (&self.c1).mul(&other.c1);
         let cc = (&self.c2).mul(&other.c2);
 
-        let tmp0 = (&self.c1).add(&self.c2);
-        let tmp0b = (&other.c1).add(&other.c2);
-        let tmp0 = (&tmp0).mul(&tmp0b);
+        let ab_ab = (&self.c0).add(&self.c1);
+        let tmp = (&other.c0).add(&other.c1);
+        let ab_ab = (&ab_ab).mul(&tmp);
 
-        let tmp1 = (&self.c0).add(&self.c1);
-        let tmp1b = (&other.c0).add(&other.c1);
-        let tmp1 = (&tmp1).mul(&tmp1b);
+        let ac_ac = (&self.c0).add(&self.c2);
+        let tmp = (&other.c0).add(&other.c2);
+        let ac_ac = (&ac_ac).mul(&tmp);
 
-        let tmp2 = (&self.c0).add(&self.c2);
-        let tmp2b = (&other.c0).add(&other.c2);
-        let tmp2 = (&tmp2).mul(&tmp2b);
+        let bc_bc = (&self.c1).add(&self.c2);
+        let tmp = (&other.c1).add(&other.c2);
+        let bc_bc = (&bc_bc).mul(&tmp);
 
-        let c0 = (&tmp0).sub(&bb);
-        let c0 = (&c0).sub(&cc);
-        let c0 = (&c0).double();
-        let c0 = (&c0).add(&aa);
+        let tmp = (&aa).add(&bb);
+        let tmp = (&tmp).add(&cc);
 
-        let c1 = (&tmp0).add(&tmp1);
+        let c0 = (&tmp).sub(&bc_bc);
+
+        let c1 = (&ab_ab).sub(&bc_bc);
         let c1 = (&c1).sub(&aa);
-        let c1 = (&c1).sub(&bb);
-        let c1 = (&c1).sub(&bb);
-        let c1 = (&c1).add(&cc);
 
-        let c2 = (&tmp2).sub(&aa);
-        let c2 = (&c2).add(&bb);
+        let c2 = (&ac_ac).sub(&tmp);
+        let c2 = (&c2).sub(&cc);
+        let t2 = (&bb).double();
+        let c2 = (&c2).add(&t2);
 
         Fp6 { c0, c1, c2 }
     }
@@ -276,28 +277,27 @@ impl Fp6 {
         let bb = (&self.c1).square();
         let cc = (&self.c2).square();
 
-        let tmp0 = (&self.c1).add(&self.c2);
-        let tmp0 = (&tmp0).square();
+        let ab_ab = (&self.c0).add(&self.c1);
+        let ab_ab = (&ab_ab).square();
 
-        let tmp1 = (&self.c0).add(&self.c1);
-        let tmp1 = (&tmp1).square();
+        let ac_ac = (&self.c0).add(&self.c2);
+        let ac_ac = (&ac_ac).square();
 
-        let tmp2 = (&self.c0).add(&self.c2);
-        let tmp2 = (&tmp2).square();
+        let bc_bc = (&self.c1).add(&self.c2);
+        let bc_bc = (&bc_bc).square();
 
-        let c0 = (&tmp0).sub(&bb);
-        let c0 = (&c0).sub(&cc);
-        let c0 = (&c0).double();
-        let c0 = (&c0).add(&aa);
+        let tmp = (&aa).add(&bb);
+        let tmp = (&tmp).add(&cc);
 
-        let c1 = (&tmp0).add(&tmp1);
+        let c0 = (&tmp).sub(&bc_bc);
+
+        let c1 = (&ab_ab).sub(&bc_bc);
         let c1 = (&c1).sub(&aa);
-        let c1 = (&c1).sub(&bb);
-        let c1 = (&c1).sub(&bb);
-        let c1 = (&c1).add(&cc);
 
-        let c2 = (&tmp2).sub(&aa);
-        let c2 = (&c2).add(&bb);
+        let c2 = (&ac_ac).sub(&tmp);
+        let c2 = (&c2).sub(&cc);
+        let t2 = (&bb).double();
+        let c2 = (&c2).add(&t2);
 
         Fp6 { c0, c1, c2 }
     }
@@ -313,14 +313,14 @@ impl Fp6 {
 
         // Compute the progenitor y of self
         // y = self^((t - 1) // 2)
-        //   = self^0x7ffd6605a3d77a978d997e2ea6efcb9538f1d34e3dc07c22d66eed23dc5ea953f2fe05a3de000bfff59
+        //   = self^0x931696537b20000d7946712c80000083a6d75f80000002ae101c0000000007db0e00000000000c4
         let y = self.exp_vartime(&[
-            0xe05a3de000bfff59,
-            0xeed23dc5ea953f2f,
-            0x1d34e3dc07c22d66,
-            0x97e2ea6efcb9538f,
-            0xd6605a3d77a978d9,
-            0x00000000000007ff,
+            0xb0e00000000000c4,
+            0xe101c0000000007d,
+            0x3a6d75f80000002a,
+            0xd7946712c8000008,
+            0x0931696537b20000,
+            0x0000000000000000,
         ]);
 
         let mut s = self * y;
@@ -382,28 +382,17 @@ impl Fp6 {
     /// element, returning None in the case that this element
     /// is zero.
     pub fn invert(&self) -> CtOption<Self> {
-        let three = Fp2::new([3, 0]);
-        let two = Fp2::new([2, 0]);
-        let four = Fp2::new([4, 0]);
-
         let c0_sq = self.c0.square();
         let c1_sq = self.c1.square();
         let c2_sq = self.c2.square();
 
-        let two_c1 = two * self.c1;
-        let c0_c1 = self.c0 * self.c1;
+        let inv = self.c0 * (c0_sq + c1_sq) - self.c1 * c1_sq
+            + (self.c0 - self.c1 + self.c2) * c2_sq
+            - (c0_sq.double() - (self.c0.double() + self.c0) * self.c1) * self.c2;
 
-        let inv = self.c0 * c0_sq - self.c0 * self.c1.square()
-            + two_c1 * c1_sq
-            + (self.c0 - two_c1) * self.c2.square()
-            + four * self.c2 * c2_sq
-            + two * (self.c0.square() - three * c0_c1) * self.c2;
-
-        let c0 = self.c0.square() - self.c1.square()
-            + two * (self.c0 - self.c1) * self.c2
-            + self.c2.square();
-        let c1 = -(c0_c1 - two * self.c2.square());
-        let c2 = self.c1.square() - self.c0 * self.c2 - self.c2.square();
+        let c0 = c0_sq + c1_sq - (self.c0.double() - self.c1) * self.c2 + c2_sq;
+        let c1 = -(self.c0 * self.c1 + c2_sq);
+        let c2 = c1_sq - self.c0 * self.c2 + c2_sq;
 
         inv.invert().map(|t| Fp6 {
             c0: c0 * t,
@@ -646,7 +635,7 @@ mod test {
         let a = Fp6::one().neg();
         assert_eq!(
             format!("{:?}", a),
-            "4611624995532046336 + 0*u + (0 + 0*u)*v + (0 + 0*u)*v^2"
+            "4719772409484279808 + 0*u + (0 + 0*u)*v + (0 + 0*u)*v^2"
         );
     }
 
@@ -663,7 +652,7 @@ mod test {
         let a = Fp6::one().neg();
         assert_eq!(
             format!("{:?}", a.output_limbs()),
-            "[4611624995532046336, 0, 0, 0, 0, 0]"
+            "[4719772409484279808, 0, 0, 0, 0, 0]"
         );
     }
 
@@ -857,30 +846,30 @@ mod test {
     fn test_squaring() {
         let a = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(4009227748844085582),
-                c1: Fp::new(4031374605246455920),
+                c0: Fp::new(2888944236454241314),
+                c1: Fp::new(1900961609923933690),
             },
             c1: Fp2 {
-                c0: Fp::new(1533760094217716083),
-                c1: Fp::new(2434700852926098351),
+                c0: Fp::new(4164134277002348062),
+                c1: Fp::new(307346200243481763),
             },
             c2: Fp2 {
-                c0: Fp::new(3070271868151135425),
-                c1: Fp::new(4445614804572870244),
+                c0: Fp::new(2163980486023891318),
+                c1: Fp::new(3902966736580914535),
             },
         };
         let b = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(1949415958821096488),
-                c1: Fp::new(34803124703569509),
+                c0: Fp::new(3125384363659457274),
+                c1: Fp::new(3501855459985374183),
             },
             c1: Fp2 {
-                c0: Fp::new(2372921723172571513),
-                c1: Fp::new(3116692962746587027),
+                c0: Fp::new(4665660136548904132),
+                c1: Fp::new(926330806566119355),
             },
             c2: Fp2 {
-                c0: Fp::new(3662356892616824886),
-                c1: Fp::new(4411799637305927293),
+                c0: Fp::new(3751072364085233784),
+                c1: Fp::new(193238968045832370),
             },
         };
 
@@ -898,23 +887,23 @@ mod test {
         assert_eq!(Fp6::zero().sqrt().unwrap(), Fp6::zero());
         assert_eq!(Fp6::one().sqrt().unwrap(), Fp6::one());
 
-        // (3732399247313726919 * u + 4310061443266019898) * v^2
-        //      + (2669503629927535146 * u + 3375741866740416989) * v
-        //      + 1679900466465613293 * u + 4383462042190447206
+        // (1817037221240944654 * u + 1972121079904647667) * v^2
+        //      + (4179895386176115723 * u + 372058458154352541) * v
+        //      + 799979765245758940 * u + 3901586259568969690
         // is not a quadratic residue in Fp6
         assert!(bool::from(
             Fp6 {
                 c0: Fp2 {
-                    c0: Fp::new(4383462042190447206),
-                    c1: Fp::new(1679900466465613293),
+                    c0: Fp::new(3901586259568969690),
+                    c1: Fp::new(799979765245758940),
                 },
                 c1: Fp2 {
-                    c0: Fp::new(3375741866740416989),
-                    c1: Fp::new(2669503629927535146),
+                    c0: Fp::new(372058458154352541),
+                    c1: Fp::new(4179895386176115723),
                 },
                 c2: Fp2 {
-                    c0: Fp::new(4310061443266019898),
-                    c1: Fp::new(3732399247313726919),
+                    c0: Fp::new(1972121079904647667),
+                    c1: Fp::new(1817037221240944654),
                 },
             }
             .sqrt()
@@ -958,44 +947,44 @@ mod test {
 
         let a = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(4009227748844085582),
-                c1: Fp::new(4031374605246455920),
+                c0: Fp::new(2888944236454241314),
+                c1: Fp::new(1900961609923933690),
             },
             c1: Fp2 {
-                c0: Fp::new(1533760094217716083),
-                c1: Fp::new(2434700852926098351),
+                c0: Fp::new(4164134277002348062),
+                c1: Fp::new(307346200243481763),
             },
             c2: Fp2 {
-                c0: Fp::new(3070271868151135425),
-                c1: Fp::new(4445614804572870244),
+                c0: Fp::new(2163980486023891318),
+                c1: Fp::new(3902966736580914535),
             },
         };
         let b = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(1949415958821096488),
-                c1: Fp::new(34803124703569509),
+                c0: Fp::new(2535997426787301359),
+                c1: Fp::new(3971257432982727883),
             },
             c1: Fp2 {
-                c0: Fp::new(2372921723172571513),
-                c1: Fp::new(3116692962746587027),
+                c0: Fp::new(4562449940607053508),
+                c1: Fp::new(2369569849810406504),
             },
             c2: Fp2 {
-                c0: Fp::new(3662356892616824886),
-                c1: Fp::new(4411799637305927293),
+                c0: Fp::new(4379339381077658533),
+                c1: Fp::new(2874815267585070886),
             },
         };
         let c = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(3466079655920498030),
-                c1: Fp::new(2417642467435273447),
+                c0: Fp::new(3981622945204561084),
+                c1: Fp::new(152859226758736115),
             },
             c1: Fp2 {
-                c0: Fp::new(44683634131777069),
-                c1: Fp::new(87878120261881242),
+                c0: Fp::new(707484124120067374),
+                c1: Fp::new(4240778718972633208),
             },
             c2: Fp2 {
-                c0: Fp::new(3689005368361223881),
-                c1: Fp::new(1980168815030341140),
+                c0: Fp::new(136693932767651254),
+                c1: Fp::new(174194258731295370),
             },
         };
 
@@ -1145,31 +1134,31 @@ mod test {
     fn test_inversion() {
         let a = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(4009227748844085582),
-                c1: Fp::new(4031374605246455920),
+                c0: Fp::new(2888944236454241314),
+                c1: Fp::new(1900961609923933690),
             },
             c1: Fp2 {
-                c0: Fp::new(1533760094217716083),
-                c1: Fp::new(2434700852926098351),
+                c0: Fp::new(4164134277002348062),
+                c1: Fp::new(307346200243481763),
             },
             c2: Fp2 {
-                c0: Fp::new(3070271868151135425),
-                c1: Fp::new(4445614804572870244),
+                c0: Fp::new(2163980486023891318),
+                c1: Fp::new(3902966736580914535),
             },
         };
 
         let b = Fp6 {
             c0: Fp2 {
-                c0: Fp::new(2755520761612505010),
-                c1: Fp::new(1048198912003742666),
+                c0: Fp::new(411478125972401294),
+                c1: Fp::new(2671067376479186442),
             },
             c1: Fp2 {
-                c0: Fp::new(4202901689791132434),
-                c1: Fp::new(2790375792599204151),
+                c0: Fp::new(4339807523281293225),
+                c1: Fp::new(4431608856960589867),
             },
             c2: Fp2 {
-                c0: Fp::new(122386710556669900),
-                c1: Fp::new(3508229261956137550),
+                c0: Fp::new(1673850528796443186),
+                c1: Fp::new(533572733765271776),
             },
         };
 
@@ -1185,12 +1174,12 @@ mod test {
         let mut rng = thread_rng();
 
         let p6_minus_2 = [
-            0x7ffeb2ffffffffff,
-            0x2a7e5fc0b47bc001,
-            0x845acddda47b8bd5,
-            0x72a71e3a69c7b80f,
-            0x52f1b32fc5d4ddf9,
-            0x000fffacc0b47aef,
+            0x88ffffffffffffff,
+            0xfb61c00000000001,
+            0x55c2038000000000,
+            0x1074daebf0000000,
+            0x01af28ce25900000,
+            0x001262d2ca6f6400,
         ];
 
         let mut r1 = Fp6::random(&mut rng);
@@ -1217,14 +1206,14 @@ mod test {
 
     #[test]
     fn test_get_root_of_unity() {
-        let two_pow_40 = 1 << TWO_ADICITY_P6 as u64;
+        let two_pow_56 = 1 << TWO_ADICITY_P6 as u64;
         assert_eq!(
             Fp6::one(),
-            TWO_ADIC_ROOT_OF_UNITY_P6.exp(&[two_pow_40, 0, 0, 0, 0, 0])
+            TWO_ADIC_ROOT_OF_UNITY_P6.exp(&[two_pow_56, 0, 0, 0, 0, 0])
         );
         assert_ne!(
             Fp6::one(),
-            TWO_ADIC_ROOT_OF_UNITY_P6.exp(&[two_pow_40 - 1, 0, 0, 0, 0, 0])
+            TWO_ADIC_ROOT_OF_UNITY_P6.exp(&[two_pow_56 - 1, 0, 0, 0, 0, 0])
         );
     }
 
@@ -1290,9 +1279,9 @@ mod test {
 
     #[test]
     fn test_from_raw_unchecked() {
-        let mut element = Fp6::from_raw_unchecked([244091581366268, 0, 0, 0, 0, 0]);
+        let mut element = Fp6::from_raw_unchecked([4287426845256712189, 0, 0, 0, 0, 0]);
 
-        let element_normalized = Fp6::new([244091581366268, 0, 0, 0, 0, 0]);
+        let element_normalized = Fp6::new([4287426845256712189, 0, 0, 0, 0, 0]);
 
         assert_eq!(element, Fp6::one());
         element.normalize();
@@ -1325,8 +1314,8 @@ mod test {
         assert_eq!(
             (-&Fp6::one()).to_bytes(),
             [
-                0, 0, 0, 0, 128, 200, 255, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, 0, 128, 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             ]
         );
     }
@@ -1361,8 +1350,8 @@ mod test {
         // -1 should work
         assert_eq!(
             Fp6::from_bytes(&[
-                0, 0, 0, 0, 128, 200, 255, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, 0, 128, 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             ])
             .unwrap(),
             -Fp6::one()
@@ -1371,8 +1360,8 @@ mod test {
         // Anything larger than M in one of the members is invalid
         assert!(bool::from(
             Fp6::from_bytes(&[
-                2, 0, 0, 0, 128, 200, 255, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                2, 0, 0, 0, 0, 0, 128, 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             ])
             .is_none()
         ));

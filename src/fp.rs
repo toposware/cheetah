@@ -21,29 +21,29 @@ use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 // ********* FP CONSTANTS ********* //
 // ******************************** //
 
-// Field modulus = 2^62 - 111 * 2^39 + 1
-const M: Fp = Fp(4611624995532046337);
+// Field modulus = 2^62 + 2^56 + 2^55 + 1
+const M: Fp = Fp(4719772409484279809);
 
 // 2^64 mod M; this is used for conversion of elements into Montgomery representation.
-pub(crate) const R: Fp = Fp(244091581366268);
+pub(crate) const R: Fp = Fp(4287426845256712189);
 
 // 2^128 mod M; this is used for conversion of elements into Montgomery representation.
-pub(crate) const R2: Fp = Fp(630444561284293700);
+pub(crate) const R2: Fp = Fp(3635333122111952146);
 
 // Multiplicative generator g of order p-1
 // g = 3
-//   = 732274744098804 in Montgomery form
-const GENERATOR: Fp = Fp(732274744098804);
+//   = 3422735716801576949 in Montgomery form
+const GENERATOR: Fp = Fp(3422735716801576949);
 
-// Two-adicity of the field: (p-1) % 2^39 = 0
-pub(crate) const TWO_ADICITY: u32 = 39;
+// Two-adicity of the field: (p-1) % 2^55 = 0
+pub(crate) const TWO_ADICITY: u32 = 55;
 
-// 2^39 root of unity = 4421547261963328785
-//                    = 117700978803869913 in Montgomery form
-const TWO_ADIC_ROOT_OF_UNITY: Fp = Fp(117700978803869913);
+// 2^55 root of unity = 90479342105353296
+//                    = 1519868260574363836 in Montgomery form
+const TWO_ADIC_ROOT_OF_UNITY: Fp = Fp(0x1517a82160ed00bc);
 
 // -M^{-1} mod 2^64; this is used during element multiplication.
-const U: u64 = 4611624995532046335;
+const U: u64 = 4719772409484279807;
 
 // FIELD ELEMENT
 // ================================================================================================
@@ -184,8 +184,8 @@ impl Fp {
 
         // Compute the progenitor y of self
         // y = self^((t - 1) // 2)
-        //   = self^0x3fffc8
-        let y = self.exp_vartime(0x3fffc8);
+        //   = self^0x41
+        let y = self.exp_vartime(0x41);
 
         let mut s = self * y;
         let mut t = s * y;
@@ -260,7 +260,7 @@ impl Fp {
         // First, because self is in Montgomery form we need to reduce it
         let tmp = Fp::montgomery_reduce(self.0, 0);
 
-        let (_, borrow) = sub64_with_carry(tmp.0, 2305812497766023169, 0);
+        let (_, borrow) = sub64_with_carry(tmp.0, 0x20c0000000000001, 0);
 
         // If the element was smaller, the subtraction will underflow
         // producing a borrow value of 0xffff...ffff, otherwise it will
@@ -306,30 +306,34 @@ impl Fp {
     /// failing if the element is zero.
     pub fn invert(&self) -> CtOption<Self> {
         // found using https://github.com/kwantam/addchain for M - 2
-        let mut t2 = self.square(); //       1:   2
-        let mut t1 = t2.square(); //         2:   4
-        t1 *= &t2; //                        3:   6
-        t2 = t1.square(); //                 4:   12
-        t2 = t2.square(); //                 5:   24
-        t2 *= &t1; //                        6:   30
-        square_assign_multi(&mut t2, 2); //  8:   120
-        t2 *= &t1; //                        9:   126
-        square_assign_multi(&mut t2, 2); //  11:  504
-        let t3 = t2 * self; //               12:  505
-        t1 *= &t3; //                        13:  511
-        let mut t0 = t1 * self; //           14:  512
-        t2 = t0 * t1; //                     15:  1023
-        t0 = t2.square(); //                 16:  2046
-        square_assign_multi(&mut t0, 8); //  24:  523776
-        t0 *= &t3; //                        25:  524281
-        square_assign_multi(&mut t0, 14); // 39:  8589819904
-        t0 *= &t2; //                        40:  8589820927
-        square_assign_multi(&mut t0, 10); // 50:  8795976629248
-        t0 *= &t2; //                        51:  8795976630271
-        square_assign_multi(&mut t0, 10); // 61:  9007080069397504
-        t0 *= &t2; //                        62:  9007080069398527
-        square_assign_multi(&mut t0, 9); //  71:  4611624995532045824
-        t0 *= &t1; //                        72:  4611624995532046335
+        let mut t2 = self.square(); //          1: 2
+        let mut t0 = t2 * self; //              2: 3
+        let t4 = t0.square(); //                3: 6
+        let t3 = t4.square(); //                4: 12
+        let mut t1 = t3.square(); //            5: 24
+        t1 = t1.square(); //                    6: 48
+        let mut t3 = t1 * t3; //                7: 60
+        t1 = t3.square(); //                    8: 120
+        t1 *= t4; //                            9: 126
+        square_assign_multi(&mut t1, 5); //    14: 4032
+        t3 = t1 * t3; //                       15: 4092
+        t1 = t3.square(); //                   16: 8184
+        t1 *= t4; //                           17: 8190
+        square_assign_multi(&mut t1, 11); //   28: 16773120
+        t1 *= t3; //                           29: 16777212
+        t1 *= t2; //                           30: 16777214
+        t0 = t1 * t0; //                       31: 16777217
+        t2 = t0 * t1; //                       32: 33554431
+        t0 = t2 * t0; //                       33: 50331648
+        t3 = t0.square(); //                   34: 100663296
+        t1 = t3.square(); //                   35: 201326592
+        t1 *= t0; //                           36: 251658240
+        square_assign_multi(&mut t1, 3); //    39: 2013265920
+        t1 *= t3; //                           40: 2113929216
+        t1 *= t2; //                           41: 2147483647
+        t0 = t1 * t0; //                       42: 2197815295
+        square_assign_multi(&mut t0, 31); //   73: 4719772407336796160
+        t0 *= t1; //                           74: 4719772409484279807 = M - 2
 
         CtOption::new(t0, !self.ct_eq(&Self::zero()))
     }
@@ -509,7 +513,7 @@ impl PrimeField for Fp {
         (self.to_bytes()[0] & 1).ct_eq(&1)
     }
 
-    const NUM_BITS: u32 = 62;
+    const NUM_BITS: u32 = 63;
     const CAPACITY: u32 = Self::NUM_BITS - 1;
 
     fn multiplicative_generator() -> Self {
@@ -584,9 +588,9 @@ mod tests {
     use super::*;
     use rand::thread_rng;
 
-    const LARGEST: Fp = Fp(4611624995532046336);
-    const TWO_POW_39: u64 = 549755813888;
-    const TWO_POW_38: u64 = 274877906944;
+    const LARGEST: Fp = Fp(4719772409484279808);
+    const TWO_POW_55: u64 = 36028797018963968;
+    const TWO_POW_54: u64 = 18014398509481984;
 
     // DISPLAY
     // ================================================================================================
@@ -595,16 +599,16 @@ mod tests {
     fn test_debug() {
         assert_eq!(format!("{:?}", Fp::zero()), "0");
         assert_eq!(format!("{:?}", Fp::one()), "1");
-        assert_eq!(format!("{:?}", R2), "244091581366268");
+        assert_eq!(format!("{:?}", R2), "4287426845256712189");
     }
 
     #[test]
     fn test_output_limbs() {
         assert_eq!(format!("{:?}", Fp::zero().output_limbs()), "0");
         assert_eq!(format!("{:?}", Fp::one().output_limbs()), "1");
-        assert_eq!(format!("{:?}", R2.output_limbs()), "244091581366268");
+        assert_eq!(format!("{:?}", R2.output_limbs()), "4287426845256712189");
 
-        let r = Fp::from_raw_unchecked(244091581366268);
+        let r = Fp::from_raw_unchecked(4287426845256712189);
         assert!(format!("{:?}", r.0) != format!("{:?}", R.output_limbs()));
 
         assert_eq!(
@@ -652,7 +656,7 @@ mod tests {
         let mut tmp = LARGEST;
         tmp += &LARGEST;
 
-        assert_eq!(tmp, Fp(4611624995532046335));
+        assert_eq!(tmp, Fp(4719772409484279807));
 
         assert_eq!(tmp, LARGEST.double());
 
@@ -810,7 +814,7 @@ mod tests {
 
     #[test]
     fn test_invert_is_pow() {
-        let p_minus_2 = 4611624995532046335;
+        let p_minus_2 = 4719772409484279807;
 
         let mut r1 = R;
         let mut r2 = R;
@@ -836,21 +840,21 @@ mod tests {
 
     #[test]
     fn test_get_root_of_unity() {
-        let root_39 = Fp::get_root_of_unity(39);
-        assert_eq!(TWO_ADIC_ROOT_OF_UNITY, root_39);
-        assert_eq!(Fp::one(), root_39.exp(TWO_POW_39));
+        let root_55 = Fp::get_root_of_unity(55);
+        assert_eq!(TWO_ADIC_ROOT_OF_UNITY, root_55);
+        assert_eq!(Fp::one(), root_55.exp(TWO_POW_55));
 
-        let root_38 = Fp::get_root_of_unity(38);
-        let expected = root_39.exp(2);
-        assert_eq!(expected, root_38);
-        assert_eq!(Fp::one(), root_38.exp(TWO_POW_38));
+        let root_54 = Fp::get_root_of_unity(54);
+        let expected = root_55.exp(2);
+        assert_eq!(expected, root_54);
+        assert_eq!(Fp::one(), root_54.exp(TWO_POW_54));
     }
 
     #[test]
     fn test_lexicographically_largest() {
-        let a = Fp::from_raw_unchecked(244091581366268);
+        let a = Fp::new(1565036539327771067);
 
-        let b = Fp::from_raw_unchecked(4611380903950680069);
+        let b = Fp::new(3154735870156508742);
 
         assert_eq!(a.square(), b.square());
         assert!(!bool::from(a.lexicographically_largest()));
@@ -883,9 +887,9 @@ mod tests {
 
     #[test]
     fn test_from_raw_unchecked() {
-        let mut element = Fp::from_raw_unchecked(244091581366268);
+        let mut element = Fp::from_raw_unchecked(4287426845256712189);
 
-        let element_normalized = Fp::new(244091581366268);
+        let element_normalized = Fp::new(4287426845256712189);
 
         assert_eq!(element, Fp::one());
         element.normalize();
@@ -903,9 +907,9 @@ mod tests {
 
         assert_eq!(Fp::one().to_bytes(), [1, 0, 0, 0, 0, 0, 0, 0]);
 
-        assert_eq!(R2.to_bytes(), [252, 255, 255, 255, 255, 221, 0, 0]);
+        assert_eq!(R2.to_bytes(), [253, 255, 255, 255, 255, 255, 127, 59]);
 
-        assert_eq!((-&Fp::one()).to_bytes(), [0, 0, 0, 0, 128, 200, 255, 63]);
+        assert_eq!((-&Fp::one()).to_bytes(), [0, 0, 0, 0, 0, 0, 128, 65]);
     }
 
     #[test]
@@ -928,24 +932,24 @@ mod tests {
         );
 
         assert_eq!(
-            Fp::from_bytes(&[252, 255, 255, 255, 255, 221, 0, 0]).unwrap(),
+            Fp::from_bytes(&[253, 255, 255, 255, 255, 255, 127, 59]).unwrap(),
             R2
         );
 
         // -1 should work
         assert_eq!(
-            Fp::from_bytes(&[0, 0, 0, 0, 128, 200, 255, 63]).unwrap(),
+            Fp::from_bytes(&[0, 0, 0, 0, 0, 0, 128, 65]).unwrap(),
             -Fp::one()
         );
 
         // M is invalid
         assert!(bool::from(
-            Fp::from_bytes(&[1, 0, 0, 0, 128, 200, 255, 63]).is_none()
+            Fp::from_bytes(&[1, 0, 0, 0, 0, 0, 128, 65]).is_none()
         ));
 
         // Anything larger than M is invalid
         assert!(bool::from(
-            Fp::from_bytes(&[2, 0, 0, 0, 128, 200, 255, 63]).is_none()
+            Fp::from_bytes(&[2, 0, 0, 0, 0, 0, 128, 65]).is_none()
         ));
 
         assert!(bool::from(

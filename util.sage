@@ -10,35 +10,114 @@ warnings.simplefilter("ignore", category=DeprecationWarning)
 # FIELD AND RING DEFINITIONS
 ##################################
 
-p_string = "2**62 - 111 * 2**39 + 1"
+p_string = "2**62 + 2**56 + 2**55 + 1"
 p = Integer(eval(p_string))
 Fp = GF(p)
 K = Fp['x']
 x = K.gen()
-poly2 = x**2 - x - 1
+poly2 = x**2 - 2*x - 2
 Fp2 = Fp.extension(poly2, 'u')
 K2 = Fp2['x']
 x = K2.gen()
-poly3 = x**3 - x - 2
+poly3 = x**3 + x + 1
 Fp6 = Fp2.extension(poly3, 'v')
 
 u = Fp2.gen()
 v = Fp6.gen()
 
-q = 19059060964990286085476939486711779813624322081295683206882804078282896682513
+q = 17278877126736494933592566161653303514319447234579276854188469089485337225893
 Fq = GF(q)  # scalar field of the curve
 
 p_len_bound = 16 * min(i for i in range(0, 32) if p.nbits() < i*16)
 q_len_bound = 16 * min(i for i in range(0, 32) if q.nbits() < i*16)
 
 # curve equation constant (y^2 = x^3 + x + B)
-B = (3960779010852551083*u + 936702401985103221)*v ^ 2 + (2317454856288651766 *
-                                                          u + 3506243645506711312)*v + 3824048103880329999*u + 3163132581539869369
+B = (1200866201009650596*u + 1935817186716799185)*v ^ 2 + (3999205700308519553 *
+                                                           u + 3518137720867787056)*v + 2508413708960025374*u + 1526905369741321712
 
+# curve generator coordinates
+g_x = (288076929228681448*u + 2633256936270674947)*v ^ 2 + (1056103921720638754 *
+                                                            u + 3052857668015466949)*v + 4508025770867562887*u + 2398517019392108645
+g_y = (288076929228681448*u + 2633256936270674947)*v ^ 2 + (1056103921720638754 *
+                                                            u + 3052857668015466949)*v + 4508025770867562887*u + 2398517019392108645
+
+
+def make_finite_field(k):
+    r""" Return the finite field isomorphic to this field.
+
+    INPUT:
+
+    - ``k`` -- a finite field
+
+    OUTPUT: a tuple `(k_1,\phi,\xi)` where `k_1` is a 'true' finite field,
+    `\phi` is an isomorphism from `k` to `k_1` and `\xi` is an isomorphism
+    from `k_1` to `k`.
+
+    This function is useful when `k` is constructed as a tower of extensions
+    with a finite field as a base field.
+
+    Adapted from https://github.com/MCLF/mclf/issues/103.
+
+    """
+
+    assert k.is_field()
+    assert k.is_finite()
+    # TODO: partially solved sage9.4 issue but still failing for higher extensions (wrong isomorphic field)
+    if k.base_ring().is_prime_field():
+        return k, k.hom(k.gen(), k), k.hom(k.gen(), k)
+    else:
+        k0 = k.base_field()
+        G = k.modulus()
+        assert G.parent().base_ring() is k0
+        k0_new, phi0, _ = make_finite_field(k0)
+        G_new = G.map_coefficients(phi0, k0_new)
+        k_new = k0_new.extension(G_new.degree())
+
+        alpha = G_new.roots(k_new)[0][0]
+        Pk0 = k.cover_ring()
+        Pk0_new = k0_new[Pk0.variable_name()]
+        psi1 = Pk0.hom(phi0, Pk0_new)
+        psi2 = Pk0_new.hom(alpha, k_new)
+        psi = psi1.post_compose(psi2)
+        # psi: Pk0 --> k_new
+        phi = k.hom(Pk0.gen(), Pk0, check=False)
+        phi = phi.post_compose(psi)
+
+        k_inv = k0.base_ring()
+        phi0_inv = k_inv.hom(k_inv.gen(), k_inv)
+        G_new_inv = k_new.modulus().map_coefficients(phi0_inv, k0_new)
+        alpha_inv = G_new_inv.roots(k)[0][0]
+        phi_inv = k_new.hom(alpha_inv, k)
+
+        return k_new, phi, phi_inv
+
+
+def twoadicity(x, base=0, limit=256):
+    return max(i for i in range(base, limit) if ((x-1) % (1 << i) == 0))
+
+
+# Direct extension rather than towered one
+# and associated morphisms to and from Fp6
+Fp6_direct, phi, psi = make_finite_field(Fp6)
+
+p_adicity = twoadicity(p)
+t_p = (p - 1) // 2 ^ p_adicity
+g_p = Fp.multiplicative_generator()
+root_p = g_p ^ t_p
+
+t_p2 = (p ^ 2 - 1) // 2 ^ (p_adicity + 1)
+g_p2 = Fp2.multiplicative_generator()
+root_p2 = g_p2 ^ t_p2
+
+t_p6 = (p ^ 6 - 1) // 2 ^ (p_adicity + 1)
+g_p6 = Fp6_direct.multiplicative_generator()
+root_p6_direct = g_p6 ^ t_p6
+root_p6 = psi(root_p6_direct)
 
 ##################################
 # FIELD UTILITY FUNCTIONS
 ##################################
+
 
 def repr_arbitrary_element(n, output_hex=True, nb_hex=64):
     assert nb_hex % 16 == 0
@@ -239,11 +318,6 @@ def remove_duplicates(string):
 def print_fp_constants():
     p_repr = p_string.replace("**", "^")
 
-    s = twoadicity(p)
-    t = (p-1) // 2 ^ s
-    g = Fp.multiplicative_generator()
-    root_of_unity = g ^ t
-
     output = "\n// ******************************** //\n"
     output += "// ********* FP CONSTANTS ********* //\n"
     output += "// ******************************** //\n"
@@ -257,16 +331,16 @@ def print_fp_constants():
     output += f"pub(crate) const R2: Fp = {repr_fp(Fp(2^p_len_bound), False, False, True)};\n\n"
 
     output += f"// Multiplicative generator g of order p-1\n"
-    output += f"// g = {g}\n"
-    output += f"//   = {g * 2^p_len_bound} in Montgomery form\n"
-    output += f"const GENERATOR: Fp = {repr_fp(g, False, False, True)};\n\n"
+    output += f"// g = {g_p}\n"
+    output += f"//   = {g_p * 2^p_len_bound} in Montgomery form\n"
+    output += f"const GENERATOR: Fp = {repr_fp(g_p, False, False, True)};\n\n"
 
-    output += f"// Two-adicity of the field: (p-1) % 2^{s} = 0\n"
-    output += f"pub(crate) const TWO_ADICITY: u32 = {s};\n\n"
+    output += f"// Two-adicity of the field: (p-1) % 2^{p_adicity} = 0\n"
+    output += f"pub(crate) const TWO_ADICITY: u32 = {p_adicity};\n\n"
 
-    output += f"// 2^{s} root of unity = {root_of_unity}\n"
-    output += f"//                    = {root_of_unity * 2^p_len_bound} in Montgomery form\n"
-    output += f"const TWO_ADIC_ROOT_OF_UNITY: Fp = {repr_fp(root_of_unity, False, False, True)};\n\n"
+    output += f"// 2^{p_adicity} root of unity = {root_p}\n"
+    output += f"//                    = {root_p * 2^p_len_bound} in Montgomery form\n"
+    output += f"const TWO_ADIC_ROOT_OF_UNITY: Fp = {repr_fp(root_p, True, False, True)};\n\n"
 
     output += f"// -M^{{-1}} mod 2^{p_len_bound}; this is used during element multiplication.\n"
     output += f"const U: u64 = {-p^(-1) % 2^p_len_bound};\n\n"
@@ -287,6 +361,12 @@ def print_fp2_constants():
             output += f"// Necessary for multiplication by u^2\n"
             output += f"const U{i}: {repr_fp(coeffs[i], False, True)};\n\n"
 
+    output += f"// 2^{p_adicity + 1} root of unity = {root_p2}\n"
+    output += f"//                    = {root_p2 * 2^p_len_bound} in Montgomery form\n"
+    output += f"const TWO_ADIC_ROOT_OF_UNITY_P2: Fp2 = {repr_fp2(root_p2, True, False, True)};\n\n"
+
+    output += f"const TWO_ADICITY_P2: u32 = TWO_ADICITY + 1;\n\n"
+
     print(output)
 
 
@@ -302,6 +382,12 @@ def print_fp6_constants():
         if coeffs[i] != 0:
             output += f"// Necessary for multiplication by v^3\n"
             output += f"const V{i}: {repr_fp2(coeffs[i], False, True)};\n\n"
+
+    output += f"// 2^{p_adicity + 1} root of unity = {root_p6}\n"
+    output += f"//                    = {root_p6 * 2^p_len_bound} in Montgomery form\n"
+    output += f"const TWO_ADIC_ROOT_OF_UNITY_P6: Fp6 = {repr_fp6(root_p6, True, False, True)};\n\n"
+
+    output += f"const TWO_ADICITY_P6: u32 = TWO_ADICITY + 1;\n\n"
 
     print(output)
 
