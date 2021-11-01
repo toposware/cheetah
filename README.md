@@ -1,6 +1,6 @@
 # cheetah
 
-This crates provide an ongoing implementation of the prime-order curve Cheetah over the field extension $\mathbb{F}_{p^6}$, with p = 2<sup>62</sup> - 111. 2<sup>39</sup> + 1.
+This crates provide an ongoing implementation of the prime-order curve Cheetah over the field extension $\mathbb{F}_{p^6}$, with p = 2<sup>62</sup> + 2<sup>56</sup> + 2<sup>55</sup> + 1.
 
 * This implementation does not require the Rust standard library
 * Arithmetic operations are all constant time unless "_vartime" is explicited mentioned
@@ -11,14 +11,14 @@ This crates provide an ongoing implementation of the prime-order curve Cheetah o
 
 ## Description
 
-Cheetah is a STARK-friendly elliptic curve defined over a sextic extension of $\mathbb{F}_p$, p = 2<sup>62</sup> - 111. 2<sup>39</sup> + 1 defined by
+Cheetah is a STARK-friendly elliptic curve defined over a sextic extension of $\mathbb{F}_p$, p = 2<sup>62</sup> + 2<sup>56</sup> + 2<sup>55</sup> + 1 defined by
 `E: y^2 = x^3 + x + B` with 
-`B = (4198454498232167043u + 1236584124511164798)v^2 + (109675342022917428u + 2744078705171299893)v + 4212198449936917436u + 2883908786857436727`
+`B = (1200866201009650596 * u + 1935817186716799185) * v^2 + (3999205700308519553 * u + 3518137720867787056) * v + 2508413708960025374 * u + 1526905369741321712`
 where
-- `u^2 - u -1 = 0` is the polynomial defining $\mathbb{F}_{p^2} / \mathbb{F}_p$
-- `v^3 - v - 2 = 0` is the polynomial defining $\mathbb{F}_{p^6} / \mathbb{F}_{p^2}$.
+- `u^2 - 2u - 2 = 0` is the polynomial defining $\mathbb{F}_{p^2} / \mathbb{F}_p$
+- `v^3 + v + 1 = 0` is the polynomial defining $\mathbb{F}_{p^6} / \mathbb{F}_{p^2}$.
 
-Cheetah defines a subgroup G of prime order `q` of 372-bits.
+Cheetah defines a subgroup G of prime order `q = 0x26337f752795f77cb6b6ebb9a18fecc9f2f264f035242b271e13aee130956aa5` of 254-bits.
 
 Extension towering $\mathbb{F}_{p^2}$ and $\mathbb{F}_{p^6}$ have been specifically constructed with polynomials of small coefficients in order to reduce the cost of multiplication, squaring and inversion in the extension fields. The current implementation may however not be fully optimal with respect to the number of multiplications in the base field.
 
