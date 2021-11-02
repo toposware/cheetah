@@ -58,6 +58,12 @@ impl From<Fp> for Fp2 {
     }
 }
 
+impl From<[Fp; 2]> for Fp2 {
+    fn from(f: [Fp; 2]) -> Self {
+        Fp2 { c0: f[0], c1: f[1] }
+    }
+}
+
 impl ConstantTimeEq for Fp2 {
     fn ct_eq(&self, other: &Self) -> Choice {
         self.c0.ct_eq(&other.c0) & self.c1.ct_eq(&other.c1)

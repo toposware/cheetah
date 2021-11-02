@@ -67,9 +67,29 @@ impl From<Fp2> for Fp6 {
     }
 }
 
+impl From<[Fp2; 3]> for Fp6 {
+    fn from(f: [Fp2; 3]) -> Self {
+        Fp6 {
+            c0: f[0],
+            c1: f[1],
+            c2: f[2],
+        }
+    }
+}
+
 impl From<Fp> for Fp6 {
     fn from(f: Fp) -> Self {
         Fp6::from(Fp2::from(f))
+    }
+}
+
+impl From<[Fp; 6]> for Fp6 {
+    fn from(f: [Fp; 6]) -> Self {
+        Fp6 {
+            c0: Fp2 { c0: f[0], c1: f[1] },
+            c1: Fp2 { c0: f[2], c1: f[3] },
+            c2: Fp2 { c0: f[4], c1: f[5] },
+        }
     }
 }
 
