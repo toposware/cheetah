@@ -57,7 +57,7 @@ pub struct Fp(pub(crate) u64);
 
 impl Debug for Fp {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let tmp = self.output_limbs();
+        let tmp = self.output_reduced_limbs();
         write!(f, "{:?}", tmp)
     }
 }
@@ -215,7 +215,7 @@ impl Fp {
     }
 
     /// Outputs the internal representation as a 64-bit limb after Montgomery reduction
-    pub const fn output_limbs(&self) -> u64 {
+    pub const fn output_reduced_limbs(&self) -> u64 {
         Fp::montgomery_reduce(self.0, 0).0
     }
 
@@ -603,17 +603,20 @@ mod tests {
     }
 
     #[test]
-    fn test_output_limbs() {
-        assert_eq!(format!("{:?}", Fp::zero().output_limbs()), "0");
-        assert_eq!(format!("{:?}", Fp::one().output_limbs()), "1");
-        assert_eq!(format!("{:?}", R2.output_limbs()), "4287426845256712189");
+    fn test_output_reduced_limbs() {
+        assert_eq!(format!("{:?}", Fp::zero().output_reduced_limbs()), "0");
+        assert_eq!(format!("{:?}", Fp::one().output_reduced_limbs()), "1");
+        assert_eq!(
+            format!("{:?}", R2.output_reduced_limbs()),
+            "4287426845256712189"
+        );
 
         let r = Fp::from_raw_unchecked(4287426845256712189);
-        assert!(format!("{:?}", r.0) != format!("{:?}", R.output_limbs()));
+        assert!(format!("{:?}", r.0) != format!("{:?}", R.output_reduced_limbs()));
 
         assert_eq!(
-            format!("{:?}", r.output_limbs()),
-            format!("{:?}", R.output_limbs())
+            format!("{:?}", r.output_reduced_limbs()),
+            format!("{:?}", R.output_reduced_limbs())
         );
     }
 

@@ -326,7 +326,7 @@ impl Fp2 {
     }
 
     /// Outputs the internal representation as 2 64-bit limbs after Montgomery reduction
-    pub const fn output_limbs(&self) -> [u64; 2] {
+    pub const fn output_reduced_limbs(&self) -> [u64; 2] {
         [
             Fp::montgomery_reduce(self.c0.0, 0).0,
             Fp::montgomery_reduce(self.c1.0, 0).0,
@@ -509,12 +509,12 @@ mod test {
     }
 
     #[test]
-    fn test_output_limbs() {
-        assert_eq!(format!("{:?}", Fp2::zero().output_limbs()), "[0, 0]");
-        assert_eq!(format!("{:?}", Fp2::one().output_limbs()), "[1, 0]");
+    fn test_output_reduced_limbs() {
+        assert_eq!(format!("{:?}", Fp2::zero().output_reduced_limbs()), "[0, 0]");
+        assert_eq!(format!("{:?}", Fp2::one().output_reduced_limbs()), "[1, 0]");
         let a = Fp2::one().neg();
         assert_eq!(
-            format!("{:?}", a.output_limbs()),
+            format!("{:?}", a.output_reduced_limbs()),
             "[4719772409484279808, 0]"
         );
     }

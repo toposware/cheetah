@@ -453,7 +453,7 @@ impl Fp6 {
     }
 
     /// Outputs the internal representation as 4 64-bit limbs after Montgomery reduction
-    pub const fn output_limbs(&self) -> [u64; 6] {
+    pub const fn output_reduced_limbs(&self) -> [u64; 6] {
         [
             Fp::montgomery_reduce(self.c0.c0.0, 0).0,
             Fp::montgomery_reduce(self.c0.c1.0, 0).0,
@@ -660,18 +660,18 @@ mod test {
     }
 
     #[test]
-    fn test_output_limbs() {
+    fn test_output_reduced_limbs() {
         assert_eq!(
-            format!("{:?}", Fp6::zero().output_limbs()),
+            format!("{:?}", Fp6::zero().output_reduced_limbs()),
             "[0, 0, 0, 0, 0, 0]"
         );
         assert_eq!(
-            format!("{:?}", Fp6::one().output_limbs()),
+            format!("{:?}", Fp6::one().output_reduced_limbs()),
             "[1, 0, 0, 0, 0, 0]"
         );
         let a = Fp6::one().neg();
         assert_eq!(
-            format!("{:?}", a.output_limbs()),
+            format!("{:?}", a.output_reduced_limbs()),
             "[4719772409484279808, 0, 0, 0, 0, 0]"
         );
     }
