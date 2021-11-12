@@ -431,7 +431,7 @@ impl DivAssign for Fp {
 // ================================================================================================
 
 impl From<u64> for Fp {
-    /// Converts a 64-bit value into a filed element. If the value is greater than or equal to
+    /// Converts a 64-bit value into a field element. If the value is greater than or equal to
     /// the field modulus, modular reduction is silently preformed.
     fn from(value: u64) -> Self {
         Fp::new(value)
@@ -439,21 +439,21 @@ impl From<u64> for Fp {
 }
 
 impl From<u32> for Fp {
-    /// Converts a 32-bit value into a filed element.
+    /// Converts a 32-bit value into a field element.
     fn from(value: u32) -> Self {
         Fp::new(value as u64)
     }
 }
 
 impl From<u16> for Fp {
-    /// Converts a 16-bit value into a filed element.
+    /// Converts a 16-bit value into a field element.
     fn from(value: u16) -> Self {
         Fp::new(value as u64)
     }
 }
 
 impl From<u8> for Fp {
-    /// Converts an 8-bit value into a filed element.
+    /// Converts an 8-bit value into a field element.
     fn from(value: u8) -> Self {
         Fp::new(value as u64)
     }

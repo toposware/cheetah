@@ -93,8 +93,14 @@ impl From<[Fp; 6]> for Fp6 {
     }
 }
 
+impl From<Fp6> for [Fp; 6] {
+    fn from(f: Fp6) -> [Fp; 6] {
+        [f.c0.c0, f.c0.c1, f.c1.c0, f.c1.c1, f.c2.c0, f.c2.c1]
+    }
+}
+
 impl From<u64> for Fp6 {
-    /// Converts a 64-bit value into a filed element. If the value is greater than or equal to
+    /// Converts a 64-bit value into a field element. If the value is greater than or equal to
     /// the field modulus, modular reduction is silently preformed.
     fn from(value: u64) -> Self {
         Fp6::from(Fp::new(value))
@@ -102,21 +108,21 @@ impl From<u64> for Fp6 {
 }
 
 impl From<u32> for Fp6 {
-    /// Converts a 32-bit value into a filed element.
+    /// Converts a 32-bit value into a field element.
     fn from(value: u32) -> Self {
         Fp6::from(Fp::new(value as u64))
     }
 }
 
 impl From<u16> for Fp6 {
-    /// Converts a 16-bit value into a filed element.
+    /// Converts a 16-bit value into a field element.
     fn from(value: u16) -> Self {
         Fp6::from(Fp::new(value as u64))
     }
 }
 
 impl From<u8> for Fp6 {
-    /// Converts an 8-bit value into a filed element.
+    /// Converts an 8-bit value into a field element.
     fn from(value: u8) -> Self {
         Fp6::from(Fp::new(value as u64))
     }
@@ -452,7 +458,7 @@ impl Fp6 {
         res
     }
 
-    /// Outputs the internal representation as 4 64-bit limbs after Montgomery reduction
+    /// Outputs the internal representation as 6 64-bit limbs after Montgomery reduction
     pub const fn output_reduced_limbs(&self) -> [u64; 6] {
         [
             Fp::montgomery_reduce(self.c0.c0.0, 0).0,

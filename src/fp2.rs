@@ -64,6 +64,12 @@ impl From<[Fp; 2]> for Fp2 {
     }
 }
 
+impl From<Fp2> for [Fp; 2] {
+    fn from(f: Fp2) -> [Fp; 2] {
+        [f.c0, f.c1]
+    }
+}
+
 impl ConstantTimeEq for Fp2 {
     fn ct_eq(&self, other: &Self) -> Choice {
         self.c0.ct_eq(&other.c0) & self.c1.ct_eq(&other.c1)
@@ -510,7 +516,10 @@ mod test {
 
     #[test]
     fn test_output_reduced_limbs() {
-        assert_eq!(format!("{:?}", Fp2::zero().output_reduced_limbs()), "[0, 0]");
+        assert_eq!(
+            format!("{:?}", Fp2::zero().output_reduced_limbs()),
+            "[0, 0]"
+        );
         assert_eq!(format!("{:?}", Fp2::one().output_reduced_limbs()), "[1, 0]");
         let a = Fp2::one().neg();
         assert_eq!(
