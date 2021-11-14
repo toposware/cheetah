@@ -380,13 +380,6 @@ impl Fp2 {
             c1: Fp::from_raw_unchecked(value[1]),
         }
     }
-
-    #[inline(always)]
-    /// Normalizes the internal representation of a `Fp2` element
-    pub fn normalize(&mut self) {
-        self.c0.normalize();
-        self.c1.normalize();
-    }
 }
 
 // FIELD TRAITS IMPLEMENTATION
@@ -819,10 +812,55 @@ mod test {
         let element_normalized = Fp2::new([4287426845256712189, 0]);
 
         assert_eq!(element, Fp2::one());
-        element.normalize();
+        element *= &crate::fp::R2.into();
 
         assert!(element != Fp2::one());
         assert_eq!(element, element_normalized);
+    }
+
+    #[test]
+    fn test_from_fp() {
+        let mut rng = thread_rng();
+        let v = rng.next_u64();
+        let e = Fp::new(v);
+
+        let e_fp2 = Fp2::new([v, 0]);
+        let array: [Fp; 2] = [e, Fp::zero()];
+
+        assert_eq!(e_fp2, e.into());
+        assert_eq!(Fp2::from(array), e_fp2);
+    }
+
+    // FIELD TRAIT
+    // ================================================================================================
+
+    #[test]
+    fn test_field_trait_methods() {
+        assert_eq!(<Fp2 as Field>::zero(), Fp2::new([0, 0]));
+        assert_eq!(<Fp2 as Field>::one(), Fp2::new([1, 0]));
+
+        assert_eq!(
+            bool::from(<Fp2 as Field>::zero().is_zero()),
+            bool::from(Fp2::new([0, 0]).is_zero())
+        );
+        assert_eq!(
+            bool::from(<Fp2 as Field>::one().is_zero()),
+            bool::from(Fp2::new([1, 0]).is_zero())
+        );
+
+        let mut rng = thread_rng();
+        let e = Fp2::random(&mut rng).square();
+
+        assert_eq!(<Fp2 as Field>::square(&e), e.square());
+        assert_eq!(<Fp2 as Field>::double(&e), e.double());
+
+        assert_eq!(<Fp2 as Field>::invert(&e).unwrap(), e.invert().unwrap());
+        assert!(bool::from(<Fp2 as Field>::invert(&Fp2::zero()).is_none()));
+
+        assert_eq!(<Fp2 as Field>::sqrt(&e).unwrap(), e.sqrt().unwrap());
+        assert!(bool::from(
+            <Fp2 as Field>::sqrt(&Fp2::new([2, 1])).is_none()
+        ));
     }
 
     // SERIALIZATION / DESERIALIZATION

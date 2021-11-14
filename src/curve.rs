@@ -350,10 +350,10 @@ impl AffinePoint {
                     p,
                     // If the infinity flag is set, the x and y coordinates should have been zero.
                     ((!infinity_flag_set) | (infinity_flag_set & x.is_zero() & y.is_zero())) &
-            // The compression flag should not have been set, as this is an uncompressed element
-            (!compression_flag_set) &
-            // The sort flag should not have been set, as this is an uncompressed element
-            (!sort_flag_set),
+                    // The compression flag should not have been set, as this is an uncompressed element
+                    (!compression_flag_set) &
+                    // The sort flag should not have been set, as this is an uncompressed element
+                    (!sort_flag_set),
                 )
             })
         })
@@ -1756,6 +1756,14 @@ mod tests {
             let point_decompressed = ProjectivePoint::from_compressed(&bytes);
             assert!(bool::from(point_decompressed.is_none()));
         }
+        {
+            let bytes = [
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            ];
+            let point_decompressed = AffinePoint::from_compressed_unchecked(&bytes);
+            assert!(bool::from(point_decompressed.is_none()));
+        }
     }
 
     #[test]
@@ -1800,6 +1808,34 @@ mod tests {
             let point = ProjectivePoint::from(&point);
             let bytes = point.to_uncompressed();
             let point_decompressed = ProjectivePoint::from_uncompressed(&bytes);
+            assert!(bool::from(point_decompressed.is_none()));
+        }
+        {
+            let bytes = [
+                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 255,
+                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            ];
+            let point_decompressed = AffinePoint::from_uncompressed_unchecked(&bytes);
+            assert!(bool::from(point_decompressed.is_none()));
+
+            let point_decompressed = ProjectivePoint::from_uncompressed_unchecked(&bytes);
+            assert!(bool::from(point_decompressed.is_none()));
+        }
+        {
+            let bytes = [
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
+                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+            ];
+            let point_decompressed = AffinePoint::from_uncompressed_unchecked(&bytes);
+            assert!(bool::from(point_decompressed.is_none()));
+
+            let point_decompressed = ProjectivePoint::from_uncompressed_unchecked(&bytes);
             assert!(bool::from(point_decompressed.is_none()));
         }
     }

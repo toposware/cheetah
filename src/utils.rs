@@ -273,4 +273,26 @@ mod tests {
             assert_eq!(carry, 1);
         }
     }
+
+    #[test]
+    fn test_square_assign_multi() {
+        use crate::fp::Fp;
+        use crate::utils::square_assign_multi;
+        use group::ff::Field;
+        use rand::thread_rng;
+
+        let mut rng = thread_rng();
+        {
+            let mut e = Fp::random(&mut rng);
+            let e_copy = e;
+            square_assign_multi(&mut e, 1);
+            assert_eq!(e, e_copy.square());
+        }
+        {
+            let mut e = Fp::random(&mut rng);
+            let e_copy = e;
+            square_assign_multi(&mut e, 2);
+            assert_eq!(e, e_copy.square().square());
+        }
+    }
 }

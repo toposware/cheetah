@@ -633,12 +633,6 @@ impl Scalar {
         CtOption::new(t0, !self.ct_eq(&Self::zero()))
     }
 
-    #[inline(always)]
-    /// Normalizes the internal representation of an `Scalar` element
-    pub fn normalize(&mut self) {
-        *self *= &R2
-    }
-
     /// Constructs a `Scalar` element without checking that it is
     /// canonical.
     pub const fn from_raw_unchecked(v: [u64; 4]) -> Self {
@@ -1092,6 +1086,21 @@ mod tests {
     }
 
     #[test]
+    fn test_sqrt() {
+        for _ in 0..100 {
+            let a = Scalar::random(&mut thread_rng()).square();
+            let b = a.sqrt().unwrap();
+            assert_eq!(a, b.square());
+        }
+
+        assert_eq!(Scalar::zero().sqrt().unwrap(), Scalar::zero());
+        assert_eq!(Scalar::one().sqrt().unwrap(), Scalar::one());
+
+        // 3 is not a quadratic residue in Scalar
+        assert!(bool::from(Scalar::new([3, 0, 0, 0]).sqrt().is_none()));
+    }
+
+    #[test]
     fn test_invert_is_pow() {
         let q_minus_2 = [
             0x1e13aee130956aa3,
@@ -1198,10 +1207,74 @@ mod tests {
         ]);
 
         assert_eq!(element, Scalar::one());
-        element.normalize();
+        element *= &R2;
 
         assert!(element != Scalar::one());
         assert_eq!(element, element_normalized);
+    }
+
+    // FIELD TRAIT
+    // ================================================================================================
+
+    #[test]
+    fn test_field_trait_methods() {
+        assert_eq!(<Scalar as Field>::zero(), Scalar::new([0, 0, 0, 0]));
+        assert_eq!(<Scalar as Field>::one(), Scalar::new([1, 0, 0, 0]));
+
+        assert_eq!(
+            bool::from(<Scalar as Field>::zero().is_zero()),
+            bool::from(Scalar::new([0, 0, 0, 0]).is_zero())
+        );
+        assert_eq!(
+            bool::from(<Scalar as Field>::one().is_zero()),
+            bool::from(Scalar::new([1, 0, 0, 0]).is_zero())
+        );
+
+        let mut rng = thread_rng();
+        let e = Scalar::random(&mut rng).square();
+
+        assert_eq!(<Scalar as Field>::square(&e), e.square());
+        assert_eq!(<Scalar as Field>::double(&e), e.double());
+
+        assert_eq!(<Scalar as Field>::invert(&e).unwrap(), e.invert().unwrap());
+        assert!(bool::from(
+            <Scalar as Field>::invert(&Scalar::zero()).is_none()
+        ));
+
+        assert_eq!(<Scalar as Field>::sqrt(&e).unwrap(), e.sqrt().unwrap());
+        assert!(bool::from(
+            <Scalar as Field>::sqrt(&Scalar::new([3, 0, 0, 0])).is_none()
+        ));
+    }
+
+    #[test]
+    fn test_primefield_trait_methods() {
+        assert_eq!(
+            Scalar::from_repr([
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0
+            ])
+            .unwrap(),
+            Scalar::zero()
+        );
+        assert_eq!(
+            Scalar::from_repr([
+                1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0
+            ])
+            .unwrap(),
+            Scalar::one()
+        );
+
+        let mut rng = thread_rng();
+        let e = Scalar::random(&mut rng).square();
+
+        assert_eq!(Scalar::from_repr(Scalar::to_repr(&e)).unwrap(), e);
+
+        assert_eq!(
+            Scalar::get_root_of_unity(<Scalar as PrimeField>::S),
+            <Scalar as PrimeField>::root_of_unity()
+        )
     }
 
     // SERIALIZATION / DESERIALIZATION

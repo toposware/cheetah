@@ -526,14 +526,6 @@ impl Fp6 {
             },
         }
     }
-
-    #[inline(always)]
-    /// Normalizes the internal representation of an `Fp6` element
-    pub fn normalize(&mut self) {
-        self.c0.normalize();
-        self.c1.normalize();
-        self.c2.normalize();
-    }
 }
 
 // FIELD TRAITS IMPLEMENTATION
@@ -1310,10 +1302,90 @@ mod test {
         let element_normalized = Fp6::new([4287426845256712189, 0, 0, 0, 0, 0]);
 
         assert_eq!(element, Fp6::one());
-        element.normalize();
+        element *= &crate::fp::R2.into();
 
         assert!(element != Fp6::one());
         assert_eq!(element, element_normalized);
+    }
+
+    #[test]
+    fn test_from_fp() {
+        let mut rng = thread_rng();
+        let v = rng.next_u64();
+        let e = Fp::new(v);
+
+        let e_fp6 = Fp6::new([v, 0, 0, 0, 0, 0]);
+        let array: [Fp; 6] = [
+            e,
+            Fp::zero(),
+            Fp::zero(),
+            Fp::zero(),
+            Fp::zero(),
+            Fp::zero(),
+        ];
+
+        assert_eq!(e_fp6, e.into());
+        assert_eq!(Fp6::from(array), e_fp6);
+    }
+
+    #[test]
+    fn test_from_fp2() {
+        let mut rng = thread_rng();
+        let v0 = rng.next_u64();
+        let v1 = rng.next_u64();
+        let e = Fp2::new([v0, v1]);
+
+        let e_fp6 = Fp6::new([v0, v1, 0, 0, 0, 0]);
+        let array: [Fp2; 3] = [e, Fp2::zero(), Fp2::zero()];
+
+        assert_eq!(e_fp6, e.into());
+        assert_eq!(Fp6::from(array), e_fp6);
+    }
+
+    // FIELD TRAIT
+    // ================================================================================================
+
+    #[test]
+    fn test_field_trait_methods() {
+        assert_eq!(<Fp6 as Field>::zero(), Fp6::new([0, 0, 0, 0, 0, 0]));
+        assert_eq!(<Fp6 as Field>::one(), Fp6::new([1, 0, 0, 0, 0, 0]));
+
+        assert_eq!(
+            bool::from(<Fp6 as Field>::zero().is_zero()),
+            bool::from(Fp6::new([0, 0, 0, 0, 0, 0]).is_zero())
+        );
+        assert_eq!(
+            bool::from(<Fp6 as Field>::one().is_zero()),
+            bool::from(Fp6::new([1, 0, 0, 0, 0, 0]).is_zero())
+        );
+
+        let mut rng = thread_rng();
+        let e = Fp6::random(&mut rng).square();
+
+        assert_eq!(<Fp6 as Field>::square(&e), e.square());
+        assert_eq!(<Fp6 as Field>::double(&e), e.double());
+
+        assert_eq!(<Fp6 as Field>::invert(&e).unwrap(), e.invert().unwrap());
+        assert!(bool::from(<Fp6 as Field>::invert(&Fp6::zero()).is_none()));
+
+        assert_eq!(<Fp6 as Field>::sqrt(&e).unwrap(), e.sqrt().unwrap());
+        assert!(bool::from(
+            <Fp6 as Field>::sqrt(&Fp6 {
+                c0: Fp2 {
+                    c0: Fp::new(3901586259568969690),
+                    c1: Fp::new(799979765245758940),
+                },
+                c1: Fp2 {
+                    c0: Fp::new(372058458154352541),
+                    c1: Fp::new(4179895386176115723),
+                },
+                c2: Fp2 {
+                    c0: Fp::new(1972121079904647667),
+                    c1: Fp::new(1817037221240944654),
+                },
+            })
+            .is_none()
+        ));
     }
 
     // SERIALIZATION / DESERIALIZATION

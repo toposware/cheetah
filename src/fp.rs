@@ -338,12 +338,6 @@ impl Fp {
         CtOption::new(t0, !self.ct_eq(&Self::zero()))
     }
 
-    #[inline(always)]
-    /// Normalizes the internal representation of an `Fp` element
-    pub fn normalize(&mut self) {
-        *self *= &R2
-    }
-
     /// Constructs an element of `Fp` without checking that it is
     /// canonical.
     pub const fn from_raw_unchecked(v: u64) -> Self {
@@ -645,10 +639,16 @@ mod tests {
         assert_eq!(Fp::one(), Fp::one());
 
         assert!(bool::from(Fp::default().is_zero()));
+        assert!(bool::from(Fp::zero().ct_eq(&Fp::zero())));
         assert!(!bool::from(Fp::zero().ct_eq(&Fp::one())));
 
         assert!(Fp::zero() != Fp::one());
         assert!(Fp::one() != R2);
+        assert!(Fp::one() == R);
+
+        assert!(!Fp::zero().eq(&Fp::one()));
+        assert!(!Fp::one().eq(&R2));
+        assert!(Fp::one().eq(&R));
 
         assert_eq!(Fp::zero(), Fp::new(0));
         assert_eq!(Fp::one(), Fp::new(1));
@@ -854,6 +854,18 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
+    fn test_get_root_of_unity_zero() {
+        let _ = Fp::get_root_of_unity(0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_get_root_of_unity_too_large() {
+        let _ = Fp::get_root_of_unity(TWO_ADICITY + 1);
+    }
+
+    #[test]
     fn test_lexicographically_largest() {
         let a = Fp::new(1565036539327771067);
 
@@ -895,10 +907,56 @@ mod tests {
         let element_normalized = Fp::new(4287426845256712189);
 
         assert_eq!(element, Fp::one());
-        element.normalize();
+        element *= &R2;
 
         assert!(element != Fp::one());
         assert_eq!(element, element_normalized);
+    }
+
+    // FIELD TRAIT
+    // ================================================================================================
+
+    #[test]
+    fn test_field_trait_methods() {
+        assert_eq!(<Fp as Field>::zero(), Fp::new(0));
+        assert_eq!(<Fp as Field>::one(), Fp::new(1));
+
+        assert_eq!(
+            bool::from(<Fp as Field>::zero().is_zero()),
+            bool::from(Fp::new(0).is_zero())
+        );
+        assert_eq!(
+            bool::from(<Fp as Field>::one().is_zero()),
+            bool::from(Fp::new(1).is_zero())
+        );
+
+        let mut rng = thread_rng();
+        let e = Fp::random(&mut rng).square();
+
+        assert_eq!(<Fp as Field>::square(&e), e.square());
+        assert_eq!(<Fp as Field>::double(&e), e.double());
+
+        assert_eq!(<Fp as Field>::invert(&e).unwrap(), e.invert().unwrap());
+        assert!(bool::from(<Fp as Field>::invert(&Fp::zero()).is_none()));
+
+        assert_eq!(<Fp as Field>::sqrt(&e).unwrap(), e.sqrt().unwrap());
+        assert!(bool::from(<Fp as Field>::sqrt(&Fp::new(3)).is_none()));
+    }
+
+    #[test]
+    fn test_primefield_trait_methods() {
+        assert_eq!(Fp::from_repr([0, 0, 0, 0, 0, 0, 0, 0]).unwrap(), Fp::zero());
+        assert_eq!(Fp::from_repr([1, 0, 0, 0, 0, 0, 0, 0]).unwrap(), Fp::one());
+
+        let mut rng = thread_rng();
+        let e = Fp::random(&mut rng).square();
+
+        assert_eq!(Fp::from_repr(Fp::to_repr(&e)).unwrap(), e);
+
+        assert_eq!(
+            Fp::get_root_of_unity(<Fp as PrimeField>::S),
+            <Fp as PrimeField>::root_of_unity()
+        )
     }
 
     // SERIALIZATION / DESERIALIZATION
