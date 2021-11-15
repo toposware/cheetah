@@ -219,6 +219,12 @@ impl Fp {
         Fp::montgomery_reduce(self.0, 0).0
     }
 
+    /// Outputs the internal representation as a 64-bit limb without Montgomery reduction
+    /// This is intended for uses like re-interpreting the type containing the internal value.
+    pub const fn output_unreduced_limbs(&self) -> u64 {
+        self.0
+    }
+
     /// Converts an `Fp` element into a byte representation in
     /// little-endian byte order.
     pub fn to_bytes(&self) -> [u8; 8] {

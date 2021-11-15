@@ -339,6 +339,12 @@ impl Fp2 {
         ]
     }
 
+    /// Outputs the internal representation as 2 64-bit limbs without Montgomery reduction
+    /// This is intended for uses like re-interpreting the type containing the internal value.
+    pub const fn output_unreduced_limbs(&self) -> [u64; 2] {
+        [self.c0.0, self.c1.0]
+    }
+
     /// Converts an `Fp2` element into a byte representation in
     /// little-endian byte order.
     pub fn to_bytes(&self) -> [u8; 16] {

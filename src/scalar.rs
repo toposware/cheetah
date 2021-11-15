@@ -410,6 +410,12 @@ impl Scalar {
         Scalar::montgomery_reduce(self.0[0], self.0[1], self.0[2], self.0[3], 0, 0, 0, 0).0
     }
 
+    /// Outputs the internal representation as 4 64-bit limbs without Montgomery reduction
+    /// This is intended for uses like re-interpreting the type containing the internal value.
+    pub const fn output_unreduced_limbs(&self) -> [u64; 4] {
+        self.0
+    }
+
     /// Converts a `Scalar` element into a byte representation in
     /// little-endian byte order.
     pub fn to_bytes(&self) -> [u8; 32] {
