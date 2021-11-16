@@ -1,4 +1,5 @@
 use core::{
+    convert::TryFrom,
     fmt::{self, Debug, Display, Formatter},
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
@@ -29,6 +30,9 @@ pub(crate) const R: Fp = Fp(4287426845256712189);
 
 // 2^128 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R2: Fp = Fp(3635333122111952146);
+
+// 2^192 mod M; this is used for conversion of elements into Montgomery representation.
+pub(crate) const R3: Fp = Fp(4670764763728573444);
 
 // Multiplicative generator g of order p-1
 // g = 3
@@ -253,6 +257,36 @@ impl Fp {
         tmp *= &R2;
 
         CtOption::new(tmp, Choice::from(is_some))
+    }
+
+    /// Converts a 128-bit little endian integer into
+    /// a `Fp` by reducing by the modulus.
+    pub fn from_bytes_wide(bytes: &[u8; 16]) -> Self {
+        Fp::from_u128([
+            u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[0..8]).unwrap()),
+            u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[8..16]).unwrap()),
+        ])
+    }
+
+    fn from_u128(limbs: [u64; 2]) -> Self {
+        // We reduce an arbitrary 128-bit number by decomposing it into two 64-bit digits
+        // with the higher bits multiplied by 2^64. Thus, we perform two reductions
+        //
+        // 1. the lower bits are multiplied by R^2, as normal
+        // 2. the upper bits are multiplied by R^2 * 2^64 = R^3
+        //
+        // and computing their sum in the field. It remains to see that arbitrary 64-bit
+        // numbers can be placed into Montgomery form safely using the reduction. The
+        // reduction works so long as the product is less than R=2^64 multiplied by
+        // the modulus. This holds because for any `c` smaller than the modulus, we have
+        // that (2^64 - 1)*c is an acceptable product for the reduction. Therefore, the
+        // reduction always works so long as `c` is in the field; in this case it is either the
+        // constant `R2` or `R3`.
+        let d0 = Fp(limbs[0]);
+        let d1 = Fp(limbs[1]);
+
+        // Convert to Montgomery form
+        d0 * R2 + d1 * R3
     }
 
     /// Returns whether or not this element is strictly lexicographically
@@ -1022,6 +1056,33 @@ mod tests {
         assert!(bool::from(
             Fp::from_bytes(&[0, 0, 0, 0, 255, 255, 255, 255]).is_none()
         ));
+    }
+
+    #[test]
+    fn test_from_u128_max() {
+        let max_u64 = 0xffff_ffff_ffff_ffff;
+        assert_eq!(R3 - R, Fp::from_u128([max_u64, max_u64]));
+    }
+
+    #[test]
+    fn test_from_bytes_wide_r2() {
+        assert_eq!(
+            R2,
+            Fp::from_bytes_wide(&[253, 255, 255, 255, 255, 255, 127, 59, 0, 0, 0, 0, 0, 0, 0, 0])
+        );
+    }
+
+    #[test]
+    fn test_from_bytes_wide_negative_one() {
+        assert_eq!(
+            -&Fp::one(),
+            Fp::from_bytes_wide(&[0, 0, 0, 0, 0, 0, 128, 65, 0, 0, 0, 0, 0, 0, 0, 0])
+        );
+    }
+
+    #[test]
+    fn test_from_bytes_wide_maximum() {
+        assert_eq!(Fp(0x551e3ce4b73f407), Fp::from_bytes_wide(&[0xff; 16]));
     }
 
     #[test]

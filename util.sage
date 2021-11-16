@@ -330,6 +330,9 @@ def print_fp_constants():
     output += f"// 2^{p_len_bound * 2} mod M; this is used for conversion of elements into Montgomery representation.\n"
     output += f"pub(crate) const R2: Fp = {repr_fp(Fp(2^p_len_bound), False, False, True)};\n\n"
 
+    output += f"// 2^{p_len_bound * 3} mod M; this is used for conversion of elements into Montgomery representation.\n"
+    output += f"pub(crate) const R3: Fp = {repr_fp(Fp(2^(p_len_bound * 2)), False, False, True)};\n\n"
+
     output += f"// Multiplicative generator g of order p-1\n"
     output += f"// g = {g_p}\n"
     output += f"//   = {g_p * 2^p_len_bound} in Montgomery form\n"
