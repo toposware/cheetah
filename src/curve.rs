@@ -472,7 +472,7 @@ impl AffinePoint {
             .skip(1)
         {
             acc = acc.double();
-            acc = if bit { acc + self } else { acc };
+            acc = ProjectivePoint::conditional_select(&acc, &(acc + self), (bit as u8).into());
         }
 
         acc.into()
@@ -896,7 +896,7 @@ impl ProjectivePoint {
             .skip(1)
         {
             acc = acc.double();
-            acc = if bit { acc + self } else { acc };
+            acc = ProjectivePoint::conditional_select(&acc, &(acc + self), (bit as u8).into());
         }
 
         acc
