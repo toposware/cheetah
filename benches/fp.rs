@@ -26,6 +26,11 @@ fn criterion_benchmark(c: &mut Criterion) {
         bench.iter(|| black_box(x) - black_box(y))
     });
 
+    c.bench_function("fp double", |bench| {
+        let x = Fp::random(&mut rng);
+        bench.iter(|| black_box(x).double())
+    });
+
     c.bench_function("fp mul", |bench| {
         let x = Fp::random(&mut rng);
         let y = Fp::random(&mut rng);

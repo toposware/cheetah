@@ -26,6 +26,11 @@ fn criterion_benchmark(c: &mut Criterion) {
         bench.iter(|| black_box(x) - black_box(y))
     });
 
+    c.bench_function("scalar double", |bench| {
+        let x = Scalar::random(&mut rng);
+        bench.iter(|| black_box(x).double())
+    });
+
     c.bench_function("scalar mul", |bench| {
         let x = Scalar::random(&mut rng);
         let y = Scalar::random(&mut rng);
