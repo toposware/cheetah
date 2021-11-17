@@ -21,6 +21,13 @@ pub const fn mul64_with_carry(a: u64, b: u64, c: u64, carry: u64) -> (u64, u64) 
     (ret as u64, (ret >> 64) as u64)
 }
 
+/// Compute (a << b) + carry, returning the result and the new carry over.
+#[inline(always)]
+pub const fn shl64_by_u32_with_carry(a: u64, b: u32, carry: u64) -> (u64, u64) {
+    let ret = ((a as u128) << (b as u128)) + (carry as u128);
+    (ret as u64, (ret >> 64) as u64)
+}
+
 #[inline(always)]
 pub(crate) fn square_assign_multi<F: Field>(n: &mut F, num_times: usize) {
     for _ in 0..num_times {
@@ -271,6 +278,38 @@ mod tests {
 
             assert_eq!(d, b);
             assert_eq!(carry, 1);
+        }
+    }
+
+    #[test]
+    fn test_shl_with_carry() {
+        use crate::utils::shl64_by_u32_with_carry;
+        {
+            let a = 1u64;
+            let b = 1u32;
+            let c = 1u64;
+            let (d, carry) = shl64_by_u32_with_carry(a, b, c);
+
+            assert_eq!(d, 3);
+            assert_eq!(carry, 0);
+        }
+        {
+            let a = u64::MAX;
+            let b = 1u32;
+            let c = 1u64;
+            let (d, carry) = shl64_by_u32_with_carry(a, b, c);
+
+            assert_eq!(d, u64::MAX);
+            assert_eq!(carry, 1);
+        }
+        {
+            let a = u64::MAX;
+            let b = 64u32;
+            let c = 1u64;
+            let (d, carry) = shl64_by_u32_with_carry(a, b, c);
+
+            assert_eq!(d, 1);
+            assert_eq!(carry, u64::MAX);
         }
     }
 

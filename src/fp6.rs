@@ -370,8 +370,13 @@ impl Fp6 {
     }
 
     /// Double this element
+    #[inline]
     pub const fn double(&self) -> Self {
-        self.add(self)
+        Fp6 {
+            c0: (&self.c0).double(),
+            c1: (&self.c1).double(),
+            c2: (&self.c2).double(),
+        }
     }
 
     /// Add two elements together

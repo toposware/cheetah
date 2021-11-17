@@ -4,7 +4,10 @@ use core::{
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
-use crate::utils::{add64_with_carry, mul64_with_carry, square_assign_multi, sub64_with_carry};
+use crate::utils::{
+    add64_with_carry, mul64_with_carry, shl64_by_u32_with_carry, square_assign_multi,
+    sub64_with_carry,
+};
 
 use bitvec::{order::Lsb0, slice::BitSlice};
 use group::ff::{Field, PrimeField};
@@ -353,10 +356,16 @@ impl Scalar {
     }
 
     /// Computes the double of a scalar element
-    // Can be faster via bitshift
     #[inline]
     pub const fn double(&self) -> Self {
-        self.add(self)
+        let (d0, carry) = shl64_by_u32_with_carry(self.0[0], 1, 0);
+        let (d1, carry) = shl64_by_u32_with_carry(self.0[1], 1, carry);
+        let (d2, carry) = shl64_by_u32_with_carry(self.0[2], 1, carry);
+        let (d3, _carry) = shl64_by_u32_with_carry(self.0[3], 1, carry);
+
+        // Attempt to subtract the modulus, to ensure the value
+        // is smaller than the modulus.
+        (&Scalar([d0, d1, d2, d3])).sub(&M)
     }
 
     /// Attempts to convert a little-endian byte representation of

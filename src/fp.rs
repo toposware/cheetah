@@ -212,10 +212,15 @@ impl Fp {
     }
 
     /// Computes the double of a field element
-    // Can be faster via bitshift
     #[inline]
     pub const fn double(&self) -> Self {
-        self.add(self)
+        // Left-shifting the current value cannot overflow, provided that
+        // the element has been constructed via a safe method, or that it
+        // has been checked prior using an unchecked one.
+
+        // Attempt to subtract the doubled value, to ensure
+        // the result is smaller than the modulus.
+        (&Fp(self.0 << 1)).sub(&M)
     }
 
     /// Outputs the internal representation as a 64-bit limb after Montgomery reduction
