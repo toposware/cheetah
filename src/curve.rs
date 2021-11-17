@@ -635,7 +635,7 @@ impl_binops_multiplicative_mixed!(AffinePoint, Scalar, ProjectivePoint);
 
 #[inline(always)]
 fn mul_by_3b(a: Fp6) -> Fp6 {
-    let b3 = B + B + B;
+    let b3 = B.double() + B;
     a * b3
 }
 
@@ -719,10 +719,10 @@ impl ProjectivePoint {
         let t2 = self.z.square();
 
         let t3 = self.x * self.y;
-        let t3 = t3 + t3;
+        let t3 = t3.double();
         let z3 = self.x * self.z;
 
-        let z3 = z3 + z3;
+        let z3 = z3.double();
         let y3 = mul_by_3b(t2);
 
         let y3 = z3 + y3;
@@ -736,7 +736,7 @@ impl ProjectivePoint {
         let t3 = t0 - t2;
 
         let t3 = t3 + z3;
-        let z3 = t0 + t0;
+        let z3 = t0.double();
         let t0 = z3 + t0;
 
         let t0 = t0 + t2;
@@ -744,14 +744,14 @@ impl ProjectivePoint {
         let y3 = y3 + t0;
 
         let t2 = self.y * self.z;
-        let t2 = t2 + t2;
+        let t2 = t2.double();
         let t0 = t2 * t3;
 
         let x3 = x3 - t0;
         let z3 = t2 * t1;
-        let z3 = z3 + z3;
+        let z3 = z3.double();
 
-        let z3 = z3 + z3;
+        let z3 = z3.double();
 
         let tmp = ProjectivePoint {
             x: x3,
@@ -797,7 +797,7 @@ impl ProjectivePoint {
         let z3 = t1 + z3;
         let y3 = x3 * z3;
 
-        let t1 = t0 + t0;
+        let t1 = t0.double();
         let t1 = t1 + t0;
 
         let t4 = mul_by_3b(t4);
@@ -849,7 +849,7 @@ impl ProjectivePoint {
 
         let z3 = t1 + z3;
         let y3 = x3 * z3;
-        let t1 = t0 + t0;
+        let t1 = t0.double();
 
         let t1 = t1 + t0;
         let t4 = mul_by_3b(t4);
