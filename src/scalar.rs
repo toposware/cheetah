@@ -217,7 +217,8 @@ impl Scalar {
         let (r6, carry) = mul64_with_carry(r6, k, M.0[3], carry);
         let (r7, _) = add64_with_carry(r7, carry2, carry);
 
-        // Result may be within M of the correct value, hence substracting the modulus
+        // The result may be within M of the correct value,
+        // hence substracting the modulus
         (&Scalar([r4, r5, r6, r7])).sub(&M)
     }
 
@@ -396,7 +397,7 @@ impl Scalar {
         CtOption::new(tmp, Choice::from(is_some))
     }
 
-    /// Convert a little-endian bit sequence into a Scalar element
+    /// Converts a little-endian bit sequence into a Scalar element
     pub fn from_bits(bit_slice: &BitSlice<Lsb0, u8>) -> Scalar {
         assert_eq!(bit_slice.len(), 256);
 
@@ -463,9 +464,8 @@ impl Scalar {
         // 1. the lower bits are multiplied by R^2, as normal
         // 2. the upper bits are multiplied by R^2 * 2^256 = R^3
         //
-        // and computing their sum in the field. It remains to see that arbitrary 256-bit
-        // numbers can be placed into Montgomery form safely using the reduction. The
-        // reduction works so long as the product is less than R=2^256 multiplied by
+        // and computing their sum in the field.
+        // The reduction works so long as the product is less than R=2^256 multiplied by
         // the modulus. This holds because for any `c` smaller than the modulus, we have
         // that (2^256 - 1)*c is an acceptable product for the reduction. Therefore, the
         // reduction always works so long as `c` is in the field; in this case it is either the
@@ -736,7 +736,7 @@ impl DivAssign for Scalar {
 
 impl From<u128> for Scalar {
     /// Converts a 128-bit value into a field element. If the value is greater than or equal to
-    /// the field modulus, modular reduction is silently preformed.
+    /// the field modulus, modular reduction is silently performed.
     fn from(value: u128) -> Self {
         let value_high: u64 = (value >> 64).try_into().unwrap();
         let value_low: u64 = (value & (u64::MAX as u128)).try_into().unwrap();

@@ -119,13 +119,13 @@ impl Fp {
     }
 
     #[inline(always)]
-    #[allow(clippy::too_many_arguments)]
     pub(crate) const fn montgomery_reduce(r0: u64, r1: u64) -> Self {
         let k = r0.wrapping_mul(U);
         let (_, carry) = mul64_with_carry(r0, k, M.0, 0);
         let (r1, _) = add64_with_carry(r1, 0, carry);
 
-        // Result may be within M of the correct value, hence substracting the modulus
+        // The result may be within M of the correct value,
+        // hence substracting the modulus
         (&Fp(r1)).sub(&M)
     }
 
@@ -134,8 +134,8 @@ impl Fp {
     pub const fn add(&self, rhs: &Self) -> Self {
         let (d0, _) = add64_with_carry(self.0, rhs.0, 0);
 
-        // Attempt to subtract the modulus, to ensure the value
-        // is smaller than the modulus.
+        // The result may be within M of the correct value,
+        // hence substracting the modulus
         (&Fp(d0)).sub(&M)
     }
 
@@ -144,7 +144,7 @@ impl Fp {
     pub const fn sub(&self, rhs: &Self) -> Self {
         let (d0, borrow) = sub64_with_carry(self.0, rhs.0, 0);
 
-        // If underflow occurred on the final limb,
+        // If underflow occurred,
         // borrow = 0xfff...fff, otherwise borrow = 0x000...000.
         let (d0, _) = add64_with_carry(d0, M.0 & borrow, 0);
 
@@ -154,8 +154,8 @@ impl Fp {
     /// Computes the negation of a field element
     #[inline]
     pub const fn neg(&self) -> Self {
-        // Subtract `self` from `M` to negate. Ignore the final
-        // borrow because it cannot underflow; self is guaranteed to
+        // Subtract `self` from `M` to negate. Ignore the borrow
+        // because it cannot underflow; self is guaranteed to
         // be in the field.
         let (d0, _) = sub64_with_carry(M.0, self.0, 0);
 
@@ -218,8 +218,8 @@ impl Fp {
         // the element has been constructed via a safe method, or that it
         // has been checked prior using an unchecked one.
 
-        // Attempt to subtract the doubled value, to ensure
-        // the result is smaller than the modulus.
+        // The doubled value may be within M of the correct value,
+        // hence substracting the modulus
         (&Fp(self.0 << 1)).sub(&M)
     }
 
@@ -280,9 +280,8 @@ impl Fp {
         // 1. the lower bits are multiplied by R^2, as normal
         // 2. the upper bits are multiplied by R^2 * 2^64 = R^3
         //
-        // and computing their sum in the field. It remains to see that arbitrary 64-bit
-        // numbers can be placed into Montgomery form safely using the reduction. The
-        // reduction works so long as the product is less than R=2^64 multiplied by
+        // and computing their sum in the field.
+        // The reduction works so long as the product is less than R=2^64 multiplied by
         // the modulus. This holds because for any `c` smaller than the modulus, we have
         // that (2^64 - 1)*c is an acceptable product for the reduction. Therefore, the
         // reduction always works so long as `c` is in the field; in this case it is either the
@@ -305,6 +304,7 @@ impl Fp {
         // First, because self is in Montgomery form we need to reduce it
         let tmp = Fp::montgomery_reduce(self.0, 0);
 
+        // (p-1) // 2 + 1 = 0x20c0000000000001
         let (_, borrow) = sub64_with_carry(tmp.0, 0x20c0000000000001, 0);
 
         // If the element was smaller, the subtraction will underflow
@@ -471,7 +471,7 @@ impl DivAssign for Fp {
 
 impl From<u64> for Fp {
     /// Converts a 64-bit value into a field element. If the value is greater than or equal to
-    /// the field modulus, modular reduction is silently preformed.
+    /// the field modulus, modular reduction is silently performed.
     fn from(value: u64) -> Self {
         Fp::new(value)
     }

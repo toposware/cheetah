@@ -207,7 +207,7 @@ impl Fp2 {
         Fp2 { c0, c1 }
     }
 
-    /// Square this element
+    /// Computes the square of a field element
     #[inline]
     pub const fn square(&self) -> Self {
         let aa = (&self.c0).square();
@@ -256,7 +256,7 @@ impl Fp2 {
         CtOption::new(s, (s * s).ct_eq(self))
     }
 
-    /// Double this element
+    /// Computes the double of a field element
     #[inline]
     pub const fn double(&self) -> Self {
         Fp2 {
@@ -265,7 +265,7 @@ impl Fp2 {
         }
     }
 
-    /// Add two elements together
+    /// Computes the summation of two field elements
     #[inline]
     pub const fn add(&self, rhs: &Self) -> Self {
         Fp2 {
@@ -274,7 +274,7 @@ impl Fp2 {
         }
     }
 
-    /// Substract two elements together
+    /// Computes the difference of two field elements
     #[inline]
     pub const fn sub(&self, rhs: &Self) -> Self {
         Fp2 {
@@ -283,7 +283,7 @@ impl Fp2 {
         }
     }
 
-    /// Negate `&self`
+    /// Computes the negation of a field element
     #[inline]
     pub const fn neg(&self) -> Self {
         Fp2 {

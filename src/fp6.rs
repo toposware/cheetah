@@ -101,7 +101,7 @@ impl From<Fp6> for [Fp; 6] {
 
 impl From<u64> for Fp6 {
     /// Converts a 64-bit value into a field element. If the value is greater than or equal to
-    /// the field modulus, modular reduction is silently preformed.
+    /// the field modulus, modular reduction is silently performed.
     fn from(value: u64) -> Self {
         Fp6::from(Fp::new(value))
     }
@@ -250,11 +250,13 @@ impl Fp6 {
     /// larger than its negation.
     #[inline]
     pub fn lexicographically_largest(&self) -> Choice {
-        // If this element's c1 coefficient is lexicographically largest
-        // then it is lexicographically largest. Otherwise, in the event
-        // the c1 coefficient is zero and the c0 coefficient is
+        // If this element's c2 coefficient is lexicographically largest
+        // then it is lexicographically largest. In the event
+        // the c2 coefficient is zero and the c1 coefficient is
         // lexicographically largest, then this element is lexicographically
-        // largest.
+        // largest. Otherwise, in the event both the c2 and c1 coefficients
+        // are zero and the c0 coefficient is lexicographically largest,
+        // then this element is lexicographically largest.
 
         self.c2.lexicographically_largest()
             | (self.c2.is_zero() & self.c1.lexicographically_largest())
@@ -296,7 +298,7 @@ impl Fp6 {
         Fp6 { c0, c1, c2 }
     }
 
-    /// Square this element
+    /// Computes the square of a field element
     #[inline]
     pub const fn square(&self) -> Self {
         let aa = (&self.c0).square();
@@ -335,7 +337,8 @@ impl Fp6 {
         // constant time specification of the algorithm.
 
         // We construct t and z from Fp6 seen as a direct extension
-        // of Fp, and then use the isomorphism to go back to the tower extension.
+        // of Fp, and then use the isomorphism in `util.sage` to go
+        // back to the tower extension.
 
         // Compute the progenitor y of self
         // y = self^((t - 1) // 2)
@@ -369,7 +372,7 @@ impl Fp6 {
         CtOption::new(s, (s * s).ct_eq(self))
     }
 
-    /// Double this element
+    /// Computes the double of a field element
     #[inline]
     pub const fn double(&self) -> Self {
         Fp6 {
@@ -379,7 +382,7 @@ impl Fp6 {
         }
     }
 
-    /// Add two elements together
+    /// Computes the summation of two field elements
     #[inline]
     pub const fn add(&self, rhs: &Self) -> Self {
         Fp6 {
@@ -389,7 +392,7 @@ impl Fp6 {
         }
     }
 
-    /// Substract two elements together
+    /// Computes the difference of two field elements
     #[inline]
     pub const fn sub(&self, rhs: &Self) -> Self {
         Fp6 {
@@ -399,7 +402,7 @@ impl Fp6 {
         }
     }
 
-    /// Negate `&self`
+    /// Computes the negation of a field element
     #[inline]
     pub const fn neg(&self) -> Self {
         Fp6 {
