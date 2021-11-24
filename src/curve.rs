@@ -463,13 +463,13 @@ impl AffinePoint {
         // multiplication, moving from most significant to least
         // significant bit of the scalar.
         //
-        // We skip the first leading bit because it's always unset for Fq
+        // We skip the first two leading bits because they are always unset for Fq
         // elements.
         for bit in by
             .iter()
             .rev()
             .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(1)
+            .skip(2)
         {
             acc = acc.double();
             acc = ProjectivePoint::conditional_select(&acc, &(acc + self), (bit as u8).into());
@@ -887,13 +887,13 @@ impl ProjectivePoint {
         // multiplication, moving from most significant to least
         // significant bit of the scalar.
         //
-        // We skip the first leading bit because it's always unset for Fq
+        // We skip the first two leading bits because they are always unset for Fq
         // elements.
         for bit in by
             .iter()
             .rev()
             .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(1)
+            .skip(2)
         {
             acc = acc.double();
             acc = ProjectivePoint::conditional_select(&acc, &(acc + self), (bit as u8).into());
