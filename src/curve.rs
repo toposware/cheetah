@@ -1,3 +1,7 @@
+//! This module provides an implementation of the STARK-friendly
+//! cheetah curve over the sextic extension of the prime field Fp
+//! of characteristic p = 2^62 + 2^56 + 2^55 + 1.
+
 use core::{
     borrow::Borrow,
     fmt,

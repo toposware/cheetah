@@ -1,3 +1,6 @@
+//! This module provides an implementation of the finite prime
+//! field Fp of characteristic p = 2^62 + 2^56 + 2^55 + 1.
+
 use core::{
     convert::TryFrom,
     fmt::{self, Debug, Display, Formatter},

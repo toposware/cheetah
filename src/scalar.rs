@@ -1,3 +1,7 @@
+//! This module provides an implementation of the scalar field Fq
+//! of the STARK-friendly cheetah curve, with characteristic
+//! q = 0x26337f752795f77cb6b6ebb9a18fecc9f2f264f035242b271e13aee130956aa5.
+
 use core::{
     convert::{TryFrom, TryInto},
     fmt::{self, Debug, Display, Formatter},
