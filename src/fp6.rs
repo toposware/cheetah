@@ -44,7 +44,7 @@ pub struct Fp6 {
 }
 
 impl fmt::Debug for Fp6 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{:?} + ({:?})*v + ({:?})*v^2", self.c0, self.c1, self.c2)
     }
 }
