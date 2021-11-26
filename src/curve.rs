@@ -24,7 +24,7 @@ use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 impl_binops_additive!(ProjectivePoint, AffinePoint);
 impl_binops_additive_specify_output!(AffinePoint, ProjectivePoint, ProjectivePoint);
 
-// A = 1
+//  A = 1
 /// B = (1200866201009650596 * u + 1935817186716799185) * v^2
 ///         + (3999205700308519553 * u + 3518137720867787056) * v
 ///         + 2508413708960025374 * u + 1526905369741321712
@@ -42,6 +42,8 @@ pub const B: Fp6 = Fp6 {
         c1: Fp(0x30dd795db5ec864c),
     },
 };
+
+const B3: Fp6 = (&B).mul(&Fp6::new([3, 0, 0, 0, 0, 0]));
 
 // cofactor = 639750783962362599710832166084722337
 //          = 0x7b36261eef444af4e22bbe55a2bea1
@@ -638,9 +640,8 @@ impl_binops_multiplicative!(ProjectivePoint, Scalar);
 impl_binops_multiplicative_mixed!(AffinePoint, Scalar, ProjectivePoint);
 
 #[inline(always)]
-fn mul_by_3b(a: Fp6) -> Fp6 {
-    let b3 = B.double() + B;
-    a * b3
+const fn mul_by_3b(a: &Fp6) -> Fp6 {
+    a.mul(&B3)
 }
 
 impl ProjectivePoint {
@@ -727,7 +728,7 @@ impl ProjectivePoint {
         let z3 = self.x * self.z;
 
         let z3 = z3.double();
-        let y3 = mul_by_3b(t2);
+        let y3 = mul_by_3b(&t2);
 
         let y3 = z3 + y3;
         let x3 = t1 - y3;
@@ -735,7 +736,7 @@ impl ProjectivePoint {
 
         let y3 = x3 * y3;
         let x3 = t3 * x3;
-        let z3 = mul_by_3b(z3);
+        let z3 = mul_by_3b(&z3);
 
         let t3 = t0 - t2;
 
@@ -794,7 +795,7 @@ impl ProjectivePoint {
         let x3 = t1 + t2;
         let t5 = t5 - x3;
 
-        let x3 = mul_by_3b(t2);
+        let x3 = mul_by_3b(&t2);
         let z3 = x3 + t4;
 
         let x3 = t1 - z3;
@@ -804,7 +805,7 @@ impl ProjectivePoint {
         let t1 = t0.double();
         let t1 = t1 + t0;
 
-        let t4 = mul_by_3b(t4);
+        let t4 = mul_by_3b(&t4);
         let t1 = t1 + t2;
         let t2 = t0 - t2;
 
@@ -847,7 +848,7 @@ impl ProjectivePoint {
         let t5 = rhs.y * self.z;
         let t5 = t5 + self.y;
 
-        let x3 = mul_by_3b(self.z);
+        let x3 = mul_by_3b(&self.z);
         let z3 = x3 + t4;
         let x3 = t1 - z3;
 
@@ -856,7 +857,7 @@ impl ProjectivePoint {
         let t1 = t0.double();
 
         let t1 = t1 + t0;
-        let t4 = mul_by_3b(t4);
+        let t4 = mul_by_3b(&t4);
 
         let t1 = t1 + self.z;
         let t2 = t0 - self.z;
