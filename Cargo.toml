@@ -15,7 +15,7 @@ keywords = ["cryptography", "crypto", "curve"]
 bitvec = { version = "0.22", default-features = false }
 getrandom = { version = "0.2", default-features = false, features = ["js"] }
 group = { version = "0.11", default-features = false }
-rand_core = { version = "0.6", default-features = false }
+rand_core = { version = "0.6", default-features = false, features = ["getrandom"] }
 serde = { version = "1.0", default-features = false, optional = true, features = ["derive"] }
 subtle = { version = "2.4", default-features = false }
 zeroize = { version = "1", default-features = false }
