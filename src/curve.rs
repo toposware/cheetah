@@ -484,6 +484,109 @@ impl AffinePoint {
         acc.into()
     }
 
+    /// Performs an affine scalar multiplication from `by`
+    /// given as byte representation of a `Scalar` element.
+    ///
+    /// **This operation is variable time with respect
+    /// to the scalar.** If the scalar is fixed,
+    /// this operation is effectively constant time.
+    #[inline]
+    pub fn multiply_vartime(&self, by: &[u8; 32]) -> AffinePoint {
+        let mut acc = ProjectivePoint::identity();
+
+        for bit in by
+            .iter()
+            .rev()
+            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
+            .skip(2)
+        {
+            acc = acc.double();
+            if bit {
+                acc += self;
+            }
+        }
+
+        acc.into()
+    }
+
+    /// Performs the affine sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with `by_lhs`
+    /// and `by_rhs` given as byte representations of `Scalar` elements.
+    #[inline]
+    pub fn multiply_double(
+        &self,
+        rhs: &AffinePoint,
+        by_lhs: &[u8; 32],
+        by_rhs: &[u8; 32],
+    ) -> AffinePoint {
+        let mut acc = ProjectivePoint::identity();
+
+        // This is similar to the simple double-and-add implementation,
+        // except that the addition step conditionally adds both points
+        // depending on the current values of the binary decompositions.
+        //
+        // This is known as the Straus-Shamir trick and is generalizable
+        // to n > 1 points.
+        for (bit_lhs, bit_rhs) in by_lhs
+            .iter()
+            .rev()
+            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
+            .skip(2)
+            .zip(
+                by_rhs
+                    .iter()
+                    .rev()
+                    .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
+                    .skip(2),
+            )
+        {
+            acc = acc.double();
+            acc = ProjectivePoint::conditional_select(&acc, &(acc + self), (bit_lhs as u8).into());
+            acc = ProjectivePoint::conditional_select(&acc, &(acc + rhs), (bit_rhs as u8).into());
+        }
+
+        acc.into()
+    }
+
+    /// Performs the affine sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with `by_lhs`
+    /// and `by_rhs` given as byte representations of `Scalar` elements.
+    ///
+    /// **This operation is variable time with respect
+    /// to the scalars.** If the scalars are fixed,
+    /// this operation is effectively constant time.
+    #[inline]
+    pub fn multiply_double_vartime(
+        &self,
+        rhs: &AffinePoint,
+        by_lhs: &[u8; 32],
+        by_rhs: &[u8; 32],
+    ) -> AffinePoint {
+        let mut acc = ProjectivePoint::identity();
+
+        for (bit_lhs, bit_rhs) in by_lhs
+            .iter()
+            .rev()
+            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
+            .skip(2)
+            .zip(
+                by_rhs
+                    .iter()
+                    .rev()
+                    .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
+                    .skip(2),
+            )
+        {
+            acc = acc.double();
+            if bit_lhs {
+                acc += self;
+            }
+            if bit_rhs {
+                acc += rhs;
+            }
+        }
+
+        acc.into()
+    }
+
     /// Multiplies by the curve cofactor
     pub fn clear_cofactor(&self) -> AffinePoint {
         let point: ProjectivePoint = self.into();
@@ -902,6 +1005,109 @@ impl ProjectivePoint {
         {
             acc = acc.double();
             acc = ProjectivePoint::conditional_select(&acc, &(acc + self), (bit as u8).into());
+        }
+
+        acc
+    }
+
+    /// Performs a projective scalar multiplication from `by`
+    /// given as byte representation of a `Scalar` element.
+    ///
+    /// **This operation is variable time with respect
+    /// to the scalar.** If the scalar is fixed,
+    /// this operation is effectively constant time.
+    #[inline]
+    pub fn multiply_vartime(&self, by: &[u8; 32]) -> ProjectivePoint {
+        let mut acc = ProjectivePoint::identity();
+
+        for bit in by
+            .iter()
+            .rev()
+            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
+            .skip(2)
+        {
+            acc = acc.double();
+            if bit {
+                acc += self;
+            }
+        }
+
+        acc
+    }
+
+    /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
+    /// `by_lhs` and `by_rhs` given as byte representations of `Scalar` elements.
+    #[inline]
+    pub fn multiply_double(
+        &self,
+        rhs: &ProjectivePoint,
+        by_lhs: &[u8; 32],
+        by_rhs: &[u8; 32],
+    ) -> ProjectivePoint {
+        let mut acc = ProjectivePoint::identity();
+
+        // This is similar to the simple double-and-add implementation,
+        // except that the addition step conditionally adds both points
+        // depending on the current values of the binary decompositions.
+        //
+        // This is known as the Straus-Shamir trick and is generalizable
+        // to n > 1 points.
+        for (bit_lhs, bit_rhs) in by_lhs
+            .iter()
+            .rev()
+            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
+            .skip(2)
+            .zip(
+                by_rhs
+                    .iter()
+                    .rev()
+                    .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
+                    .skip(2),
+            )
+        {
+            acc = acc.double();
+            acc = ProjectivePoint::conditional_select(&acc, &(acc + self), (bit_lhs as u8).into());
+            acc = ProjectivePoint::conditional_select(&acc, &(acc + rhs), (bit_rhs as u8).into());
+        }
+
+        acc
+    }
+
+    /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
+    /// `by_lhs` and `by_rhs` given as byte representations of `Scalar` elements.
+    ///
+    /// **This operation is variable time with respect
+    /// to the scalars.** If the scalars are fixed,
+    /// this operation is effectively constant time.
+    #[inline]
+    pub fn multiply_double_vartime(
+        &self,
+        rhs: &ProjectivePoint,
+        by_lhs: &[u8; 32],
+        by_rhs: &[u8; 32],
+    ) -> ProjectivePoint {
+        let mut acc = ProjectivePoint::identity();
+
+        for (bit_lhs, bit_rhs) in by_lhs
+            .iter()
+            .rev()
+            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
+            .skip(2)
+            .zip(
+                by_rhs
+                    .iter()
+                    .rev()
+                    .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
+                    .skip(2),
+            )
+        {
+            acc = acc.double();
+            if bit_lhs {
+                acc += self;
+            }
+            if bit_rhs {
+                acc += rhs;
+            }
         }
 
         acc
@@ -1521,57 +1727,75 @@ mod tests {
 
     #[test]
     fn test_projective_scalar_multiplication() {
+        let mut rng = thread_rng();
         let g = ProjectivePoint::generator();
-        let a = Scalar::new([
-            0x1fe3ac3d0fde1429,
-            0xd1ab3020993395ec,
-            0x7b05ba9afe7bb36a,
-            0x1a52ef1d2291d9bc,
-        ]);
-        let b = Scalar::new([
-            0xb2a7f9f8569e3b44,
-            0x1f9ada6e71c9167b,
-            0xb73915944013806b,
-            0x090e3287fea5247a,
-        ]);
-        let c = a * b;
-
-        assert_eq!((g * a) * b, g * c);
 
         for _ in 0..100 {
-            let a = Scalar::random(&mut thread_rng());
-            let b = Scalar::random(&mut thread_rng());
+            let a = Scalar::random(&mut rng);
+            let b = Scalar::random(&mut rng);
+
             let c = a * b;
 
             assert_eq!((g * a) * b, g * c);
+            assert_eq!(g * c, g.multiply_vartime(&c.to_bytes()));
+        }
+    }
+
+    #[test]
+    fn test_projective_double_scalar_multiplication() {
+        let mut rng = thread_rng();
+        let g = ProjectivePoint::generator() * Scalar::random(&mut rng);
+        let h = ProjectivePoint::generator() * Scalar::random(&mut rng);
+
+        for _ in 0..100 {
+            let a = Scalar::random(&mut rng);
+            let b = Scalar::random(&mut rng);
+
+            assert_eq!(
+                g.multiply_double(&h, &a.to_bytes(), &b.to_bytes()),
+                g * a + h * b
+            );
+            assert_eq!(
+                g.multiply_double_vartime(&h, &a.to_bytes(), &b.to_bytes()),
+                g * a + h * b
+            );
         }
     }
 
     #[test]
     fn test_affine_scalar_multiplication() {
+        let mut rng = thread_rng();
         let g = AffinePoint::generator();
-        let a = Scalar::new([
-            0x1fe3ac3d0fde1429,
-            0xd1ab3020993395ec,
-            0x7b05ba9afe7bb36a,
-            0x1a52ef1d2291d9bc,
-        ]);
-        let b = Scalar::new([
-            0xb2a7f9f8569e3b44,
-            0x1f9ada6e71c9167b,
-            0xb73915944013806b,
-            0x090e3287fea5247a,
-        ]);
-        let c = a * b;
-
-        assert_eq!(AffinePoint::from(g * a) * b, g * c);
 
         for _ in 0..100 {
-            let a = Scalar::random(&mut thread_rng());
-            let b = Scalar::random(&mut thread_rng());
+            let a = Scalar::random(&mut rng);
+            let b = Scalar::random(&mut rng);
+
             let c = a * b;
 
             assert_eq!((g * a) * b, g * c);
+            assert_eq!(g.multiply_vartime(&c.to_bytes()), g.multiply(&c.to_bytes()));
+        }
+    }
+
+    #[test]
+    fn test_affine_double_scalar_multiplication() {
+        let mut rng = thread_rng();
+        let g = AffinePoint::from(ProjectivePoint::generator() * Scalar::random(&mut rng));
+        let h = AffinePoint::from(ProjectivePoint::generator() * Scalar::random(&mut rng));
+
+        for _ in 0..100 {
+            let a = Scalar::random(&mut rng);
+            let b = Scalar::random(&mut rng);
+
+            assert_eq!(
+                g.multiply_double(&h, &a.to_bytes(), &b.to_bytes()),
+                AffinePoint::from(g * a + h * b)
+            );
+            assert_eq!(
+                g.multiply_double_vartime(&h, &a.to_bytes(), &b.to_bytes()),
+                AffinePoint::from(g * a + h * b)
+            );
         }
     }
 

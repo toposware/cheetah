@@ -50,11 +50,43 @@ fn criterion_benchmark(c: &mut Criterion) {
         bench.iter(|| AffinePoint::multiply(black_box(&p), black_box(&pow)))
     });
 
+    c.bench_function("curve double scalar mul affine", |bench| {
+        let mut rng = thread_rng();
+        let p1 = AffinePoint::random(&mut rng);
+        let p2 = AffinePoint::random(&mut rng);
+        let pow1 = Scalar::random(&mut rng).to_bytes();
+        let pow2 = Scalar::random(&mut rng).to_bytes();
+        bench.iter(|| {
+            AffinePoint::multiply_double(
+                black_box(&p1),
+                black_box(&p2),
+                black_box(&pow1),
+                black_box(&pow2),
+            )
+        })
+    });
+
     c.bench_function("curve scalar mul projective", |bench| {
         let mut rng = thread_rng();
         let p = ProjectivePoint::random(&mut rng);
         let pow = Scalar::random(&mut rng).to_bytes();
         bench.iter(|| ProjectivePoint::multiply(black_box(&p), black_box(&pow)))
+    });
+
+    c.bench_function("curve double scalar mul projective", |bench| {
+        let mut rng = thread_rng();
+        let p1 = ProjectivePoint::random(&mut rng);
+        let p2 = ProjectivePoint::random(&mut rng);
+        let pow1 = Scalar::random(&mut rng).to_bytes();
+        let pow2 = Scalar::random(&mut rng).to_bytes();
+        bench.iter(|| {
+            ProjectivePoint::multiply_double(
+                black_box(&p1),
+                black_box(&p2),
+                black_box(&pow1),
+                black_box(&pow2),
+            )
+        })
     });
 
     let batch_str = "curve batch normalize ".to_string();
