@@ -820,45 +820,43 @@ impl ProjectivePoint {
 
     /// Computes the doubling of this point.
     pub fn double(&self) -> ProjectivePoint {
-        // Algorithm 3, https://eprint.iacr.org/2015/1060.pdf
+        // Use formulae given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
 
-        let t0 = self.x.square();
-        let t1 = self.y.square();
-        let t2 = self.z.square();
+        let x2 = self.x.square();
+        let z2 = self.z.square();
 
-        let t3 = self.x * self.y;
+        let a = x2.double();
+        let a = a + x2;
+        let a = a + z2;
+
+        let b = self.y * self.z;
+        let t3 = self.y * b;
+        let c = t3 * self.x;
+
+        let d = c.double();
+        let c4 = d.double();
+        let d = c4.double();
+
+        let t = a.square();
+        let d = t - d;
+
+        let x3 = b * d;
+        let x3 = x3.double();
+
+        let y3 = c4 - d;
+        let y3 = a * y3;
+        let t3 = t3.square();
+
         let t3 = t3.double();
-        let z3 = self.x * self.z;
+        let t3 = t3.double();
+        let t3 = t3.double();
+
+        let y3 = y3 - t3;
+        let z3 = b.square();
+        let z3 = z3 * b;
 
         let z3 = z3.double();
-        let y3 = mul_by_3b(&t2);
-
-        let y3 = z3 + y3;
-        let x3 = t1 - y3;
-        let y3 = t1 + y3;
-
-        let y3 = x3 * y3;
-        let x3 = t3 * x3;
-        let z3 = mul_by_3b(&z3);
-
-        let t3 = t0 - t2;
-
-        let t3 = t3 + z3;
-        let z3 = t0.double();
-        let t0 = z3 + t0;
-
-        let t0 = t0 + t2;
-        let t0 = t0 * t3;
-        let y3 = y3 + t0;
-
-        let t2 = self.y * self.z;
-        let t2 = t2.double();
-        let t0 = t2 * t3;
-
-        let x3 = x3 - t0;
-        let z3 = t2 * t1;
         let z3 = z3.double();
-
         let z3 = z3.double();
 
         let tmp = ProjectivePoint {
