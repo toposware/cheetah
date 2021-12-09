@@ -400,6 +400,15 @@ impl Fp {
 
         TWO_ADIC_ROOT_OF_UNITY.exp(power)
     }
+
+    /// Outputs a `Fp` element of multiplicative order equals to 2^n
+    pub fn get_root_of_unity_vartime(n: u32) -> Self {
+        assert!(n != 0, "cannot get root of unity for n = 0");
+        assert!(n <= TWO_ADICITY, "order cannot exceed 2^{}", TWO_ADICITY);
+        let power = 1u64 << (TWO_ADICITY - n);
+
+        TWO_ADIC_ROOT_OF_UNITY.exp_vartime(power)
+    }
 }
 
 // OVERLOADED OPERATORS
@@ -892,12 +901,16 @@ mod tests {
     #[test]
     fn test_get_root_of_unity() {
         let root_55 = Fp::get_root_of_unity(55);
+        let root_55_vartime = Fp::get_root_of_unity_vartime(55);
         assert_eq!(TWO_ADIC_ROOT_OF_UNITY, root_55);
+        assert_eq!(TWO_ADIC_ROOT_OF_UNITY, root_55_vartime);
         assert_eq!(Fp::one(), root_55.exp(TWO_POW_55));
 
         let root_54 = Fp::get_root_of_unity(54);
+        let root_54_vartime = Fp::get_root_of_unity_vartime(54);
         let expected = root_55.exp(2);
         assert_eq!(expected, root_54);
+        assert_eq!(expected, root_54_vartime);
         assert_eq!(Fp::one(), root_54.exp(TWO_POW_54));
     }
 
