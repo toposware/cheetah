@@ -13,6 +13,8 @@ use cheetah::{AffinePoint, ProjectivePoint};
 use group::ff::Field;
 use group::Group;
 
+use cheetah::{BasePointTable, BASEPOINT_TABLE};
+
 static BATCH_SIZES: [u32; 5] = [1, 2, 4, 8, 16];
 
 fn criterion_benchmark(c: &mut Criterion) {
@@ -73,6 +75,12 @@ fn criterion_benchmark(c: &mut Criterion) {
         bench.iter(|| ProjectivePoint::multiply(black_box(&p), black_box(&pow)))
     });
 
+    c.bench_function("curve scalar mul projective basepoint table", |bench| {
+        let mut rng = thread_rng();
+        let pow = Scalar::random(&mut rng).to_bytes();
+        bench.iter(|| BasePointTable::multiply(black_box(&BASEPOINT_TABLE), black_box(&pow)))
+    });
+
     c.bench_function("curve double scalar mul projective", |bench| {
         let mut rng = thread_rng();
         let p1 = ProjectivePoint::random(&mut rng);
@@ -83,6 +91,20 @@ fn criterion_benchmark(c: &mut Criterion) {
             ProjectivePoint::multiply_double(
                 black_box(&p1),
                 black_box(&p2),
+                black_box(&pow1),
+                black_box(&pow2),
+            )
+        })
+    });
+
+    c.bench_function("curve double scalar mul with basepoint", |bench| {
+        let mut rng = thread_rng();
+        let p = ProjectivePoint::random(&mut rng);
+        let pow1 = Scalar::random(&mut rng).to_bytes();
+        let pow2 = Scalar::random(&mut rng).to_bytes();
+        bench.iter(|| {
+            ProjectivePoint::multiply_double_with_basepoint(
+                black_box(&p),
                 black_box(&pow1),
                 black_box(&pow2),
             )

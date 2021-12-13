@@ -9,7 +9,9 @@ use core::{
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
-use crate::{fp::Fp, fp2::Fp2, fp6::Fp6, scalar::Scalar};
+use crate::{Fp, Fp2, Fp6, Scalar};
+
+use crate::LookupTable;
 
 use group::ff::Field;
 use group::{Curve, Group};
@@ -56,7 +58,7 @@ const COFACTOR_BYTES: [u8; 15] = [
 pub struct AffinePoint {
     pub(crate) x: Fp6,
     pub(crate) y: Fp6,
-    infinity: Choice,
+    pub(crate) infinity: Choice,
 }
 
 impl Default for AffinePoint {
@@ -463,25 +465,7 @@ impl AffinePoint {
     /// given as byte representation of a `Scalar` element.
     #[inline]
     pub fn multiply(&self, by: &[u8; 32]) -> AffinePoint {
-        let mut acc = ProjectivePoint::identity();
-
-        // This is a simple double-and-add implementation of point
-        // multiplication, moving from most significant to least
-        // significant bit of the scalar.
-        //
-        // We skip the first two leading bits because they are always unset for Fq
-        // elements.
-        for bit in by
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(2)
-        {
-            acc = acc.double();
-            acc = ProjectivePoint::conditional_select(&acc, &(acc + self), (bit as u8).into());
-        }
-
-        acc.into()
+        ProjectivePoint::multiply(&self.into(), by).into()
     }
 
     /// Performs an affine scalar multiplication from `by`
@@ -492,21 +476,7 @@ impl AffinePoint {
     /// this operation is effectively constant time.
     #[inline]
     pub fn multiply_vartime(&self, by: &[u8; 32]) -> AffinePoint {
-        let mut acc = ProjectivePoint::identity();
-
-        for bit in by
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(2)
-        {
-            acc = acc.double();
-            if bit {
-                acc += self;
-            }
-        }
-
-        acc.into()
+        ProjectivePoint::multiply_vartime(&self.into(), by).into()
     }
 
     /// Performs the affine sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with `by_lhs`
@@ -518,33 +488,7 @@ impl AffinePoint {
         by_lhs: &[u8; 32],
         by_rhs: &[u8; 32],
     ) -> AffinePoint {
-        let mut acc = ProjectivePoint::identity();
-
-        // This is similar to the simple double-and-add implementation,
-        // except that the addition step conditionally adds both points
-        // depending on the current values of the binary decompositions.
-        //
-        // This is known as the Straus-Shamir trick and is generalizable
-        // to n > 1 points.
-        for (bit_lhs, bit_rhs) in by_lhs
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(2)
-            .zip(
-                by_rhs
-                    .iter()
-                    .rev()
-                    .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-                    .skip(2),
-            )
-        {
-            acc = acc.double();
-            acc = ProjectivePoint::conditional_select(&acc, &(acc + self), (bit_lhs as u8).into());
-            acc = ProjectivePoint::conditional_select(&acc, &(acc + rhs), (bit_rhs as u8).into());
-        }
-
-        acc.into()
+        ProjectivePoint::multiply_double(&self.into(), &rhs.into(), by_lhs, by_rhs).into()
     }
 
     /// Performs the affine sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with `by_lhs`
@@ -560,31 +504,7 @@ impl AffinePoint {
         by_lhs: &[u8; 32],
         by_rhs: &[u8; 32],
     ) -> AffinePoint {
-        let mut acc = ProjectivePoint::identity();
-
-        for (bit_lhs, bit_rhs) in by_lhs
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(2)
-            .zip(
-                by_rhs
-                    .iter()
-                    .rev()
-                    .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-                    .skip(2),
-            )
-        {
-            acc = acc.double();
-            if bit_lhs {
-                acc += self;
-            }
-            if bit_rhs {
-                acc += rhs;
-            }
-        }
-
-        acc.into()
+        ProjectivePoint::multiply_double_vartime(&self.into(), &rhs.into(), by_lhs, by_rhs).into()
     }
 
     /// Multiplies by the curve cofactor
@@ -818,9 +738,21 @@ impl ProjectivePoint {
         }
     }
 
+    /// Computes `n` iterated doubling of this point.
+    pub fn double_multi(&self, n: u32) -> ProjectivePoint {
+        assert!(n >= 1);
+        let mut output = self.double();
+
+        for _ in 1..n {
+            output = output.double();
+        }
+
+        output
+    }
+
     /// Computes the doubling of this point.
     pub fn double(&self) -> ProjectivePoint {
-        // Use formulae given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
+        // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
 
         let x2 = self.x.square();
         let z2 = self.z.square();
@@ -865,6 +797,8 @@ impl ProjectivePoint {
             z: z3,
         };
 
+        // The calculation above fails for doubling the infinity point,
+        // hence we do a final conditional selection.
         ProjectivePoint::conditional_select(&tmp, &ProjectivePoint::identity(), self.is_identity())
     }
 
@@ -988,21 +922,19 @@ impl ProjectivePoint {
     /// given as byte representation of a `Scalar` element
     pub fn multiply(&self, by: &[u8; 32]) -> ProjectivePoint {
         let mut acc = ProjectivePoint::identity();
+        let table = LookupTable::<16>::from(self);
 
-        // This is a simple double-and-add implementation of point
-        // multiplication, moving from most significant to least
-        // significant bit of the scalar.
-        //
-        // We skip the first two leading bits because they are always unset for Fq
-        // elements.
-        for bit in by
+        for digit in by
             .iter()
             .rev()
-            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(2)
+            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
         {
-            acc = acc.double();
-            acc = ProjectivePoint::conditional_select(&acc, &(acc + self), (bit as u8).into());
+            acc = acc.double_multi(4);
+            acc = ProjectivePoint::conditional_select(
+                &acc,
+                &(acc + table.get_point(digit as i8)),
+                ((digit != 0) as u8).into(),
+            );
         }
 
         acc
@@ -1014,19 +946,18 @@ impl ProjectivePoint {
     /// **This operation is variable time with respect
     /// to the scalar.** If the scalar is fixed,
     /// this operation is effectively constant time.
-    #[inline]
     pub fn multiply_vartime(&self, by: &[u8; 32]) -> ProjectivePoint {
         let mut acc = ProjectivePoint::identity();
+        let table = LookupTable::<16>::from(self);
 
-        for bit in by
+        for digit in by
             .iter()
             .rev()
-            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(2)
+            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
         {
-            acc = acc.double();
-            if bit {
-                acc += self;
+            acc = acc.double_multi(4);
+            if digit != 0 {
+                acc += table.get_point_vartime(digit as i8);
             }
         }
 
@@ -1043,29 +974,31 @@ impl ProjectivePoint {
         by_rhs: &[u8; 32],
     ) -> ProjectivePoint {
         let mut acc = ProjectivePoint::identity();
+        let table_lhs = LookupTable::<16>::from(self);
+        let table_rhs = LookupTable::<16>::from(rhs);
 
-        // This is similar to the simple double-and-add implementation,
-        // except that the addition step conditionally adds both points
-        // depending on the current values of the binary decompositions.
-        //
-        // This is known as the Straus-Shamir trick and is generalizable
-        // to n > 1 points.
-        for (bit_lhs, bit_rhs) in by_lhs
+        for (digit_lhs, digit_rhs) in by_lhs
             .iter()
             .rev()
-            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(2)
+            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
             .zip(
                 by_rhs
                     .iter()
                     .rev()
-                    .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-                    .skip(2),
+                    .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8)),
             )
         {
-            acc = acc.double();
-            acc = ProjectivePoint::conditional_select(&acc, &(acc + self), (bit_lhs as u8).into());
-            acc = ProjectivePoint::conditional_select(&acc, &(acc + rhs), (bit_rhs as u8).into());
+            acc = acc.double_multi(4);
+            acc = ProjectivePoint::conditional_select(
+                &acc,
+                &(acc + table_lhs.get_point(digit_lhs as i8)),
+                ((digit_lhs != 0) as u8).into(),
+            );
+            acc = ProjectivePoint::conditional_select(
+                &acc,
+                &(acc + table_rhs.get_point(digit_rhs as i8)),
+                ((digit_rhs != 0) as u8).into(),
+            );
         }
 
         acc
@@ -1085,30 +1018,88 @@ impl ProjectivePoint {
         by_rhs: &[u8; 32],
     ) -> ProjectivePoint {
         let mut acc = ProjectivePoint::identity();
+        let table_lhs = LookupTable::<16>::from(self);
+        let table_rhs = LookupTable::<16>::from(rhs);
 
-        for (bit_lhs, bit_rhs) in by_lhs
+        for (digit_lhs, digit_rhs) in by_lhs
             .iter()
             .rev()
-            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(2)
+            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
             .zip(
                 by_rhs
                     .iter()
                     .rev()
-                    .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-                    .skip(2),
+                    .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8)),
             )
         {
-            acc = acc.double();
-            if bit_lhs {
-                acc += self;
+            acc = acc.double_multi(4);
+            if digit_lhs != 0 {
+                acc += table_lhs.get_point_vartime(digit_lhs as i8);
             }
-            if bit_rhs {
-                acc += rhs;
+            if digit_rhs != 0 {
+                acc += table_rhs.get_point_vartime(digit_rhs as i8);
             }
         }
 
         acc
+    }
+
+    /// Performs the projective sum [`by` * `self` + `by_basepoint` * `g`] with
+    /// `by_` and `by_basepoint` given as byte representations of `Scalar` elements,
+    /// where `g` stands for the curve base point.
+    #[inline]
+    pub fn multiply_double_with_basepoint(
+        &self,
+        by: &[u8; 32],
+        by_basepoint: &[u8; 32],
+    ) -> ProjectivePoint {
+        let mut acc = ProjectivePoint::identity();
+        let table_lhs = LookupTable::<16>::from(self);
+
+        for digit in by
+            .iter()
+            .rev()
+            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
+        {
+            acc = acc.double_multi(4);
+            acc = ProjectivePoint::conditional_select(
+                &acc,
+                &(acc + table_lhs.get_point(digit as i8)),
+                ((digit != 0) as u8).into(),
+            );
+        }
+
+        acc + crate::constants::BASEPOINT_TABLE.multiply(by_basepoint)
+    }
+
+    /// Performs the projective sum [`by` * `self` + `by_basepoint` * `g`] with
+    /// `by_` and `by_basepoint` given as byte representations of `Scalar` elements,
+    /// where `g` stands for the curve base point.
+    ///
+    /// **This operation is variable time with respect
+    /// to the scalars.** If the scalars are fixed,
+    /// this operation is effectively constant time.
+    #[inline]
+    pub fn multiply_double_with_basepoint_vartime(
+        &self,
+        by: &[u8; 32],
+        by_basepoint: &[u8; 32],
+    ) -> ProjectivePoint {
+        let mut acc = ProjectivePoint::identity();
+        let table_lhs = LookupTable::<16>::from(self);
+
+        for digit in by
+            .iter()
+            .rev()
+            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
+        {
+            acc = acc.double_multi(4);
+            if digit != 0 {
+                acc += table_lhs.get_point_vartime(digit as i8);
+            }
+        }
+
+        acc + crate::constants::BASEPOINT_TABLE.multiply_vartime(by_basepoint)
     }
 
     /// Multiplies by the curve cofactor
@@ -1357,6 +1348,8 @@ impl<'de> Deserialize<'de> for ProjectivePoint {
 mod tests {
     use super::*;
     use rand::thread_rng;
+
+    use crate::{BasePointTable, BASEPOINT_TABLE};
 
     #[test]
     fn test_is_on_curve() {
@@ -1736,6 +1729,16 @@ mod tests {
 
             assert_eq!((g * a) * b, g * c);
             assert_eq!(g * c, g.multiply_vartime(&c.to_bytes()));
+
+            assert_eq!(g * c, &BASEPOINT_TABLE * c);
+            assert_eq!(g * c, BASEPOINT_TABLE.multiply(&c.to_bytes()));
+            assert_eq!(g * c, BASEPOINT_TABLE.multiply_vartime(&c.to_bytes()));
+
+            let g = g * a;
+            let basepoint_table = BasePointTable::create(&g);
+            assert_eq!(g * b, &basepoint_table * b);
+            assert_eq!(g * b, basepoint_table.multiply(&b.to_bytes()));
+            assert_eq!(g * b, basepoint_table.multiply_vartime(&b.to_bytes()));
         }
     }
 
@@ -1756,6 +1759,16 @@ mod tests {
             assert_eq!(
                 g.multiply_double_vartime(&h, &a.to_bytes(), &b.to_bytes()),
                 g * a + h * b
+            );
+
+            let g = ProjectivePoint::generator();
+            assert_eq!(
+                h.multiply_double_with_basepoint(&a.to_bytes(), &b.to_bytes()),
+                h * a + g * b
+            );
+            assert_eq!(
+                h.multiply_double_with_basepoint_vartime(&a.to_bytes(), &b.to_bytes()),
+                h * a + g * b
             );
         }
     }

@@ -481,6 +481,30 @@ impl Scalar {
         d0 * R2 + d1 * R3
     }
 
+    /// Converts a `Scalar` element given as byte representation into a radix-16
+    /// representation, where each resulting coefficient is in [-8;8).
+    ///
+    /// The resulting decomposition `[a_0, ..., a_63]` is such that
+    /// `sum(a_j * 2^(j * 4)) == a`.
+    pub(crate) fn to_radix_16(bytes: &[u8; 32]) -> [i8; 64] {
+        let mut result = [0i8; 64];
+
+        // Convert from bytes to radix-16
+        for i in 0..32 {
+            result[2 * i] = (bytes[i] & 0xf) as i8;
+            result[2 * i + 1] = ((bytes[i] >> 4) & 0xf) as i8;
+        }
+
+        // Shift every coefficients from [0; 16) to [-8; 8)
+        for i in 0..63 {
+            let carry = (result[i] + 8) >> 4;
+            result[i] -= carry << 4;
+            result[i + 1] += carry;
+        }
+
+        result
+    }
+
     /// Returns whether or not this element is strictly lexicographically
     /// larger than its negation.
     pub fn lexicographically_largest(&self) -> Choice {
