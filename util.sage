@@ -38,8 +38,10 @@ B = (1200866201009650596*u + 1935817186716799185)*v ^ 2 + (3999205700308519553 *
 # curve generator coordinates
 g_x = (288076929228681448*u + 2633256936270674947)*v ^ 2 + (1056103921720638754 *
                                                             u + 3052857668015466949)*v + 4508025770867562887*u + 2398517019392108645
-g_y = (288076929228681448*u + 2633256936270674947)*v ^ 2 + (1056103921720638754 *
-                                                            u + 3052857668015466949)*v + 4508025770867562887*u + 2398517019392108645
+g_y = (3289504647774244396*u + 4227116334258416103)*v ^ 2 + (3024200307602630234 *
+                                                             u + 1961556908722893436)*v + 1225290585625954719*u + 3894155704139868264
+
+E = EllipticCurve(Fp6, [1, B])
 
 
 def make_finite_field(k):
@@ -207,6 +209,18 @@ def repr_scalar(n, output_hex=True, no_computations=False):
     return output
 
 
+def repr_point(p, output_hex=False, allow_neg=False, no_computations=False):
+    assert(p in E)
+    output = "ProjectivePoint {\n"
+    output += "x: {},\n".format(repr_fp6(p.xy()[0],
+                                         output_hex, allow_neg, no_computations))
+    output += "y: {},\n".format(repr_fp6(p.xy()[1],
+                                         output_hex, allow_neg, no_computations))
+    output += "z: Fp6::one(),\n"
+    output += "}"
+    return (output)
+
+
 def print_fp(n, output_hex=False, allow_neg=False, no_computations=False):
     print(repr_fp(n, output_hex, allow_neg, no_computations))
 
@@ -221,6 +235,10 @@ def print_fp6(n, output_hex=False, allow_neg=False, no_computations=False):
 
 def print_scalar(n, output_hex=False, no_computations=False):
     print(repr_scalar(n, output_hex, no_computations))
+
+
+def print_point(p, output_hex=False, allow_neg=False, no_computations=False):
+    print(repr_point(p, output_hex, allow_neg, no_computations))
 
 
 def twoadicity(x):
