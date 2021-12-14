@@ -651,7 +651,7 @@ impl<'de> Deserialize<'de> for Fp6 {
 #[cfg(test)]
 mod test {
     use super::*;
-    use rand::thread_rng;
+    use rand_core::OsRng;
 
     // DISPLAY
     // ================================================================================================
@@ -918,7 +918,7 @@ mod test {
     #[test]
     fn test_sqrt() {
         for _ in 0..100 {
-            let a = Fp6::random(&mut thread_rng()).square();
+            let a = Fp6::random(&mut OsRng).square();
             let b = a.sqrt().unwrap();
             assert_eq!(a, b.square());
         }
@@ -1128,7 +1128,7 @@ mod test {
 
     #[test]
     fn test_negation() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
 
         let a = Fp6 {
             c0: Fp2 {
@@ -1210,7 +1210,7 @@ mod test {
 
     #[test]
     fn test_invert_is_pow() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
 
         let p6_minus_2 = [
             0x88ffffffffffffff,
@@ -1331,7 +1331,7 @@ mod test {
 
     #[test]
     fn test_from_fp() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let v = rng.next_u64();
         let e = Fp::new(v);
 
@@ -1351,7 +1351,7 @@ mod test {
 
     #[test]
     fn test_from_fp2() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let v0 = rng.next_u64();
         let v1 = rng.next_u64();
         let e = Fp2::new([v0, v1]);
@@ -1380,7 +1380,7 @@ mod test {
             bool::from(Fp6::new([1, 0, 0, 0, 0, 0]).is_zero())
         );
 
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let e = Fp6::random(&mut rng).square();
 
         assert_eq!(<Fp6 as Field>::square(&e), e.square());
@@ -1441,7 +1441,7 @@ mod test {
 
     #[test]
     fn test_from_bytes() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         for _ in 0..100 {
             let a = Fp6::random(&mut rng);
             let bytes = a.to_bytes();
@@ -1537,7 +1537,7 @@ mod test {
     #[test]
     #[cfg(feature = "serialize")]
     fn test_serde() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let element = Fp6::random(&mut rng);
         let encoded = bincode::serialize(&element).unwrap();
         let parsed: Fp6 = bincode::deserialize(&encoded).unwrap();

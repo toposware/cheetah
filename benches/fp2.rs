@@ -1,4 +1,4 @@
-use rand::thread_rng;
+use rand_core::OsRng;
 
 #[macro_use]
 extern crate criterion;
@@ -12,7 +12,7 @@ use cheetah::Fp2;
 use group::ff::Field;
 
 fn criterion_benchmark(c: &mut Criterion) {
-    let mut rng = thread_rng();
+    let mut rng = OsRng;
 
     c.bench_function("fp2 add", |bench| {
         let x = Fp2::random(&mut rng);

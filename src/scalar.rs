@@ -930,7 +930,7 @@ impl<'de> Deserialize<'de> for Scalar {
 mod tests {
     use super::*;
     use bitvec::view::AsBits;
-    use rand::thread_rng;
+    use rand_core::OsRng;
 
     const LARGEST: Scalar = Scalar([
         0x1e13aee130956aa4,
@@ -1031,7 +1031,7 @@ mod tests {
 
     #[test]
     fn test_negation() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
 
         let tmp = -&LARGEST;
 
@@ -1085,7 +1085,7 @@ mod tests {
         assert_eq!(Scalar::one().invert().unwrap(), Scalar::one());
         assert_eq!((-&Scalar::one()).invert().unwrap(), -&Scalar::one());
 
-        let mut tmp = Scalar::random(&mut thread_rng());
+        let mut tmp = Scalar::random(&mut OsRng);
 
         for _ in 0..100 {
             let mut tmp2 = tmp.invert().unwrap();
@@ -1093,7 +1093,7 @@ mod tests {
 
             assert_eq!(tmp2, Scalar::one());
 
-            tmp.add_assign(&Scalar::random(&mut thread_rng()));
+            tmp.add_assign(&Scalar::random(&mut OsRng));
         }
     }
 
@@ -1131,7 +1131,7 @@ mod tests {
     #[test]
     fn test_sqrt() {
         for _ in 0..100 {
-            let a = Scalar::random(&mut thread_rng()).square();
+            let a = Scalar::random(&mut OsRng).square();
             let b = a.sqrt().unwrap();
             assert_eq!(a, b.square());
         }
@@ -1273,7 +1273,7 @@ mod tests {
             bool::from(Scalar::new([1, 0, 0, 0]).is_zero())
         );
 
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let e = Scalar::random(&mut rng).square();
 
         assert_eq!(<Scalar as Field>::square(&e), e.square());
@@ -1309,7 +1309,7 @@ mod tests {
             Scalar::one()
         );
 
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let e = Scalar::random(&mut rng).square();
 
         assert_eq!(Scalar::from_repr(Scalar::to_repr(&e)).unwrap(), e);
@@ -1360,7 +1360,7 @@ mod tests {
 
     #[test]
     fn test_from_bytes() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         for _ in 0..100 {
             let a = Scalar::random(&mut rng);
             let bytes = a.to_bytes();
@@ -1529,7 +1529,7 @@ mod tests {
     #[test]
     #[cfg(feature = "serialize")]
     fn test_serde() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let element = Scalar::random(&mut rng);
         let encoded = bincode::serialize(&element).unwrap();
         let parsed: Scalar = bincode::deserialize(&encoded).unwrap();

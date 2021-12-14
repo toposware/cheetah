@@ -637,7 +637,7 @@ impl<'de> Deserialize<'de> for Fp {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::thread_rng;
+    use rand_core::OsRng;
 
     const LARGEST: Fp = Fp(4719772409484279808);
     const TWO_POW_55: u64 = 36028797018963968;
@@ -744,7 +744,7 @@ mod tests {
 
     #[test]
     fn test_negation() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
 
         let tmp = -&LARGEST;
 
@@ -794,7 +794,7 @@ mod tests {
 
     #[test]
     fn test_division() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let scale = Fp::random(&mut rng);
 
         for _ in 0..100 {
@@ -814,7 +814,7 @@ mod tests {
         assert_eq!(Fp::one().invert().unwrap(), Fp::one());
         assert_eq!((-&Fp::one()).invert().unwrap(), -&Fp::one());
 
-        let mut tmp = Fp::random(&mut thread_rng());
+        let mut tmp = Fp::random(&mut OsRng);
 
         for _ in 0..100 {
             let mut tmp2 = tmp.invert().unwrap();
@@ -822,7 +822,7 @@ mod tests {
 
             assert_eq!(tmp2, Fp::one());
 
-            tmp.add_assign(&Fp::random(&mut thread_rng()));
+            tmp.add_assign(&Fp::random(&mut OsRng));
         }
     }
 
@@ -860,7 +860,7 @@ mod tests {
     #[test]
     fn test_sqrt() {
         for _ in 0..100 {
-            let a = Fp::random(&mut thread_rng()).square();
+            let a = Fp::random(&mut OsRng).square();
             let b = a.sqrt().unwrap();
             assert_eq!(a, b.square());
         }
@@ -991,7 +991,7 @@ mod tests {
             bool::from(Fp::new(1).is_zero())
         );
 
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let e = Fp::random(&mut rng).square();
 
         assert_eq!(<Fp as Field>::square(&e), e.square());
@@ -1009,7 +1009,7 @@ mod tests {
         assert_eq!(Fp::from_repr([0, 0, 0, 0, 0, 0, 0, 0]).unwrap(), Fp::zero());
         assert_eq!(Fp::from_repr([1, 0, 0, 0, 0, 0, 0, 0]).unwrap(), Fp::one());
 
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let e = Fp::random(&mut rng).square();
 
         assert_eq!(Fp::from_repr(Fp::to_repr(&e)).unwrap(), e);
@@ -1036,7 +1036,7 @@ mod tests {
 
     #[test]
     fn test_from_bytes() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         for _ in 0..100 {
             let a = Fp::random(&mut rng);
             let bytes = a.to_bytes();
@@ -1109,7 +1109,7 @@ mod tests {
     #[test]
     #[cfg(feature = "serialize")]
     fn test_serde() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let element = Fp::random(&mut rng);
         let encoded = bincode::serialize(&element).unwrap();
         let parsed: Fp = bincode::deserialize(&encoded).unwrap();

@@ -27,7 +27,6 @@ serialize = ["serde"]
 [dev-dependencies]
 bincode = "1"
 criterion = "0.3"
-rand = "0.8"
 
 [[bench]]
 name = "fp"

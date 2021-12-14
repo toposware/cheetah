@@ -1,4 +1,4 @@
-use rand::thread_rng;
+use rand_core::OsRng;
 
 #[macro_use]
 extern crate criterion;
@@ -12,7 +12,7 @@ use cheetah::Scalar;
 use group::ff::Field;
 
 fn criterion_benchmark(c: &mut Criterion) {
-    let mut rng = thread_rng();
+    let mut rng = OsRng;
 
     c.bench_function("scalar add", |bench| {
         let x = Scalar::random(&mut rng);

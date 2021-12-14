@@ -318,9 +318,9 @@ mod tests {
         use crate::fp::Fp;
         use crate::utils::square_assign_multi;
         use group::ff::Field;
-        use rand::thread_rng;
+        use rand_core::OsRng;
 
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         {
             let mut e = Fp::random(&mut rng);
             let e_copy = e;

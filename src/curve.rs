@@ -1347,7 +1347,7 @@ impl<'de> Deserialize<'de> for ProjectivePoint {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::thread_rng;
+    use rand_core::OsRng;
 
     use crate::{BasePointTable, BASEPOINT_TABLE};
 
@@ -1718,7 +1718,7 @@ mod tests {
 
     #[test]
     fn test_projective_scalar_multiplication() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let g = ProjectivePoint::generator();
 
         for _ in 0..100 {
@@ -1744,7 +1744,7 @@ mod tests {
 
     #[test]
     fn test_projective_double_scalar_multiplication() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let g = ProjectivePoint::generator() * Scalar::random(&mut rng);
         let h = ProjectivePoint::generator() * Scalar::random(&mut rng);
 
@@ -1775,7 +1775,7 @@ mod tests {
 
     #[test]
     fn test_affine_scalar_multiplication() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let g = AffinePoint::generator();
 
         for _ in 0..100 {
@@ -1791,7 +1791,7 @@ mod tests {
 
     #[test]
     fn test_affine_double_scalar_multiplication() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let g = AffinePoint::from(ProjectivePoint::generator() * Scalar::random(&mut rng));
         let h = AffinePoint::from(ProjectivePoint::generator() * Scalar::random(&mut rng));
 
@@ -1955,7 +1955,7 @@ mod tests {
 
     #[test]
     fn test_point_compressed() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         // Random points
         for _ in 0..100 {
             let point = AffinePoint::random(&mut rng);
@@ -2008,7 +2008,7 @@ mod tests {
 
     #[test]
     fn test_point_uncompressed() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
 
         // Random points
         for _ in 0..100 {
@@ -2086,7 +2086,7 @@ mod tests {
     #[test]
     #[cfg(feature = "serialize")]
     fn test_serde_affine() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let point = AffinePoint::random(&mut rng);
         let encoded = bincode::serialize(&point).unwrap();
         let parsed: AffinePoint = bincode::deserialize(&encoded).unwrap();
@@ -2111,7 +2111,7 @@ mod tests {
     #[test]
     #[cfg(feature = "serialize")]
     fn test_serde_projective() {
-        let mut rng = thread_rng();
+        let mut rng = OsRng;
         let point = ProjectivePoint::random(&mut rng);
         let encoded = bincode::serialize(&point).unwrap();
         let parsed: ProjectivePoint = bincode::deserialize(&encoded).unwrap();
