@@ -1,4 +1,4 @@
-# cheetah
+# Cheetah 🐆
 
 This crates provide an implementation of the Cheetah curve over the field extension $\mathbb{F}_{p^6}$, with p = 2<sup>62</sup> + 2<sup>56</sup> + 2<sup>55</sup> + 1.
 
