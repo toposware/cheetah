@@ -1,9 +1,11 @@
 # cheetah
 
-This crates provide an ongoing implementation of the Cheetah curve over the field extension $\mathbb{F}_{p^6}$, with p = 2<sup>62</sup> + 2<sup>56</sup> + 2<sup>55</sup> + 1.
+This crates provide an implementation of the Cheetah curve over the field extension $\mathbb{F}_{p^6}$, with p = 2<sup>62</sup> + 2<sup>56</sup> + 2<sup>55</sup> + 1.
 
 * This implementation does not require the Rust standard library
 * Arithmetic operations are all constant time unless "_vartime" is explicited mentioned
+
+**WARNING:** This is an ongoing, prototype implementation subject to changes. In particular, it has not been audited and may contain bugs and security flaws. This implementation is NOT ready for production use.
 
 ## Features
 
