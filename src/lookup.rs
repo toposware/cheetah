@@ -164,7 +164,7 @@ impl BasePointTable {
     /// using internally the Pippenger's algorithm.
     #[inline]
     pub fn multiply(&self, scalar: &[u8; 32]) -> ProjectivePoint {
-        let a = Scalar::to_radix_16(scalar);
+        let a = Scalar::bytes_to_radix_16(scalar);
 
         let tables = &self.0;
         let mut acc = ProjectivePoint::identity();
@@ -191,7 +191,7 @@ impl BasePointTable {
     /// this operation is effectively constant time.
     #[inline]
     pub fn multiply_vartime(&self, scalar: &[u8; 32]) -> ProjectivePoint {
-        let a = Scalar::to_radix_16(scalar);
+        let a = Scalar::bytes_to_radix_16(scalar);
 
         let tables = &self.0;
         let mut acc = ProjectivePoint::identity();

@@ -486,7 +486,7 @@ impl Scalar {
     ///
     /// The resulting decomposition `[a_0, ..., a_63]` is such that
     /// `sum(a_j * 2^(j * 4)) == a`.
-    pub(crate) fn to_radix_16(bytes: &[u8; 32]) -> [i8; 64] {
+    pub(crate) fn bytes_to_radix_16(bytes: &[u8; 32]) -> [i8; 64] {
         let mut result = [0i8; 64];
 
         // Convert from bytes to radix-16
