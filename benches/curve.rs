@@ -97,20 +97,6 @@ fn criterion_benchmark(c: &mut Criterion) {
         })
     });
 
-    c.bench_function("curve double scalar mul with basepoint", |bench| {
-        let mut rng = OsRng;
-        let p = ProjectivePoint::random(&mut rng);
-        let pow1 = Scalar::random(&mut rng).to_bytes();
-        let pow2 = Scalar::random(&mut rng).to_bytes();
-        bench.iter(|| {
-            ProjectivePoint::multiply_double_with_basepoint(
-                black_box(&p),
-                black_box(&pow1),
-                black_box(&pow2),
-            )
-        })
-    });
-
     let batch_str = "curve batch normalize ".to_string();
     for &batch_size in BATCH_SIZES.iter() {
         let name = batch_str.clone() + &batch_size.to_string();

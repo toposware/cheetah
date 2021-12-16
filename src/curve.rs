@@ -1044,64 +1044,6 @@ impl ProjectivePoint {
         acc
     }
 
-    /// Performs the projective sum [`by` * `self` + `by_basepoint` * `g`] with
-    /// `by_` and `by_basepoint` given as byte representations of `Scalar` elements,
-    /// where `g` stands for the curve base point.
-    #[inline]
-    pub fn multiply_double_with_basepoint(
-        &self,
-        by: &[u8; 32],
-        by_basepoint: &[u8; 32],
-    ) -> ProjectivePoint {
-        let mut acc = ProjectivePoint::identity();
-        let table_lhs = LookupTable::<16>::from(self);
-
-        for digit in by
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
-        {
-            acc = acc.double_multi(4);
-            acc = ProjectivePoint::conditional_select(
-                &acc,
-                &(acc + table_lhs.get_point(digit as i8)),
-                ((digit != 0) as u8).into(),
-            );
-        }
-
-        acc + crate::constants::BASEPOINT_TABLE.multiply(by_basepoint)
-    }
-
-    /// Performs the projective sum [`by` * `self` + `by_basepoint` * `g`] with
-    /// `by_` and `by_basepoint` given as byte representations of `Scalar` elements,
-    /// where `g` stands for the curve base point.
-    ///
-    /// **This operation is variable time with respect
-    /// to the scalars.** If the scalars are fixed,
-    /// this operation is effectively constant time.
-    #[inline]
-    pub fn multiply_double_with_basepoint_vartime(
-        &self,
-        by: &[u8; 32],
-        by_basepoint: &[u8; 32],
-    ) -> ProjectivePoint {
-        let mut acc = ProjectivePoint::identity();
-        let table_lhs = LookupTable::<16>::from(self);
-
-        for digit in by
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
-        {
-            acc = acc.double_multi(4);
-            if digit != 0 {
-                acc += table_lhs.get_point_vartime(digit as i8);
-            }
-        }
-
-        acc + crate::constants::BASEPOINT_TABLE.multiply_vartime(by_basepoint)
-    }
-
     /// Multiplies by the curve cofactor
     pub fn clear_cofactor(&self) -> ProjectivePoint {
         let mut acc = ProjectivePoint::identity();
@@ -1759,16 +1701,6 @@ mod tests {
             assert_eq!(
                 g.multiply_double_vartime(&h, &a.to_bytes(), &b.to_bytes()),
                 g * a + h * b
-            );
-
-            let g = ProjectivePoint::generator();
-            assert_eq!(
-                h.multiply_double_with_basepoint(&a.to_bytes(), &b.to_bytes()),
-                h * a + g * b
-            );
-            assert_eq!(
-                h.multiply_double_with_basepoint_vartime(&a.to_bytes(), &b.to_bytes()),
-                h * a + g * b
             );
         }
     }
