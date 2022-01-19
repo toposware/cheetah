@@ -129,11 +129,10 @@ impl Fp {
     #[inline]
     pub const fn add(&self, rhs: &Self) -> Self {
         // TODO: check that everything is ct
-        let (result, over) = self.0.overflowing_add(rhs.make_canonical().0);
+        let (d0, is_overflow) = self.0.overflowing_add(rhs.0);
+        let (d0, is_overflow) = d0.overflowing_add((is_overflow as u64) * E);
 
-        // The result may be within M of the correct value,
-        // hence substracting the modulus
-        Self(result.wrapping_sub(M.0 * (over as u64)))
+        Self(d0 + E * (is_overflow as u64))
     }
 
     /// Computes the difference of two field elements
