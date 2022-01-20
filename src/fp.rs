@@ -14,7 +14,9 @@ use core::{
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
-use crate::utils::{add64_with_carry, square_assign_multi, sub64_with_carry};
+use crate::utils::{
+    add64_with_carry, shl64_by_u32_with_carry, square_assign_multi, sub64_with_carry,
+};
 
 use group::ff::{Field, PrimeField};
 use rand_core::RngCore;
@@ -134,6 +136,15 @@ impl Fp {
         Self(d0 + E * (is_overflow as u64))
     }
 
+    /// Computes the double of a field element
+    #[inline]
+    pub const fn double(&self) -> Self {
+        let (d0, carry) = shl64_by_u32_with_carry(self.0, 1, 0);
+        let (d0, is_overflow) = d0.overflowing_add(carry * E);
+
+        Self(d0 + E * (is_overflow as u64))
+    }
+
     /// Computes the difference of two field elements
     #[inline]
     pub const fn sub(&self, rhs: &Self) -> Self {
@@ -204,13 +215,6 @@ impl Fp {
         }
 
         CtOption::new(s, (s * s).ct_eq(self))
-    }
-
-    /// Computes the double of a field element
-    #[inline]
-    pub const fn double(&self) -> Self {
-        // TODO: fix shl to get back the tiny speedup
-        self.add(&self)
     }
 
     /// Outputs the internal representation as a 64-bit limb after Montgomery reduction
