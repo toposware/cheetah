@@ -98,7 +98,7 @@ impl Fp {
     /// The value is stored in canonical form
     /// (i.e. reduced by the modulus M if larger)
     pub const fn new(value: u64) -> Self {
-        Fp(value % M.0)
+        (&Fp(value)).sub(&M)
     }
 
     /// Returns zero, the additive identity.
@@ -128,7 +128,6 @@ impl Fp {
     /// Computes the summation of two field elements
     #[inline]
     pub const fn add(&self, rhs: &Self) -> Self {
-        // TODO: check that everything is ct
         let (d0, is_overflow) = self.0.overflowing_add(rhs.0);
         let (d0, is_overflow) = d0.overflowing_add((is_overflow as u64) * E);
 
