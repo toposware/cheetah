@@ -24,17 +24,18 @@ use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 use crate::fp::Fp;
 use crate::utils::square_assign_multi;
 
+use crate::fp::GENERATOR;
 use crate::fp::TWO_ADICITY;
 
 // 2^33 root of unity = 10277652121819048352*u^5 + 9084844568934916810*u^4 + 6141246800624588228*u^3
 //                          + 13627025161062455919*u^2 + 2361889345279789581*u + 3733119278093849254
 const TWO_ADIC_ROOT_OF_UNITY_P6: Fp6 = Fp6 {
-    c0: Fp(3733119278093849254),
-    c1: Fp(2361889345279789581),
-    c2: Fp(13627025161062455919),
-    c3: Fp(6141246800624588228),
-    c4: Fp(9084844568934916810),
-    c5: Fp(10277652121819048352),
+    c0: Fp::zero(),
+    c1: Fp::zero(),
+    c2: Fp::zero(),
+    c3: Fp(135436726719221772),
+    c4: Fp::zero(),
+    c5: Fp::zero(),
 };
 
 const TWO_ADICITY_P6: u32 = TWO_ADICITY + 1;
@@ -295,41 +296,95 @@ impl Fp6 {
     /// Computes the multiplication of two Fp6 elements
     pub const fn mul(&self, other: &Fp6) -> Fp6 {
         let aa = (&self.c0).mul(&other.c0);
+        let ab = (&self.c0).mul(&other.c1);
+        let ac = (&self.c0).mul(&other.c2);
+        let ad = (&self.c0).mul(&other.c3);
+        let ae = (&self.c0).mul(&other.c4);
+        let af = (&self.c0).mul(&other.c5);
+
+        let ba = (&self.c1).mul(&other.c0);
         let bb = (&self.c1).mul(&other.c1);
+        let bc = (&self.c1).mul(&other.c2);
+        let bd = (&self.c1).mul(&other.c3);
+        let be = (&self.c1).mul(&other.c4);
+        let bf = (&self.c1).mul(&other.c5);
+
+        let ca = (&self.c2).mul(&other.c0);
+        let cb = (&self.c2).mul(&other.c1);
         let cc = (&self.c2).mul(&other.c2);
+        let cd = (&self.c2).mul(&other.c3);
+        let ce = (&self.c2).mul(&other.c4);
+        let cf = (&self.c2).mul(&other.c5);
 
-        let ab_ab = (&self.c0).add(&self.c1);
-        let tmp = (&other.c0).add(&other.c1);
-        let ab_ab = (&ab_ab).mul(&tmp);
+        let da = (&self.c3).mul(&other.c0);
+        let db = (&self.c3).mul(&other.c1);
+        let dc = (&self.c3).mul(&other.c2);
+        let dd = (&self.c3).mul(&other.c3);
+        let de = (&self.c3).mul(&other.c4);
+        let df = (&self.c3).mul(&other.c5);
 
-        let ac_ac = (&self.c0).add(&self.c2);
-        let tmp = (&other.c0).add(&other.c2);
-        let ac_ac = (&ac_ac).mul(&tmp);
+        let ea = (&self.c4).mul(&other.c0);
+        let eb = (&self.c4).mul(&other.c1);
+        let ec = (&self.c4).mul(&other.c2);
+        let ed = (&self.c4).mul(&other.c3);
+        let ee = (&self.c4).mul(&other.c4);
+        let ef = (&self.c4).mul(&other.c5);
 
-        let bc_bc = (&self.c1).add(&self.c2);
-        let tmp = (&other.c1).add(&other.c2);
-        let bc_bc = (&bc_bc).mul(&tmp);
+        let fa = (&self.c5).mul(&other.c0);
+        let fb = (&self.c5).mul(&other.c1);
+        let fc = (&self.c5).mul(&other.c2);
+        let fd = (&self.c5).mul(&other.c3);
+        let fe = (&self.c5).mul(&other.c4);
+        let ff = (&self.c5).mul(&other.c5);
 
-        let tmp = (&aa).add(&bb);
-        let tmp = (&tmp).add(&cc);
+        let c0 = (&bf).add(&fb);
+        let c0 = (&c0).add(&ce);
+        let c0 = (&c0).add(&ec);
+        let c0 = (&c0).add(&dd);
+        let c0 = (&c0).mul(&GENERATOR);
+        let c0 = (&c0).add(&aa);
 
-        let c0 = (&tmp).sub(&bc_bc);
+        let c1 = (&cf).add(&fc);
+        let c1 = (&c1).add(&de);
+        let c1 = (&c1).add(&ed);
+        let c1 = (&c1).mul(&GENERATOR);
+        let c1 = (&c1).add(&ab);
+        let c1 = (&c1).add(&ba);
 
-        let c1 = (&ab_ab).sub(&bc_bc);
-        let c1 = (&c1).sub(&aa);
+        let c2 = (&df).add(&fd);
+        let c2 = (&c2).add(&ee);
+        let c2 = (&c2).mul(&GENERATOR);
+        let c2 = (&c2).add(&ac);
+        let c2 = (&c2).add(&ca);
+        let c2 = (&c2).add(&bb);
 
-        let c2 = (&ac_ac).sub(&tmp);
-        let c2 = (&c2).sub(&cc);
-        let t2 = (&bb).double();
-        let c2 = (&c2).add(&t2);
+        let c3 = (&ef).add(&fe);
+        let c3 = (&c3).mul(&GENERATOR);
+        let c3 = (&c3).add(&ad);
+        let c3 = (&c3).add(&da);
+        let c3 = (&c3).add(&bc);
+        let c3 = (&c3).add(&cb);
+
+        let c4 = (&ff).mul(&GENERATOR);
+        let c4 = (&c4).add(&ae);
+        let c4 = (&c4).add(&ea);
+        let c4 = (&c4).add(&bd);
+        let c4 = (&c4).add(&db);
+        let c4 = (&c4).add(&cc);
+
+        let c5 = (&af).add(&fa);
+        let c5 = (&c5).add(&be);
+        let c5 = (&c5).add(&eb);
+        let c5 = (&c5).add(&cd);
+        let c5 = (&c5).add(&dc);
 
         Fp6 {
             c0,
             c1,
             c2,
-            c3: Fp::zero(),
-            c4: Fp::zero(),
-            c5: Fp::zero(),
+            c3,
+            c4,
+            c5,
         }
     }
 
@@ -337,38 +392,80 @@ impl Fp6 {
     #[inline]
     pub const fn square(&self) -> Self {
         let aa = (&self.c0).square();
+        let ab = (&self.c0).mul(&self.c1);
+        let ac = (&self.c0).mul(&self.c2);
+        let ad = (&self.c0).mul(&self.c3);
+        let ae = (&self.c0).mul(&self.c4);
+        let af = (&self.c0).mul(&self.c5);
+
         let bb = (&self.c1).square();
+        let bc = (&self.c1).mul(&self.c2);
+        let bd = (&self.c1).mul(&self.c3);
+        let be = (&self.c1).mul(&self.c4);
+        let bf = (&self.c1).mul(&self.c5);
+
         let cc = (&self.c2).square();
+        let cd = (&self.c2).mul(&self.c3);
+        let ce = (&self.c2).mul(&self.c4);
+        let cf = (&self.c2).mul(&self.c5);
 
-        let ab_ab = (&self.c0).add(&self.c1);
-        let ab_ab = (&ab_ab).square();
+        let dd = (&self.c3).square();
+        let de = (&self.c3).mul(&self.c4);
+        let df = (&self.c3).mul(&self.c5);
 
-        let ac_ac = (&self.c0).add(&self.c2);
-        let ac_ac = (&ac_ac).square();
+        let ee = (&self.c4).square();
+        let ef = (&self.c4).mul(&self.c5);
 
-        let bc_bc = (&self.c1).add(&self.c2);
-        let bc_bc = (&bc_bc).square();
+        let ff = (&self.c5).square();
 
-        let tmp = (&aa).add(&bb);
-        let tmp = (&tmp).add(&cc);
+        let c0 = (&bf).add(&bf);
+        let c0 = (&c0).add(&ce);
+        let c0 = (&c0).add(&ce);
+        let c0 = (&c0).add(&dd);
+        let c0 = (&c0).mul(&GENERATOR);
+        let c0 = (&c0).add(&aa);
 
-        let c0 = (&tmp).sub(&bc_bc);
+        let c1 = (&cf).add(&cf);
+        let c1 = (&c1).add(&de);
+        let c1 = (&c1).add(&de);
+        let c1 = (&c1).mul(&GENERATOR);
+        let c1 = (&c1).add(&ab);
+        let c1 = (&c1).add(&ab);
 
-        let c1 = (&ab_ab).sub(&bc_bc);
-        let c1 = (&c1).sub(&aa);
+        let c2 = (&df).add(&df);
+        let c2 = (&c2).add(&ee);
+        let c2 = (&c2).mul(&GENERATOR);
+        let c2 = (&c2).add(&ac);
+        let c2 = (&c2).add(&ac);
+        let c2 = (&c2).add(&bb);
 
-        let c2 = (&ac_ac).sub(&tmp);
-        let c2 = (&c2).sub(&cc);
-        let t2 = (&bb).double();
-        let c2 = (&c2).add(&t2);
+        let c3 = (&ef).add(&ef);
+        let c3 = (&c3).mul(&GENERATOR);
+        let c3 = (&c3).add(&ad);
+        let c3 = (&c3).add(&ad);
+        let c3 = (&c3).add(&bc);
+        let c3 = (&c3).add(&bc);
+
+        let c4 = (&ff).mul(&GENERATOR);
+        let c4 = (&c4).add(&ae);
+        let c4 = (&c4).add(&ae);
+        let c4 = (&c4).add(&bd);
+        let c4 = (&c4).add(&bd);
+        let c4 = (&c4).add(&cc);
+
+        let c5 = (&af).add(&af);
+        let c5 = (&c5).add(&be);
+        let c5 = (&c5).add(&be);
+        let c5 = (&c5).add(&cd);
+        let c5 = (&c5).add(&cd);
 
         Fp6 {
             c0,
             c1,
             c2,
-            c3: Fp::zero(),
-            c4: Fp::zero(),
-            c5: Fp::zero(),
+            c3,
+            c4,
+            c5,
         }
     }
 
@@ -946,20 +1043,20 @@ mod test {
     #[test]
     fn test_squaring() {
         let a = Fp6 {
-            c0: Fp::new(18276341657262703099),
-            c1: Fp::new(17494203821764010183),
-            c2: Fp::new(1501410161970000750),
-            c3: Fp::new(11114954296560371639),
-            c4: Fp::new(11239800819928514629),
-            c5: Fp::new(3936451805295023052),
+            c0: Fp::new(7311251207099623982),
+            c1: Fp::new(11101156575191577169),
+            c2: Fp::new(3471450285948349450),
+            c3: Fp::new(18081717484378824777),
+            c4: Fp::new(17271827452459074620),
+            c5: Fp::new(13245881484175979175),
         };
         let b = Fp6 {
-            c0: Fp::new(170402412151881222),
-            c1: Fp::new(952540247650574138),
-            c2: Fp::new(16945333907444583571),
-            c3: Fp::new(7331789772854212682),
-            c4: Fp::new(7206943249486069692),
-            c5: Fp::new(14510292264119561269),
+            c0: Fp::new(18442855563257030637),
+            c1: Fp::new(416354386888665317),
+            c2: Fp::new(12488382742185552506),
+            c3: Fp::new(6173432951622501799),
+            c4: Fp::new(9922025629450424125),
+            c5: Fp::new(9218000164529386038),
         };
 
         assert_eq!(a.square(), b);
@@ -1015,28 +1112,28 @@ mod test {
         assert_eq!(a * b, c);
 
         let a = Fp6 {
-            c0: Fp::new(2098994220256595738),
-            c1: Fp::new(673977037340430481),
-            c2: Fp::new(5929483033901189297),
-            c3: Fp::new(12197281587486450994),
-            c4: Fp::new(3255458495445660128),
-            c5: Fp::new(5032960995606616052),
+            c0: Fp::new(7311251207099623982),
+            c1: Fp::new(11101156575191577169),
+            c2: Fp::new(3471450285948349450),
+            c3: Fp::new(18081717484378824777),
+            c4: Fp::new(17271827452459074620),
+            c5: Fp::new(13245881484175979175),
         };
         let b = Fp6 {
-            c0: Fp::new(14775999762145087217),
-            c1: Fp::new(17647376224002285663),
-            c2: Fp::new(3211342674611075840),
-            c3: Fp::new(10473960418324124545),
-            c4: Fp::new(9795599126079613575),
-            c5: Fp::new(2235733991290064790),
+            c0: Fp::new(10376570592177434053),
+            c1: Fp::new(2266730037751779421),
+            c2: Fp::new(17604547680137376634),
+            c3: Fp::new(8522386576290610241),
+            c4: Fp::new(4622828580943454349),
+            c5: Fp::new(3310945140500303981),
         };
         let c = Fp6 {
-            c0: Fp::new(5573180654036170088),
-            c1: Fp::new(6577854503873716158),
-            c2: Fp::new(2700781565974227439),
-            c3: Fp::new(18230273672688413957),
-            c4: Fp::new(17732712765236457407),
-            c5: Fp::new(5816651272886877019),
+            c0: Fp::new(16699204345089849089),
+            c1: Fp::new(12290068205868725576),
+            c2: Fp::new(15503892176250492698),
+            c3: Fp::new(16153850030910369456),
+            c4: Fp::new(4357822170351527454),
+            c5: Fp::new(15609745236686299732),
         };
 
         assert_eq!(a * b, c);
@@ -1473,11 +1570,10 @@ mod test {
         assert_eq!(element, bincode::deserialize(&element.to_bytes()).unwrap());
 
         // Check that invalid encodings fail
-        let element = Fp6::random(&mut rng);
-        let mut encoded = bincode::serialize(&element).unwrap();
-        encoded[47] = 127;
-        assert!(bincode::deserialize::<Fp6>(&encoded).is_err());
+        let wrong_encoding = [255; 48];
+        assert!(bincode::deserialize::<Fp6>(&wrong_encoding).is_err());
 
+        let element = Fp6::random(&mut rng);
         let encoded = bincode::serialize(&element).unwrap();
         assert!(bincode::deserialize::<Fp6>(&encoded[0..47]).is_err());
     }

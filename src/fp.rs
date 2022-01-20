@@ -14,9 +14,7 @@ use core::{
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
-use crate::utils::{
-    add64_with_carry, shl64_by_u32_with_carry, square_assign_multi, sub64_with_carry,
-};
+use crate::utils::{shl64_by_u32_with_carry, square_assign_multi, sub64_with_carry};
 
 use group::ff::{Field, PrimeField};
 use rand_core::RngCore;
@@ -39,7 +37,7 @@ const M: Fp = Fp(0xffffffff00000001);
 
 // Multiplicative generator g of order p-1
 // g = 7
-const GENERATOR: Fp = Fp(7);
+pub(crate) const GENERATOR: Fp = Fp(7);
 
 // Epsilon = 2^32 - 1;
 const E: u64 = 0xffffffff;
@@ -129,7 +127,7 @@ impl Fp {
     }
 
     /// Computes the summation of two field elements
-    /// 
+    ///
     /// Granted that `self` and `rhs` are in canonical form, i.e. at most
     /// 2^64 - 2^32, the carry over value can either be 0 or 1, and the
     /// resulting value is at most 2^64 - 2^33, which allows for a single
@@ -143,7 +141,7 @@ impl Fp {
     }
 
     /// Computes the double of a field element
-    /// 
+    ///
     /// Granted that `self` is in canonical form, i.e. at most
     /// 2^64 - 2^32, the carry over value can either be 0 or 1, and the
     /// resulting value is at most 2^64 - 2^33, which allows for a single
@@ -157,7 +155,7 @@ impl Fp {
     }
 
     /// Computes the difference of two field elements
-    /// 
+    ///
     /// Granted that `self` and `rhs` are in canonical form, i.e. at most
     /// 2^64 - 2^32, subtracting `E * borrow` to the result cannot
     /// underflow.
