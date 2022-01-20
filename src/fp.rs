@@ -156,15 +156,15 @@ impl Fp {
     }
 
     /// Computes the difference of two field elements
+    /// 
+    /// Granted that `self` and `rhs` are in canonical form, i.e. at most
+    /// 2^64 - 2^32, subtracting `E * borrow` to the result cannot
+    /// underflow.
     #[inline]
     pub const fn sub(&self, rhs: &Self) -> Self {
-        let (d0, borrow) = sub64_with_carry(self.0, rhs.0, 0);
+        let (d0, borrow) = self.0.overflowing_sub(rhs.0);
 
-        // If underflow occurred,
-        // borrow = 0xfff...fff, otherwise borrow = 0x000...000.
-        let (d0, _) = add64_with_carry(d0, M.0 & borrow, 0);
-
-        Fp(d0)
+        Self(d0 - E * (borrow as u64))
     }
 
     /// Computes the negation of a field element
@@ -175,7 +175,7 @@ impl Fp {
         // be in the field.
         let (d0, _) = sub64_with_carry(M.0, self.0, 0);
 
-        // `tmp` could be `M` if `self` was zero. Create a mask that is
+        // `d0` could be `M` if `self` was zero. Create a mask that is
         // zero if `self` was zero, and `u64::max_value()` if self was nonzero.
         let mask = ((self.0 == 0) as u64).wrapping_sub(1);
 
