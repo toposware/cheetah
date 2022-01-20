@@ -55,7 +55,8 @@ const TWO_ADIC_ROOT_OF_UNITY: Fp = Fp(1753635133440165772);
 
 /// Represents a base field element.
 ///
-/// Internal values are stored in Montgomery representation.
+/// Internal values are stored in canonical representation,
+/// between 0 and 2^64 - 2^32 included.
 /// The backing type is `u64`.
 #[derive(Copy, Clone, Eq, Default)]
 pub struct Fp(pub(crate) u64);
@@ -227,13 +228,16 @@ impl Fp {
         CtOption::new(s, (s * s).ct_eq(self))
     }
 
-    /// Outputs the internal representation as a 64-bit limb after Montgomery reduction
+    /// Outputs the internal representation as
+    /// a 64-bit limb after canonical reduction.
+    // TODO; is the distinction needed? should we rename it?
     pub const fn output_reduced_limbs(&self) -> u64 {
         self.make_canonical().0
     }
 
-    /// Outputs the internal representation as a 64-bit limb without Montgomery reduction
+    /// Outputs the internal representation as a 64-bit limb without canonical reduction
     /// This is intended for uses like re-interpreting the type containing the internal value.
+    // TODO: is it even needed now?
     pub const fn output_unreduced_limbs(&self) -> u64 {
         self.0
     }
