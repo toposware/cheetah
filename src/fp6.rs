@@ -418,46 +418,38 @@ impl Fp6 {
 
         let ff = (&self.c5).square();
 
-        let c0 = (&bf).add(&bf);
-        let c0 = (&c0).add(&ce);
-        let c0 = (&c0).add(&ce);
+        let c0 = (&bf).add(&ce);
+        let c0 = (&c0).double();
         let c0 = (&c0).add(&dd);
         let c0 = (&c0).mul(&GENERATOR);
         let c0 = (&c0).add(&aa);
 
-        let c1 = (&cf).add(&cf);
-        let c1 = (&c1).add(&de);
-        let c1 = (&c1).add(&de);
+        let c1 = (&cf).add(&de);
         let c1 = (&c1).mul(&GENERATOR);
         let c1 = (&c1).add(&ab);
-        let c1 = (&c1).add(&ab);
+        let c1 = (&c1).double();
 
-        let c2 = (&df).add(&df);
+        let c2 = (&df).double();
         let c2 = (&c2).add(&ee);
         let c2 = (&c2).mul(&GENERATOR);
-        let c2 = (&c2).add(&ac);
-        let c2 = (&c2).add(&ac);
         let c2 = (&c2).add(&bb);
+        let t2 = (&ac).double();
+        let c2 = (&c2).add(&t2);
 
-        let c3 = (&ef).add(&ef);
-        let c3 = (&c3).mul(&GENERATOR);
-        let c3 = (&c3).add(&ad);
+        let c3 = (&ef).mul(&GENERATOR);
         let c3 = (&c3).add(&ad);
         let c3 = (&c3).add(&bc);
-        let c3 = (&c3).add(&bc);
+        let c3 = (&c3).double();
 
-        let c4 = (&ff).mul(&GENERATOR);
-        let c4 = (&c4).add(&ae);
-        let c4 = (&c4).add(&ae);
-        let c4 = (&c4).add(&bd);
-        let c4 = (&c4).add(&bd);
+        let t4 = (&ff).mul(&GENERATOR);
+        let c4 = (&ae).add(&bd);
+        let c4 = (&c4).double();
         let c4 = (&c4).add(&cc);
+        let c4 = (&c4).add(&t4);
 
-        let c5 = (&af).add(&af);
-        let c5 = (&c5).add(&be);
-        let c5 = (&c5).add(&be);
+        let c5 = (&af).add(&be);
         let c5 = (&c5).add(&cd);
-        let c5 = (&c5).add(&cd);
+        let c5 = (&c5).double();
 
         Fp6 {
             c0,
