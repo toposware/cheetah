@@ -128,21 +128,31 @@ impl Fp {
     }
 
     /// Computes the summation of two field elements
+    /// 
+    /// Granted that `self` and `rhs` are in canonical form, i.e. at most
+    /// 2^64 - 2^32, the carry over value can either be 0 or 1, and the
+    /// resulting value is at most 2^64 - 2^33, which allows for a single
+    /// conditional addition with Epsilon based on the carry over value.
     #[inline]
     pub const fn add(&self, rhs: &Self) -> Self {
         let (d0, is_overflow) = self.0.overflowing_add(rhs.0);
-        let (d0, is_overflow) = d0.overflowing_add((is_overflow as u64) * E);
+        let (d0, _) = d0.overflowing_add((is_overflow as u64) * E);
 
-        Self(d0 + E * (is_overflow as u64))
+        Self(d0)
     }
 
     /// Computes the double of a field element
+    /// 
+    /// Granted that `self` is in canonical form, i.e. at most
+    /// 2^64 - 2^32, the carry over value can either be 0 or 1, and the
+    /// resulting value is at most 2^64 - 2^33, which allows for a single
+    /// conditional addition with Epsilon based on the carry over value.
     #[inline]
     pub const fn double(&self) -> Self {
         let (d0, carry) = shl64_by_u32_with_carry(self.0, 1, 0);
-        let (d0, is_overflow) = d0.overflowing_add(carry * E);
+        let (d0, _) = d0.overflowing_add(carry * E);
 
-        Self(d0 + E * (is_overflow as u64))
+        Self(d0)
     }
 
     /// Computes the difference of two field elements
