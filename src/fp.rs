@@ -100,7 +100,7 @@ impl Fp {
     /// The value is stored in canonical form
     /// (i.e. reduced by the modulus M if larger)
     pub const fn new(value: u64) -> Self {
-        (&Fp(value)).sub(&M)
+        Self(value % M.0)
     }
 
     /// Returns zero, the additive identity.
@@ -124,7 +124,7 @@ impl Fp {
     /// Attempts to subtract the modulus to make the element canonical
     pub const fn make_canonical(&self) -> Self {
         // Substracting the modulus
-        (&self).sub(&M)
+        Self(self.0 % M.0)
     }
 
     /// Computes the summation of two field elements
