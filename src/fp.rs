@@ -187,7 +187,7 @@ impl Fp {
     pub const fn mul(&self, rhs: &Self) -> Self {
         let r0 = (self.0 as u128) * (rhs.0 as u128);
 
-        Self(reduce_u128(r0))
+        Self(reduce_u128(r0)).make_canonical()
     }
 
     /// Computes the square of a field element
