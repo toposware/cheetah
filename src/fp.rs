@@ -7,7 +7,7 @@
 // except according to those terms.
 
 //! This module provides an implementation of the finite prime
-//! field Fp of characteristic p = 2^62 + 2^56 + 2^55 + 1.
+//! field Fp of characteristic p = 2^64 - 2^32 + 1.
 
 use core::{
     fmt::{self, Debug, Display, Formatter},
@@ -27,10 +27,6 @@ use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 
 // CONSTANTS
 // ================================================================================================
-
-// ******************************** //
-// ********* FP CONSTANTS ********* //
-// ******************************** //
 
 // Field modulus = 2^64 - 2^32 + 1
 const M: Fp = Fp(0xffffffff00000001);

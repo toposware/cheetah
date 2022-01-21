@@ -223,8 +223,8 @@ impl_binops_multiplicative!(Fp6, Fp6);
 
 impl Fp6 {
     /// Creates a new field element from a [u64; 6] value.
-    /// The value is converted to Montgomery form by computing
-    /// (a.R^0 * R^2) / R = a.R
+    /// The value is converted to canonical form by reducing
+    /// each coordinate if necessary.
     pub const fn new(value: [u64; 6]) -> Self {
         Fp6 {
             c0: Fp::new(value[0]),
