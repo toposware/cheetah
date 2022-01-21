@@ -57,7 +57,7 @@ pub struct Fp(pub(crate) u64);
 
 impl Debug for Fp {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let tmp = self.output_reduced_limbs();
+        let tmp = self.output_internal();
         write!(f, "{:?}", tmp)
     }
 }
@@ -144,8 +144,8 @@ impl Fp {
     /// conditional addition with Epsilon based on the carry over value.
     #[inline]
     pub const fn double(&self) -> Self {
-        let (d0, carry) = shl64_by_u32_with_carry(self.0, 1, 0);
-        let (d0, _) = d0.overflowing_add(carry * E);
+        let (d0, is_overflow) = shl64_by_u32_with_carry(self.0, 1, 0);
+        let (d0, _) = d0.overflowing_add(is_overflow * E);
 
         Self(d0)
     }
@@ -157,9 +157,9 @@ impl Fp {
     /// underflow.
     #[inline]
     pub const fn sub(&self, rhs: &Self) -> Self {
-        let (d0, borrow) = self.0.overflowing_sub(rhs.0);
+        let (d0, is_overflow) = self.0.overflowing_sub(rhs.0);
 
-        Self(d0 - E * (borrow as u64))
+        Self(d0 - E * (is_overflow as u64))
     }
 
     /// Computes the negation of a field element
@@ -178,6 +178,13 @@ impl Fp {
     }
 
     /// Computes the multiplication of two field elements
+    ///
+    /// Granted that `self` and `rhs` are in canonical form, i.e. at most
+    /// 2^64 - 2^32, multiplying them temporarily yields a `u128` which is
+    /// at most (2^32-2).2^96  + 1.2^64 + 0.2^32 + 0, ensuring that the
+    /// modular reduction detailed
+    /// https://github.com/mir-protocol/plonky2/blob/main/plonky2.pdf
+    /// does not yield non-canonical elements.
     #[inline]
     pub const fn mul(&self, rhs: &Self) -> Self {
         let r0 = (self.0 as u128) * (rhs.0 as u128);
@@ -224,16 +231,8 @@ impl Fp {
 
     /// Outputs the internal representation as
     /// a 64-bit limb after canonical reduction.
-    // TODO; is the distinction needed? should we rename it?
-    pub const fn output_reduced_limbs(&self) -> u64 {
+    pub const fn output_internal(&self) -> u64 {
         self.make_canonical().0
-    }
-
-    /// Outputs the internal representation as a 64-bit limb without canonical reduction
-    /// This is intended for uses like re-interpreting the type containing the internal value.
-    // TODO: is it even needed now?
-    pub const fn output_unreduced_limbs(&self) -> u64 {
-        self.0
     }
 
     /// Converts an `Fp` element into a byte representation in
@@ -657,10 +656,10 @@ mod tests {
     }
 
     #[test]
-    fn test_output_reduced_limbs() {
-        assert_eq!(format!("{:?}", Fp::zero().output_reduced_limbs()), "0");
-        assert_eq!(format!("{:?}", Fp::one().output_reduced_limbs()), "1");
-        assert_eq!(format!("{:?}", M.output_reduced_limbs()), "0");
+    fn test_output_internal() {
+        assert_eq!(format!("{:?}", Fp::zero().output_internal()), "0");
+        assert_eq!(format!("{:?}", Fp::one().output_internal()), "1");
+        assert_eq!(format!("{:?}", M.output_internal()), "0");
     }
 
     // BASIC ALGEBRA

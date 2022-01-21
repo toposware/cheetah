@@ -668,22 +668,14 @@ impl Fp6 {
     }
 
     /// Outputs the internal representation as 6 64-bit limbs after canonical reduction
-    pub const fn output_reduced_limbs(&self) -> [u64; 6] {
+    pub const fn output_internal(&self) -> [u64; 6] {
         [
-            Fp::make_canonical(&self.c0).0,
-            Fp::make_canonical(&self.c1).0,
-            Fp::make_canonical(&self.c2).0,
-            Fp::make_canonical(&self.c3).0,
-            Fp::make_canonical(&self.c4).0,
-            Fp::make_canonical(&self.c5).0,
-        ]
-    }
-
-    /// Outputs the internal representation as 6 64-bit limbs without canonical reduction
-    /// This is intended for uses like re-interpreting the type containing the internal value.
-    pub const fn output_unreduced_limbs(&self) -> [u64; 6] {
-        [
-            self.c0.0, self.c1.0, self.c2.0, self.c3.0, self.c4.0, self.c5.0,
+            self.c0.output_internal(),
+            self.c1.output_internal(),
+            self.c2.output_internal(),
+            self.c3.output_internal(),
+            self.c4.output_internal(),
+            self.c5.output_internal(),
         ]
     }
 
@@ -890,16 +882,16 @@ mod test {
     #[test]
     fn test_output_reduced_limbs() {
         assert_eq!(
-            format!("{:?}", Fp6::zero().output_reduced_limbs()),
+            format!("{:?}", Fp6::zero().output_internal()),
             "[0, 0, 0, 0, 0, 0]"
         );
         assert_eq!(
-            format!("{:?}", Fp6::one().output_reduced_limbs()),
+            format!("{:?}", Fp6::one().output_internal()),
             "[1, 0, 0, 0, 0, 0]"
         );
         let a = Fp6::one().neg();
         assert_eq!(
-            format!("{:?}", a.output_reduced_limbs()),
+            format!("{:?}", a.output_internal()),
             "[18446744069414584320, 0, 0, 0, 0, 0]"
         );
     }
