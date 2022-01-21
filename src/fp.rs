@@ -186,7 +186,7 @@ impl Fp {
     pub const fn mul(&self, rhs: &Self) -> Self {
         let r0 = (self.0 as u128) * (rhs.0 as u128);
 
-        Self(reduce_u128(r0)).make_canonical()
+        Self(reduce_u128(r0))
     }
 
     /// Computes the square of a field element
@@ -272,10 +272,10 @@ impl Fp {
     /// Converts a 128-bit little endian integer into
     /// a `Fp` by reducing by the modulus.
     ///
-    /// The result is not necessarily canonical
-    /// (i.e. the value can lie between p and 2^64).
+    /// The result is always returned in canonical form,
+    /// reduced by p if necessary.
     pub fn from_bytes_wide(bytes: [u8; 16]) -> Self {
-        Self(reduce_u128(u128::from_le_bytes(bytes)))
+        Self(reduce_u128(u128::from_le_bytes(bytes))).make_canonical()
     }
 
     /// Returns whether or not this element is strictly lexicographically
@@ -608,32 +608,38 @@ impl<'de> Deserialize<'de> for Fp {
     }
 }
 
-/// Reduces a 128-bit value by M such that the output is in [0, 2^64) range.
+/// Reduces a 128-bit value by M such that the output is in [0, M) range.
 ///
-/// ***NOTE***: The output of this function is not necessarily a valid `Fp` element.
-/// The value can lie between p and 2^64. To ensure that the output is a valid `Fp`
-/// element, one may construct one from the outputted u64 value by calling `Fp::new`.
+/// ***NOTE***: The output of this function is guaranteed to be a canonical element
+/// in `Fp`, granted that it results from the multiplication of two canonical elements
+/// before reduction.
+/// Applying it to any u128 value x (in particular for x in ](M-1)^2, 2^128-1] range,
+/// requires to call `Fp::make_canonical` to ensure that the result is in proper
+/// canonical form.
 #[inline(always)]
 const fn reduce_u128(x: u128) -> u64 {
-    // assume x consists of four 32-bit values: a, b, c, d such that a contains 32 least
-    // significant bits and d contains 32 most significant bits. we break x into corresponding
-    // values as shown below
+    // See https://github.com/mir-protocol/plonky2/blob/main/plonky2.pdf
+    // for a more complete description of the reduction.
+
+    // Decompose x = a + b.2^32 + c.2^64 + d.2^96 with a,b,c and d u32 values
     let ab = x as u64;
     let cd = (x >> 64) as u64;
     let c = (cd as u32) as u64;
     let d = cd >> 32;
 
-    // compute ab - d; because d may be greater than ab we need to handle potential underflow
-    let (tmp0, under) = ab.overflowing_sub(d);
-    let tmp0 = tmp0.wrapping_sub(E * (under as u64));
+    // r0 = ab - d
+    let (r0, is_overflow) = ab.overflowing_sub(d);
+    // d > ab may happen, hence handling potential overflow
+    let r0 = r0.wrapping_sub(E * (is_overflow as u64));
 
-    // compute c * 2^32 - c; this is guaranteed not to underflow
-    let tmp1 = (c << 32) - c;
+    // r1 = c * 2^32 - c
+    // this cannot underflow
+    let r1 = (c << 32) - c;
 
-    // add temp values and return the result; because each of the temp may be up to 64 bits,
-    // we need to handle potential overflow
-    let (result, over) = tmp0.overflowing_add(tmp1);
-    result.wrapping_add(E * (over as u64))
+    // result = r0 + r1
+    let (result, is_overflow) = r0.overflowing_add(r1);
+    // handle potential overflow
+    result.wrapping_add(E * (is_overflow as u64))
 }
 
 #[cfg(test)]
