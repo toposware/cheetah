@@ -258,25 +258,13 @@ impl AffinePoint {
 
     /// Outputs an uncompressed byte representation of this `AffinePoint` element
     /// It is twice larger than when calling `AffinePoint::to_compressed()`
-    pub fn to_uncompressed(&self) -> [u8; 96] {
-        let mut res = [0; 96];
-
-        res[0..48].copy_from_slice(
-            &Fp6::conditional_select(&self.x, &Fp6::zero(), self.infinity).to_bytes()[..],
-        );
-        res[48..96].copy_from_slice(
-            &Fp6::conditional_select(&self.y, &Fp6::zero(), self.infinity).to_bytes()[..],
-        );
-
-        // Is this point at infinity? If so, set the most significant bit of the second Fp element.
-        res[15] |= u8::conditional_select(&0u8, &(1u8 << 7), self.infinity);
-
-        res
+    pub fn to_uncompressed(&self) -> UncompressedPoint {
+        UncompressedPoint::from_affine(&self)
     }
 
     /// Attempts to deserialize an uncompressed element.
-    pub fn from_uncompressed(bytes: &[u8; 96]) -> CtOption<Self> {
-        Self::from_uncompressed_unchecked(bytes)
+    pub fn from_uncompressed(uncompressed_point: &UncompressedPoint) -> CtOption<Self> {
+        Self::from_uncompressed_unchecked(uncompressed_point)
             .and_then(|p| CtOption::new(p, p.is_on_curve() & p.is_torsion_free()))
     }
 
@@ -284,56 +272,8 @@ impl AffinePoint {
     /// element is on the curve and not checking if it is in the correct subgroup.
     /// **This is dangerous to call unless you trust the bytes you are reading; otherwise,
     /// API invariants may be broken.** Please consider using `from_uncompressed()` instead.
-    pub fn from_uncompressed_unchecked(bytes: &[u8; 96]) -> CtOption<Self> {
-        // Obtain the three flags
-        let compression_flag_set = Choice::from((bytes[7] >> 7) & 1);
-        let infinity_flag_set = Choice::from((bytes[15] >> 7) & 1);
-        let sort_flag_set = Choice::from((bytes[23] >> 7) & 1);
-
-        // Attempt to obtain the x-coordinate
-        let x = {
-            let mut tmp = [0; 48];
-            tmp.copy_from_slice(&bytes[0..48]);
-
-            // Mask away the flag bits
-            tmp[7] &= 0b0111_1111;
-            tmp[15] &= 0b0111_1111;
-            tmp[23] &= 0b0111_1111;
-
-            Fp6::from_bytes(&tmp)
-        };
-
-        // Attempt to obtain the y-coordinate
-        let y = {
-            let mut tmp = [0; 48];
-            tmp.copy_from_slice(&bytes[48..96]);
-
-            Fp6::from_bytes(&tmp)
-        };
-
-        x.and_then(|x| {
-            y.and_then(|y| {
-                let p = AffinePoint::conditional_select(
-                    &AffinePoint {
-                        x,
-                        y,
-                        infinity: infinity_flag_set,
-                    },
-                    &AffinePoint::identity(),
-                    infinity_flag_set,
-                );
-
-                CtOption::new(
-                    p,
-                    // If the infinity flag is set, the x and y coordinates should have been zero.
-                    ((!infinity_flag_set) | (infinity_flag_set & x.is_zero() & y.is_zero())) &
-                    // The compression flag should not have been set, as this is an uncompressed element
-                    (!compression_flag_set) &
-                    // The sort flag should not have been set, as this is an uncompressed element
-                    (!sort_flag_set),
-                )
-            })
-        })
+    pub fn from_uncompressed_unchecked(uncompressed_point: &UncompressedPoint) -> CtOption<Self> {
+        uncompressed_point.to_affine()
     }
 
     /// Attempts to deserialize a compressed element.
@@ -639,13 +579,13 @@ impl ProjectivePoint {
 
     /// Outputs an uncompressed byte representation of this `ProjectivePoint` element
     /// It is twice larger than when calling `ProjectivePoint::to_uncompress()`
-    pub fn to_uncompressed(&self) -> [u8; 96] {
+    pub fn to_uncompressed(&self) -> UncompressedPoint {
         AffinePoint::from(self).to_uncompressed()
     }
 
     /// Attempts to deserialize an uncompressed element.
-    pub fn from_uncompressed(bytes: &[u8; 96]) -> CtOption<Self> {
-        AffinePoint::from_uncompressed(bytes)
+    pub fn from_uncompressed(uncompressed_point: &UncompressedPoint) -> CtOption<Self> {
+        AffinePoint::from_uncompressed(uncompressed_point)
             .and_then(|p| CtOption::new(ProjectivePoint::from(p), 1.into()))
     }
 
@@ -653,8 +593,8 @@ impl ProjectivePoint {
     /// element is on the curve and not checking if it is in the correct subgroup.
     /// **This is dangerous to call unless you trust the bytes you are reading; otherwise,
     /// API invariants may be broken.** Please consider using `from_uncompressed()` instead.
-    pub fn from_uncompressed_unchecked(bytes: &[u8; 96]) -> CtOption<Self> {
-        AffinePoint::from_uncompressed_unchecked(bytes)
+    pub fn from_uncompressed_unchecked(uncompressed_point: &UncompressedPoint) -> CtOption<Self> {
+        AffinePoint::from_uncompressed_unchecked(uncompressed_point)
             .and_then(|p| CtOption::new(ProjectivePoint::from(p), 1.into()))
     }
 
@@ -1135,6 +1075,75 @@ impl CompressedPoint {
                         !infinity_flag_set, // Infinity flag should not be set
                     )
                 })
+            })
+        })
+    }
+}
+
+/// A uncompressed point, storing the `x` and `y` coordinates
+/// of a point, along an extra byte storing metadata to be
+/// used for decompression.
+#[derive(Copy, Clone, Debug)]
+pub struct UncompressedPoint([u8; 97]);
+
+impl UncompressedPoint {
+    /// Converts an `AffinePoint` to an `UncompressedPoint`
+    fn from_affine(point: &AffinePoint) -> Self {
+        let mut bytes = [0; 97];
+
+        bytes[0..48].copy_from_slice(
+            &Fp6::conditional_select(&point.x, &Fp6::zero(), point.infinity).to_bytes()[..],
+        );
+        bytes[48..96].copy_from_slice(
+            &Fp6::conditional_select(&point.y, &Fp6::zero(), point.infinity).to_bytes()[..],
+        );
+
+        // Is this point at infinity? If so, set the most significant bit of the last byte.
+        bytes[96] |= u8::conditional_select(&0u8, &(1u8 << 7), point.infinity);
+
+        Self(bytes)
+    }
+
+    /// Attempts to convert an `UncompressedPoint` to an `AffinePoint`
+    /// The resulting point is ensured to be on the curve, but is
+    /// not necessarily on the prime order subgroup.
+    fn to_affine(&self) -> CtOption<AffinePoint> {
+        // Obtain the two flags
+        let infinity_flag_set = Choice::from((self.0[96] >> 7) & 1);
+
+        // Attempt to obtain the x-coordinate
+        let x = {
+            let mut tmp = [0; 48];
+            tmp.copy_from_slice(&self.0[0..48]);
+
+            Fp6::from_bytes(&tmp)
+        };
+
+        // Attempt to obtain the y-coordinate
+        let y = {
+            let mut tmp = [0; 48];
+            tmp.copy_from_slice(&self.0[48..96]);
+
+            Fp6::from_bytes(&tmp)
+        };
+
+        x.and_then(|x| {
+            y.and_then(|y| {
+                let p = AffinePoint::conditional_select(
+                    &AffinePoint {
+                        x,
+                        y,
+                        infinity: infinity_flag_set,
+                    },
+                    &AffinePoint::identity(),
+                    infinity_flag_set,
+                );
+
+                CtOption::new(
+                    p,
+                    // If the infinity flag is set, the x and y coordinates should have been zero.
+                    (!infinity_flag_set) | (infinity_flag_set & x.is_zero() & y.is_zero()),
+                )
             })
         })
     }
@@ -1931,13 +1940,13 @@ mod tests {
             assert!(bool::from(point_decompressed.is_none()));
         }
         {
-            let bytes = [
+            let bytes = UncompressedPoint([
                 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 255,
                 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
                 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            ];
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            ]);
             let point_decompressed = AffinePoint::from_uncompressed_unchecked(&bytes);
             assert!(bool::from(point_decompressed.is_none()));
 
@@ -1945,13 +1954,13 @@ mod tests {
             assert!(bool::from(point_decompressed.is_none()));
         }
         {
-            let bytes = [
+            let bytes = UncompressedPoint([
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
                 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
                 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-            ];
+                255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+            ]);
             let point_decompressed = AffinePoint::from_uncompressed_unchecked(&bytes);
             assert!(bool::from(point_decompressed.is_none()));
 
