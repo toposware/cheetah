@@ -35,10 +35,10 @@ pub use group;
 #[macro_use]
 mod utils;
 
-// mod constants;
-// mod lookup;
+mod constants;
+mod lookup;
 
-// mod curve;
+mod curve;
 mod fp;
 mod fp6;
 mod scalar;
@@ -48,7 +48,7 @@ pub use scalar::Scalar;
 pub use fp::Fp;
 pub use fp6::Fp6;
 
-// pub use constants::BASEPOINT_TABLE;
-// pub use lookup::{BasePointTable, LookupTable};
+pub use constants::BASEPOINT_TABLE;
+pub use lookup::{BasePointTable, LookupTable};
 
-// pub use curve::{AffinePoint, ProjectivePoint, B};
+pub use curve::{AffinePoint, ProjectivePoint, B};

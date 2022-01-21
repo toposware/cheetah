@@ -7,7 +7,7 @@
 // except according to those terms.
 
 use crate::{BasePointTable, LookupTable, ProjectivePoint};
-use crate::{Fp, Fp2, Fp6};
+use crate::{Fp, Fp6};
 
 /// A hardcoded `BasePointTable` for the generator of the
 /// Cheetah curve, to allow for efficient scalar multiplication.
@@ -16,249 +16,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xf6798582c92ece1),
-                    c1: Fp(0x2b7c30a4c7d886c0),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1269cdae98dc2fd0),
-                    c1: Fp(0x11b78ef6c71c6132),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3ac2244dfc47537),
-                    c1: Fp(0x36dfeea4b9051daf),
-                },
+                c0: Fp(0x648eeb1134772af2),
+                c1: Fp(0x615c8ceb5de71c1f),
+                c2: Fp(0x14a489b1f34ab92b),
+                c3: Fp(0xd541aa1e607aaa66),
+                c4: Fp(0x814ff01215217248),
+                c5: Fp(0xc995a8d192442791),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x334807e450d55e2f),
-                    c1: Fp(0x200a54d42b84bd17),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x271af7bb20ab32e1),
-                    c1: Fp(0x3df7b90927efc7ec),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xab8bbf4a53af6a0),
-                    c1: Fp(0xe13dca26b2ac6ab),
-                },
+                c0: Fp(0x512330e187a232d7),
+                c1: Fp(0xc51d530fbdfbe188),
+                c2: Fp(0x46f1c144a28b3894),
+                c3: Fp(0xf634b28a1537990f),
+                c4: Fp(0x4783e4f886f87554),
+                c5: Fp(0xdb2c4e2e0198890b),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1ba2d52806f212a),
-                    c1: Fp(0x5e9353a4e8225c8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x13e92423fef3bc2d),
-                    c1: Fp(0x241081e7ae1db310),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x29f0073c3351026b),
-                    c1: Fp(0x11233fe9eb7285c0),
-                },
+                c0: Fp(0xba493934267abd25),
+                c1: Fp(0xe67708b141b00f98),
+                c2: Fp(0x281a941118867b07),
+                c3: Fp(0xef05e46bf54aee0),
+                c4: Fp(0x26fba4541e43ebfa),
+                c5: Fp(0xc188a470c53c1f2d),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3a19dfba18e15ed5),
-                    c1: Fp(0x3691eb6949fca20b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3ea42cb9ad7430ab),
-                    c1: Fp(0x1b840f91119a2eb3),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1b94f8ccdafc47ba),
-                    c1: Fp(0x19e92e12c3a9cfa),
-                },
+                c0: Fp(0xd33b8d0cfe41fbaa),
+                c1: Fp(0xb4072471688071f7),
+                c2: Fp(0x3b528825265ba3f3),
+                c3: Fp(0xfd892261eaf47fe6),
+                c4: Fp(0xce63e291673184d1),
+                c5: Fp(0x37eb7b2fa4ea4db0),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x240fa5ba0a5898ed),
-                    c1: Fp(0x40c47d7ba253bf0e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x33ba4aded4efccc),
-                    c1: Fp(0x1039b991fc425c2a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3a3377cb089e18e1),
-                    c1: Fp(0x33fe6dd67a1199d1),
-                },
+                c0: Fp(0xd4dc48c2667d945f),
+                c1: Fp(0x94765a50bd0e4597),
+                c2: Fp(0xd94a3b9a2372bd84),
+                c3: Fp(0x19786877754c64ef),
+                c4: Fp(0xba161d976cb200d6),
+                c5: Fp(0x6f89e31c5e95093d),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3d18545ae8d7f1ca),
-                    c1: Fp(0x35d016be897d1ac),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x11cffedc95fab7c),
-                    c1: Fp(0x380a47d8d19fe89d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xf2626400fe07952),
-                    c1: Fp(0x29bdee7543df2dc1),
-                },
+                c0: Fp(0xf6d9a5f58dd68ce4),
+                c1: Fp(0x7725fa873c1fe9f4),
+                c2: Fp(0x42496ae505900f6f),
+                c3: Fp(0xce26e911b37cfecc),
+                c4: Fp(0x7f9c4748ff931f57),
+                c5: Fp(0x235d37abfc69380),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x38421f520be9eaa5),
-                    c1: Fp(0x42de68de893c711),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3e8e067736bd2eb8),
-                    c1: Fp(0x30460eddb629aa0b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x12d35376f4dda11c),
-                    c1: Fp(0x3900acab8b415e26),
-                },
+                c0: Fp(0x4631b26a8c3a8495),
+                c1: Fp(0x7a336d164fce6978),
+                c2: Fp(0x7e3047cca7979cb1),
+                c3: Fp(0x31cedaf6aca78455),
+                c4: Fp(0x57b9c5260be05716),
+                c5: Fp(0xa15ac55256ed6c62),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1d8b65a1650963c8),
-                    c1: Fp(0x1a9e0c9571c0cd5e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xffb279b803f9a1e),
-                    c1: Fp(0x3f4362974ac3f3e4),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3b1c67d6d589d25e),
-                    c1: Fp(0xd16b2f32f47b2c5),
-                },
+                c0: Fp(0xaf28f7be225d9843),
+                c1: Fp(0x103a887fb40a9ecb),
+                c2: Fp(0x39a8af182cbc9623),
+                c3: Fp(0xec63f76cf6b85ca0),
+                c4: Fp(0x2de2b2ce628db658),
+                c5: Fp(0xd761821ce964bd5a),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x20963a9466642969),
-                    c1: Fp(0x6d053c1cc2028ae),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x20113cd3b01b2e42),
-                    c1: Fp(0x3095357e8999801),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x16a416abf236f9e7),
-                    c1: Fp(0x2f3a322b2d83abbd),
-                },
+                c0: Fp(0x6d8425f4b10c7564),
+                c1: Fp(0xe212bdbea3a3b764),
+                c2: Fp(0x390a3ee0ca67e2a),
+                c3: Fp(0x908607320005d989),
+                c4: Fp(0x2c4cf472eafa7ffe),
+                c5: Fp(0xdccc68bbd534e054),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3ef655cb5df8e10e),
-                    c1: Fp(0x288c475d23a8a254),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1dff0ce61a7ae2bc),
-                    c1: Fp(0x1129ae857ee07f8a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x870bd430eca1e97),
-                    c1: Fp(0x1cd4733a0462ae02),
-                },
+                c0: Fp(0xe0aba06be5d258d5),
+                c1: Fp(0xd662cffbdf7e492b),
+                c2: Fp(0xb401a48b1ace9962),
+                c3: Fp(0xe866a76804d23661),
+                c4: Fp(0x2fd296c6433bdf02),
+                c5: Fp(0x2bd098468894b815),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x21f56b2c2c2b9f74),
-                    c1: Fp(0x26c1f4f022e38324),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2fff141ac2c11242),
-                    c1: Fp(0x18f66618417b4ff4),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2aecbec97c6022fa),
-                    c1: Fp(0x128adabb230d9814),
-                },
+                c0: Fp(0xd23fb1b0ebd285ce),
+                c1: Fp(0xfc57b9c90ebd608),
+                c2: Fp(0xe38653f5c287961e),
+                c3: Fp(0x4800e4395657ecc7),
+                c4: Fp(0xbe3f3ef100914a79),
+                c5: Fp(0x1e0bc20870f07aa7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x4559c3329006d77),
-                    c1: Fp(0xd50ac681186a14d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1dc79c586ab3a07),
-                    c1: Fp(0x15c428abe161368f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x4c6f6b905cf7c50),
-                    c1: Fp(0x3fe15445d1cea5b),
-                },
+                c0: Fp(0xbd059e9f826d7782),
+                c1: Fp(0x3d8a0f6af6d86751),
+                c2: Fp(0x42fd23db1a506358),
+                c3: Fp(0x8b55f7043000fc43),
+                c4: Fp(0xf37f8b4dd99caf61),
+                c5: Fp(0xfd5d707f086fbe6),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1779944f15ceab03),
-                    c1: Fp(0x2e5b13cb48482f81),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x4073839e4414218d),
-                    c1: Fp(0x1b99bde9130cd32a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xa6a4605df9774e4),
-                    c1: Fp(0x3d98693f8ca0016),
-                },
+                c0: Fp(0x70b69b36754ae4ea),
+                c1: Fp(0x1aaec23fdb09d6b7),
+                c2: Fp(0xa6ec51ec3171ad3f),
+                c3: Fp(0x9f86bfde1d5d3aa1),
+                c4: Fp(0xdaa3d2f57adcf388),
+                c5: Fp(0x8340a5dec8721e33),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x22d756e15bca4b42),
-                    c1: Fp(0x29703b4435c7ea5),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x399d43e5b876ab4),
-                    c1: Fp(0x172962906cb0b347),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x21bcc1674db9f7ba),
-                    c1: Fp(0x272437362226a1b4),
-                },
+                c0: Fp(0x157e9da7effaee1f),
+                c1: Fp(0x1c6e53deee13df93),
+                c2: Fp(0xafeda16fdad5a31b),
+                c3: Fp(0x4339e95afd3dbec6),
+                c4: Fp(0x4b4940529c0ccdd8),
+                c5: Fp(0x43461057c65a512a),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3c6db9906b674248),
-                    c1: Fp(0x93348e2de77d662),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2b098441acf17bd1),
-                    c1: Fp(0x2836d01fa21c3267),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x36a95afba527cbda),
-                    c1: Fp(0x3170d4d25d1fc074),
-                },
+                c0: Fp(0x896350db8c7ccf21),
+                c1: Fp(0x66c7f69a069cbe96),
+                c2: Fp(0x175a11bcfb90f298),
+                c3: Fp(0xe40377116d0982d6),
+                c4: Fp(0xc14ff30c153e8438),
+                c5: Fp(0xf6c1f1c54dc1ffba),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3dad8cd910195fa4),
-                    c1: Fp(0x18fda15837f0c55d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x24a92bc9469374b8),
-                    c1: Fp(0x1fc214214fa71c00),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x44b0f35a91ce992),
-                    c1: Fp(0x3d17086a9fb936fc),
-                },
+                c0: Fp(0x87c8e7a97e435bef),
+                c1: Fp(0xbc7e079167a53e58),
+                c2: Fp(0xac9bbe69be2ab041),
+                c3: Fp(0xf05ece7493a1ce8),
+                c4: Fp(0x51cf827acc32e19c),
+                c5: Fp(0x7f2b0cc6ec9631de),
             },
             z: Fp6::one(),
         },
@@ -266,249 +170,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xdd3b759d0c5b0fa),
-                    c1: Fp(0x2b0e767dd35bdfda),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x38af1d5dc3ac6f3e),
-                    c1: Fp(0x80d10fafedbe98f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xad1dd4eb083da47),
-                    c1: Fp(0x1ca8311dff4ce349),
-                },
+                c0: Fp(0xb332b5e289a6e338),
+                c1: Fp(0x3d35d3125c45cb93),
+                c2: Fp(0x69939fa970bd604d),
+                c3: Fp(0x43ab9296aea96ce0),
+                c4: Fp(0x2cdaa6ef424e143e),
+                c5: Fp(0x90fdbfaf80bb94fa),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x19ff2c168042eb01),
-                    c1: Fp(0x4007586da2894e46),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x5aaaf9e3567510a),
-                    c1: Fp(0x1a6e418ad84c4619),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x10f896cc9eb1055a),
-                    c1: Fp(0x4320112227f80d4),
-                },
+                c0: Fp(0xb52e0c5066cbf426),
+                c1: Fp(0x79ecd518cb37d3af),
+                c2: Fp(0x321d0b47c55acc83),
+                c3: Fp(0x9cc30a4d200b78eb),
+                c4: Fp(0x3e7ed726ab8d134a),
+                c5: Fp(0x382c7b055022e539),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3bc8fd80f65d02c9),
-                    c1: Fp(0x2df2167aed52ddcd),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1e2041a6d8b5dbbf),
-                    c1: Fp(0xc0b9c7468240108),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x7bbabd750c8db9d),
-                    c1: Fp(0x1e91996097c9a6d9),
-                },
+                c0: Fp(0x188bd3b8700f1f62),
+                c1: Fp(0x4a91d483e8818628),
+                c2: Fp(0x2b67c97eed23df77),
+                c3: Fp(0xf401767a0478fd18),
+                c4: Fp(0x63ef71f45dcb7541),
+                c5: Fp(0xdc36e42e5e020853),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1953c238cdc172e5),
-                    c1: Fp(0xe3b4ab21c933459),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x29818ba8470c4fe5),
-                    c1: Fp(0x1ae0e695c0f6682e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x4f2f742ece341b9),
-                    c1: Fp(0x361337895c5705bd),
-                },
+                c0: Fp(0xb2c7bb3a8626ef22),
+                c1: Fp(0xab602fff561b58ae),
+                c2: Fp(0xc5578730c0ef0869),
+                c3: Fp(0x4753b32dc088cab1),
+                c4: Fp(0x2ebaae8c77c2874c),
+                c5: Fp(0x54e72d552dbbddd8),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xa1f60ec5d184af1),
-                    c1: Fp(0x3a68f25f218c8d02),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x24827bb71a123064),
-                    c1: Fp(0x596aa2bee9cc656),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x22247624f7c3ff2c),
-                    c1: Fp(0x3794286303ffa006),
-                },
+                c0: Fp(0x725a978ada9cd527),
+                c1: Fp(0x484d4185a295260c),
+                c2: Fp(0x6f33d8efe3301bcc),
+                c3: Fp(0xfc4ae6e2372934fe),
+                c4: Fp(0xc71df098198a1e70),
+                c5: Fp(0x549a7ebb07ebef9e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3b78586150b23b5d),
-                    c1: Fp(0xfab198f88db3e38),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1405e01d97b2ef1f),
-                    c1: Fp(0x3d16c316e3e450e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x219b40d84bae85f8),
-                    c1: Fp(0x18500c542a1eec8a),
-                },
+                c0: Fp(0x9c87d6401cd8d504),
+                c1: Fp(0x84dd13cb75755293),
+                c2: Fp(0xa6ad5fd4ea18ac),
+                c3: Fp(0x30c7cfe7559cf2e),
+                c4: Fp(0xeed0330729ca1365),
+                c5: Fp(0x3d28faaba4a8e8f4),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x493eed46a3a9cfa),
-                    c1: Fp(0xd61e31ec6554390),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xfeef9277cf8683a),
-                    c1: Fp(0x91fdd8fb889acd0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x372d0d5088118a97),
-                    c1: Fp(0x3d99bede521cd17a),
-                },
+                c0: Fp(0x9777d2211400fe69),
+                c1: Fp(0x461a1867304c01f4),
+                c2: Fp(0x8087e294740170b0),
+                c3: Fp(0x88a1ce138b9d9008),
+                c4: Fp(0x4d0e8c781c13698f),
+                c5: Fp(0xbcddbf0652309711),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1987f5100ca21049),
-                    c1: Fp(0x1414701a4eb51be8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x39b1e761da2a3594),
-                    c1: Fp(0x408317c7ec7ada0f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1ab9dd39f89cc843),
-                    c1: Fp(0x3249f35c4bf35541),
-                },
+                c0: Fp(0xbeb4d0188326a5ac),
+                c1: Fp(0xd7928135001e306),
+                c2: Fp(0xcd62d89a5caf9ed7),
+                c3: Fp(0xf5ebb57e0915218d),
+                c4: Fp(0x995d386dfd7a77ef),
+                c5: Fp(0xb7a3ce993279a1fe),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3d0558c886ed752c),
-                    c1: Fp(0x1d050504926903cc),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1a74a8847d5a18cc),
-                    c1: Fp(0x35b22e1158fbe401),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x197333f74127bb95),
-                    c1: Fp(0x6eae05ba4ecf9fa),
-                },
+                c0: Fp(0x8a4bac840f8a9c9),
+                c1: Fp(0x6b1a83114f6b7c5b),
+                c2: Fp(0x9ea3059a78e6da8c),
+                c3: Fp(0xbcf4a2dbc65d9217),
+                c4: Fp(0x7068b9eb642b6f33),
+                c5: Fp(0x5f88535f9fdf04bc),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xcefb707e333ec0e),
-                    c1: Fp(0x3f2cc5547fe4218),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1c6f4bfe67b4ab84),
-                    c1: Fp(0x2e340ebfef02091c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x13fb7a713c91ba84),
-                    c1: Fp(0x3cc0ccb178701160),
-                },
+                c0: Fp(0xc25ad6dd53b33564),
+                c1: Fp(0x22501281bab69879),
+                c2: Fp(0x669caace419addf6),
+                c3: Fp(0x59cdc33216c276cd),
+                c4: Fp(0xedd5c3fc46969c29),
+                c5: Fp(0x829a6549417c3366),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x50c7c18fc8a4b98),
-                    c1: Fp(0x1a5b07fc191b915c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x34d906d084fa0611),
-                    c1: Fp(0xcbbc8f54de73743),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x25e622bb5d06b99f),
-                    c1: Fp(0x23a43c39cbe150),
-                },
+                c0: Fp(0xa3165c0677b06a19),
+                c1: Fp(0x386eecf9ce361b06),
+                c2: Fp(0xf0e69edab9188410),
+                c3: Fp(0xc4a4adb11ab7cb1a),
+                c4: Fp(0xdbc06334408769c2),
+                c5: Fp(0x75924d3f6c43e2a8),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x42beb89da355cf3),
-                    c1: Fp(0x3e71a49e61b9c508),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x21e49e7c4ffaabf1),
-                    c1: Fp(0x102ffcbd8f79d5d0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x24e0406aefcf5f75),
-                    c1: Fp(0x3f24e32e613fbc40),
-                },
+                c0: Fp(0xea869eaaf623cf7b),
+                c1: Fp(0xe151674bd4759277),
+                c2: Fp(0xac98bff09c3375fe),
+                c3: Fp(0x51cddff60a7ab2b5),
+                c4: Fp(0xa00eb93d0c5ba4c3),
+                c5: Fp(0xd598713d1c945dbc),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1ba5d4b085c0a22c),
-                    c1: Fp(0x408c5b24baa5ac60),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x299fae28f95c8c78),
-                    c1: Fp(0x39a5e846ce20ebbb),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x20138e2abf79ea0c),
-                    c1: Fp(0xe0760764d5aa876),
-                },
+                c0: Fp(0xed3ef414e72afe),
+                c1: Fp(0x6191e2e55839205a),
+                c2: Fp(0x9c70419d4e1406c4),
+                c3: Fp(0xc72fae6f1e0ac893),
+                c4: Fp(0xf35efd9f2a3b0ad),
+                c5: Fp(0x8921e6c24d9ab2ad),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1c02a1f9f0fc3ac8),
-                    c1: Fp(0x3228fae6b9f7b8e4),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2d4395326f9a1f20),
-                    c1: Fp(0x3df313acd576f8d1),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x10be2c1b38a9bbc3),
-                    c1: Fp(0x38bc94226c03f0d5),
-                },
+                c0: Fp(0x7fc5065a39c1371c),
+                c1: Fp(0x819806bcc85efb58),
+                c2: Fp(0x43a96d6a44ba7752),
+                c3: Fp(0x4e25bb990c477e97),
+                c4: Fp(0x2fcfa7a8441c1bb1),
+                c5: Fp(0x190895025f4a99fc),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x366c622262b019bc),
-                    c1: Fp(0x7ea4e41d44b7942),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2ca051041302bc2a),
-                    c1: Fp(0x257cf4cecd54b182),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1510208930eec96a),
-                    c1: Fp(0x1ded4a3ea90c518c),
-                },
+                c0: Fp(0x284c9410e3590091),
+                c1: Fp(0xcf4dca620307277b),
+                c2: Fp(0xf497af78f7b622de),
+                c3: Fp(0xc66744da63d051b),
+                c4: Fp(0xaa2ca5685a963095),
+                c5: Fp(0xf9ea467787fcaf70),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x296c27f9aa20efe8),
-                    c1: Fp(0x3f273ee4e1c32e64),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x378fc1e844acf273),
-                    c1: Fp(0x1d7031a196fcf80a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xa7cb63c675efcc0),
-                    c1: Fp(0x1dba7acbffa128e8),
-                },
+                c0: Fp(0xe6fa945ff7800e4b),
+                c1: Fp(0xfcb8296681e6d4b8),
+                c2: Fp(0x7d30f11301306224),
+                c3: Fp(0x268335730918c938),
+                c4: Fp(0xeb12e12d662dbf13),
+                c5: Fp(0xe2e5b6432cffe275),
             },
             z: Fp6::one(),
         },
@@ -516,249 +324,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x39e47df8c163a5fa),
-                    c1: Fp(0x3cdcfff6f2d3d363),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3abad77d5244dc3),
-                    c1: Fp(0x1cd3a414c5c9b61d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1a5e0474f223aafe),
-                    c1: Fp(0x109f8841e31ef65c),
-                },
+                c0: Fp(0xd0ed60d4377f1dde),
+                c1: Fp(0xa2daf6100cd79864),
+                c2: Fp(0xce5fe20793e5f1e),
+                c3: Fp(0x7003737d1c9d7bb0),
+                c4: Fp(0xc2cfdfc6bc8a7109),
+                c5: Fp(0xb866db5268a8b03c),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x6c522cb19e197cb),
-                    c1: Fp(0x5f9e355e8ca9063),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2f8f2489ff141721),
-                    c1: Fp(0x304c95d7f5064cf9),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3eb9101e7b4829d4),
-                    c1: Fp(0x1c8ea4b171932d1d),
-                },
+                c0: Fp(0xa8bdd1f881a795d6),
+                c1: Fp(0x7b0260844c9d8aef),
+                c2: Fp(0x2071eeee192c48b5),
+                c3: Fp(0xe586ec1d3ea5c9a0),
+                c4: Fp(0x22175ec0dee283ad),
+                c5: Fp(0x629bb6dd08d7b15),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1455f2236cde6719),
-                    c1: Fp(0x339f4e56ca33e8da),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x40561d93f24edb17),
-                    c1: Fp(0x334af21832239bf8),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x415ba34f30213405),
-                    c1: Fp(0x34648849e7abce7f),
-                },
+                c0: Fp(0x9c8801cd4e589022),
+                c1: Fp(0xa6095738301d9b78),
+                c2: Fp(0xfa68c16e72e5d8b9),
+                c3: Fp(0x1787065117efd7d1),
+                c4: Fp(0xc1fdf3142def5d76),
+                c5: Fp(0xef758f970a8d0113),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x198f48a59d3f426c),
-                    c1: Fp(0x2fa8d6786379a72a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2af5b26b7500195),
-                    c1: Fp(0x40e59b14fc544dd6),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x387fa190e7006f75),
-                    c1: Fp(0x11fdc58256d57edb),
-                },
+                c0: Fp(0xc436a37bd70e2715),
+                c1: Fp(0x2f1c5f1cfe77a24),
+                c2: Fp(0x58793135d2f21f73),
+                c3: Fp(0x20f4f36c4f035536),
+                c4: Fp(0x652bf500f73f9172),
+                c5: Fp(0x6cb545297664dbb4),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x62949d2a34776c3),
-                    c1: Fp(0x4aa24d68132850a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x377baaa05bd960bf),
-                    c1: Fp(0x2df02317deaf3796),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x38de9a3c714487c1),
-                    c1: Fp(0x41205958fa142730),
-                },
+                c0: Fp(0x7b2eb066b1434ab8),
+                c1: Fp(0x4d63be93edc6188),
+                c2: Fp(0x79863378dabacebb),
+                c3: Fp(0xcdbc7d4bd3b067a4),
+                c4: Fp(0x43e2f1e87dab0d6b),
+                c5: Fp(0xf4f0022c9c35ec84),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3ec319549c034eaa),
-                    c1: Fp(0xb77986fbfa5f917),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x39c08f8ef844161a),
-                    c1: Fp(0xa9c8d36306b785c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x20a2a26b50c1e794),
-                    c1: Fp(0x60d61d0cbf51d59),
-                },
+                c0: Fp(0x57fdd380cac3daa6),
+                c1: Fp(0x444734d28cabcae8),
+                c2: Fp(0x46a90ef0adab6930),
+                c3: Fp(0x9c0a7a6e73df93a3),
+                c4: Fp(0x3a629f2b2c30ba62),
+                c5: Fp(0x96fb0c74a9e7a8ff),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3875bb1287b1cb5e),
-                    c1: Fp(0xb26d2ca6185efcb),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xe15851a451c99fb),
-                    c1: Fp(0x3db481aeeda8634f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x4068e59d58229e1d),
-                    c1: Fp(0x1eb684543d7f96e7),
-                },
+                c0: Fp(0x1ba5b27b3555b5dd),
+                c1: Fp(0x2250537fad710bf6),
+                c2: Fp(0x90412c3e60438795),
+                c3: Fp(0xc1f6ca598cc264b7),
+                c4: Fp(0xf38d857267b2437f),
+                c5: Fp(0x8d2a01f790dbd15c),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1452bf6e8d6b4aed),
-                    c1: Fp(0x36fbbfb4184e77c9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2a7c077ab94ea3c4),
-                    c1: Fp(0x8a410b6ed6e8e54),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xf6518adcfc85764),
-                    c1: Fp(0x164703370651fb02),
-                },
+                c0: Fp(0xdfd3b2d82ec3bafc),
+                c1: Fp(0x51bc119698a389cb),
+                c2: Fp(0x900245cba0c51ea3),
+                c3: Fp(0x20043931331db69d),
+                c4: Fp(0x3ab2526327bf9cc1),
+                c5: Fp(0xbc8658f93e623d48),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xe8dc17ecc51b3ff),
-                    c1: Fp(0x168750ea8f87947d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xa264abcb9b45815),
-                    c1: Fp(0x9284effa33b4cd6),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x63788ff5954da1a),
-                    c1: Fp(0x3b52aeaa2b3229d4),
-                },
+                c0: Fp(0x9c2a692041f32513),
+                c1: Fp(0xac1fd5a287473dad),
+                c2: Fp(0x2b0940255c052078),
+                c3: Fp(0xb2b394437aa86aff),
+                c4: Fp(0xb2806c31c4d363e1),
+                c5: Fp(0x650c7609c5e9366e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x334ba3f21a794059),
-                    c1: Fp(0x1c0eece248ce612c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x33d44d7f27b7353),
-                    c1: Fp(0x134742dd3a7f4708),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3519887cf20ba136),
-                    c1: Fp(0x2d504b0be7467fac),
-                },
+                c0: Fp(0x89cdc38634a6ba9f),
+                c1: Fp(0x6eba22332ca64671),
+                c2: Fp(0x43eaf072e5f94fe4),
+                c3: Fp(0x7a78d88718b77d6f),
+                c4: Fp(0x504474cb399faa41),
+                c5: Fp(0x3537b25bdc0b8f98),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3c4e1a9fd9ce5b45),
-                    c1: Fp(0x1cfe2273186a6fa2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2d14a5af5bfc703b),
-                    c1: Fp(0x30bbb02a767aa27a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x413093e31166589a),
-                    c1: Fp(0x13638e116fa7a7ed),
-                },
+                c0: Fp(0xcfd1363bf0977081),
+                c1: Fp(0x2cc3a5e215ace4c6),
+                c2: Fp(0xaa06d53b35709ea4),
+                c3: Fp(0x2462eca9ea6eda8a),
+                c4: Fp(0x150040c458531601),
+                c5: Fp(0x5d2613eb316eef1e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x11defcf5e620a367),
-                    c1: Fp(0x329b8ad75dbc1353),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1a05086a84346df0),
-                    c1: Fp(0x17633194ce79339b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x299b7d87932c2b2),
-                    c1: Fp(0x408fd90d82b3ae0b),
-                },
+                c0: Fp(0x3b6c77a0d594f106),
+                c1: Fp(0xd71458e03f0aa315),
+                c2: Fp(0xc1aadeba523cdf0d),
+                c3: Fp(0x9bd10a71ac490a21),
+                c4: Fp(0x2091bed678ae688c),
+                c5: Fp(0xbc8a0d9292a73979),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x21123a7d59487eac),
-                    c1: Fp(0x160576a9a57356b4),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x376b0cbab8c9c0fc),
-                    c1: Fp(0x2cd6dac4c4f1e78a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xcad8e636746ffb),
-                    c1: Fp(0x204f95d6d19931be),
-                },
+                c0: Fp(0x4fac697529ce3349),
+                c1: Fp(0x974dc8a8afcc4b88),
+                c2: Fp(0xef8df0d1ecc709b),
+                c3: Fp(0x557acae2774cd00d),
+                c4: Fp(0x1b76b8c26d76d671),
+                c5: Fp(0x5abe53d79dcbab1a),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x39d4b80e09558d98),
-                    c1: Fp(0x2cc395633db09334),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x30f4b4d74e548c6c),
-                    c1: Fp(0x3e0fe545ff5f05b2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xd092ba687546031),
-                    c1: Fp(0x15acc01c7f95e84),
-                },
+                c0: Fp(0xcf784f692ddf22a8),
+                c1: Fp(0x74579e232ddd0877),
+                c2: Fp(0xa181c1d7e8f9d4fc),
+                c3: Fp(0x755d853a2a70d386),
+                c4: Fp(0xcf31686505ec02c5),
+                c5: Fp(0x4b8ba0adb37044bf),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x383f2d2fc5a81ef7),
-                    c1: Fp(0x13d46c4420605c3f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x6cd3600f1043394),
-                    c1: Fp(0x3451efd53506794f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1291aabbd3108c9d),
-                    c1: Fp(0x773818506e778fe),
-                },
+                c0: Fp(0x6d5713b332cde692),
+                c1: Fp(0x3fd1a817cf9294f6),
+                c2: Fp(0x5fc5eedbb309600d),
+                c3: Fp(0x47a121ddddc34773),
+                c4: Fp(0x5f674821155ddae6),
+                c5: Fp(0x229f87b42488e35c),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1f3888c2a72c36bd),
-                    c1: Fp(0x22db7b2cdbea5dd1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1ca3ff041551298a),
-                    c1: Fp(0x3108c84576c59627),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x34bf2d868c48c27e),
-                    c1: Fp(0x121a5b715b55003c),
-                },
+                c0: Fp(0x8aebf2cdc217e68f),
+                c1: Fp(0x557248606330790c),
+                c2: Fp(0x23e5aac6aec5e4ac),
+                c3: Fp(0x85b1d9e4980c8944),
+                c4: Fp(0x22953ad1682cdf89),
+                c5: Fp(0x4b37890cfeee108d),
             },
             z: Fp6::one(),
         },
@@ -766,249 +478,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x28bf3c5af38d9554),
-                    c1: Fp(0x357c62d7dbec3860),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1d2ddb20baa72438),
-                    c1: Fp(0x52620489828fb50),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2af2649ecd6f6056),
-                    c1: Fp(0x37ba29549030353b),
-                },
+                c0: Fp(0x34b299ff9ab1bf7f),
+                c1: Fp(0x176d8f1bff60aa41),
+                c2: Fp(0x1ee5e60022ef8c6c),
+                c3: Fp(0x186828780f68947f),
+                c4: Fp(0x17cc7e82c2c0f455),
+                c5: Fp(0x715a2bcd1120e4a5),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x364ef466efde59d9),
-                    c1: Fp(0x11db385be6438525),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1f53e297811616fc),
-                    c1: Fp(0x4134eee5d588675),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x568ce4c8fdfa320),
-                    c1: Fp(0x3e5ac8853c9003a7),
-                },
+                c0: Fp(0x710ea9ebf3931287),
+                c1: Fp(0xac1164092cde645b),
+                c2: Fp(0xb1337163b54c7ae4),
+                c3: Fp(0xa9b03d9569ce1a87),
+                c4: Fp(0xa2b74fb6501cd95c),
+                c5: Fp(0x3cee6b20fd06fa96),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2a47f6a8203f312b),
-                    c1: Fp(0x28f97b42161241f7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x9c9d12bf3705f39),
-                    c1: Fp(0x133896a48028c8),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x207a6f11ca2cd07),
-                    c1: Fp(0xa73633e24195fcc),
-                },
+                c0: Fp(0xa7651b9ebe8afd01),
+                c1: Fp(0xc509d1b10a638415),
+                c2: Fp(0xd57ca1b9f8e74235),
+                c3: Fp(0x1cb54e69956189b1),
+                c4: Fp(0x89375b6820d71e3a),
+                c5: Fp(0x60420cca1f3243c),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x76f0ca8ea4b2bc2),
-                    c1: Fp(0x32b1f972cf84cdd2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3c1c173787ffa305),
-                    c1: Fp(0x331269da4397127),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3347bd12bda1c9e0),
-                    c1: Fp(0x26b59b2cf11a78ea),
-                },
+                c0: Fp(0xbfe19eeac7d66c88),
+                c1: Fp(0xd581cc08ff57bdd0),
+                c2: Fp(0x7a1943842d7fab0c),
+                c3: Fp(0xe147d25665bcfc64),
+                c4: Fp(0x591a5539661dea28),
+                c5: Fp(0xbafaf5b9b959451c),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2d407481b6dbfc34),
-                    c1: Fp(0x37db092246d84ed1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1165db712def3cc),
-                    c1: Fp(0x401315edf5a7f46),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x167adc94f5e0e758),
-                    c1: Fp(0x486ca8d515c22b6),
-                },
+                c0: Fp(0x3a1d999a0d17e8ed),
+                c1: Fp(0x5d31e3178eb9e3ad),
+                c2: Fp(0x3b8afbba5c6fb7ad),
+                c3: Fp(0x8bbf1201f5a9ddb9),
+                c4: Fp(0x5b4c92a63d5da08c),
+                c5: Fp(0xb0b8fae9d7c72684),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x262053d682dc5c58),
-                    c1: Fp(0x1241032dcf752cba),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x370e5ef84fbba40e),
-                    c1: Fp(0x1e7c1ce3ecfb732a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x4c861b99d6fc001),
-                    c1: Fp(0x1caff9feea5b17da),
-                },
+                c0: Fp(0xbae507e63dd362b1),
+                c1: Fp(0x7a8f7b041f462b58),
+                c2: Fp(0xa1b53fc695c9f034),
+                c3: Fp(0x89af7788646c692c),
+                c4: Fp(0xcc0520ee5cbab3c2),
+                c5: Fp(0xae99e6d23518cc21),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x387aa4b688eef66),
-                    c1: Fp(0x200e321306df883e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x28ed795e110f0da6),
-                    c1: Fp(0x5ab6a43acd1a86),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3eb83dd0192ba75d),
-                    c1: Fp(0x3f715c88ca0969e1),
-                },
+                c0: Fp(0x8108b5da5cb9277e),
+                c1: Fp(0x609b88b688e3c092),
+                c2: Fp(0x5ca1b45502dbfa51),
+                c3: Fp(0x12af2327fe919e75),
+                c4: Fp(0xb28e0289a30a31cd),
+                c5: Fp(0xfa1ffdcbc6e1068d),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xcacd3e51dbb8f55),
-                    c1: Fp(0x30d3d0a955c831c8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3842953fecf44c6c),
-                    c1: Fp(0x8a954dd8111b552),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x25aac2e0c43f5412),
-                    c1: Fp(0x2b54a825b0c7504e),
-                },
+                c0: Fp(0xe3c5c0051179e1c),
+                c1: Fp(0xf729759a41ff8039),
+                c2: Fp(0x5aaaf41d087c00c5),
+                c3: Fp(0x77ca17b18a5d0069),
+                c4: Fp(0xe1be77ffd561ff6e),
+                c5: Fp(0x79e7166e98eae85d),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x396416f4645ad28d),
-                    c1: Fp(0x1dd93281be9aaab2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x135ca2ace64a43b2),
-                    c1: Fp(0x8b7e38f97b9c930),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xd9a02459066b30a),
-                    c1: Fp(0x22b0b9b5f33f0256),
-                },
+                c0: Fp(0x20018729a6422b97),
+                c1: Fp(0x9a53a363f37d37a8),
+                c2: Fp(0x99986ddc85504ad7),
+                c3: Fp(0x68a103e1d9fdd90a),
+                c4: Fp(0x83291b1b811d9ce2),
+                c5: Fp(0x3d9c9016dd188c2f),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x9209a6c4ab962b0),
-                    c1: Fp(0x4155c0432771499),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xd199932635e5a93),
-                    c1: Fp(0x327a87633f093eda),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x30a7a27900524520),
-                    c1: Fp(0xb5b730d34931e2e),
-                },
+                c0: Fp(0xb3b798e98ee83550),
+                c1: Fp(0xd90b4dd92cab5954),
+                c2: Fp(0x2e47032cc85fb078),
+                c3: Fp(0xda3f12866f1bdd67),
+                c4: Fp(0x8cc8f5a34aa99151),
+                c5: Fp(0xf0c8d8d546912ff),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x26c4b000498763ba),
-                    c1: Fp(0x40680b5926f1bf1d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x4870c32b57673aa),
-                    c1: Fp(0xb605c087809f51a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1b9c57ada851202d),
-                    c1: Fp(0xdbe58cc32e43f7e),
-                },
+                c0: Fp(0xd548aac214fe4848),
+                c1: Fp(0xb6cf85fd25d070a2),
+                c2: Fp(0xc861209657b94992),
+                c3: Fp(0x24594eba8aeaa66c),
+                c4: Fp(0x8bef49b6b45047d4),
+                c5: Fp(0xbb935fec33d3e3b9),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1c00a58a7f51dfa),
-                    c1: Fp(0x17ff9b8e616c767d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x26c62aa0e9c2f2da),
-                    c1: Fp(0x226914dfa3148b82),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3a509d1cc1d228ca),
-                    c1: Fp(0xcf01b9d4ada80cb),
-                },
+                c0: Fp(0x5cda6259ccd76b4f),
+                c1: Fp(0xc9128da429e08937),
+                c2: Fp(0xd6408c901bd7dba0),
+                c3: Fp(0x919e9b1c75e9b84b),
+                c4: Fp(0x3fc63390bc4d8f8c),
+                c5: Fp(0xda46b5204d8c07a8),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3a16421487b2d139),
-                    c1: Fp(0x2ef8ab0b3eabe36d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x106cd3bd891e5ca),
-                    c1: Fp(0x2da3b5c2f7b5f731),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x326e1975c861dc82),
-                    c1: Fp(0x14577b9fe9865dae),
-                },
+                c0: Fp(0xfb73546cc708b6cc),
+                c1: Fp(0x421193e626d2a61e),
+                c2: Fp(0x838c48f893d1cb96),
+                c3: Fp(0xa7d707c018ef1c10),
+                c4: Fp(0xa6f777ab7bcd829),
+                c5: Fp(0xdd75cc9375129c92),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x25a1e02159c57b95),
-                    c1: Fp(0x3fa4f09b5f001bd7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x6d3231add627512),
-                    c1: Fp(0xf8937ad99c78a27),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2c6499fad1c83f8d),
-                    c1: Fp(0x358fda2c2212c3fb),
-                },
+                c0: Fp(0xda7cbb779ba5af25),
+                c1: Fp(0xdf984534c07d75c2),
+                c2: Fp(0x14ea88fdd2c29308),
+                c3: Fp(0xf17e4f8c196900b8),
+                c4: Fp(0x1556033a6ef60d8d),
+                c5: Fp(0x7ca809f0c0a6f861),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x28bfc1ac20542a0d),
-                    c1: Fp(0x1ca9956596f1271c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2fc47aaffd0e8523),
-                    c1: Fp(0x5fd5df6268a4a2d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x29f57b5d038769f8),
-                    c1: Fp(0x3e03b243837ce742),
-                },
+                c0: Fp(0xec6063b65f0c7eb5),
+                c1: Fp(0x14007e5aceaac1fb),
+                c2: Fp(0x3c2dc323bc28f011),
+                c3: Fp(0xf3da4809cb473e45),
+                c4: Fp(0xfa5eedaf40177d30),
+                c5: Fp(0x9bbc4428d9e64597),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x5aabe88119b2fff),
-                    c1: Fp(0x1d921384a65a80e7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x5f578be337f9b2a),
-                    c1: Fp(0x2ddd80e3aa58a616),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xfc40e02c1fd4678),
-                    c1: Fp(0x247a3cfa61950ca7),
-                },
+                c0: Fp(0xefeeb833e8c76823),
+                c1: Fp(0xf7d02665a4b4ad60),
+                c2: Fp(0xec7c133813fc134),
+                c3: Fp(0xaa35646cb5b0135d),
+                c4: Fp(0x5974b3762456a5ea),
+                c5: Fp(0xd4aa381fd37fe881),
             },
             z: Fp6::one(),
         },
@@ -1016,249 +632,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2d7d3a236eec9e09),
-                    c1: Fp(0x3bd3e9b4f0fdb766),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3cab56c9582949a1),
-                    c1: Fp(0x3d9999b576dd2868),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3ddfcf5895c0ba6b),
-                    c1: Fp(0xaa063d770599979),
-                },
+                c0: Fp(0xc6e65637261f2530),
+                c1: Fp(0x9e792ec07a7582ff),
+                c2: Fp(0xa421df3a6f4d00a6),
+                c3: Fp(0x4f3c41d35e9a8268),
+                c4: Fp(0xca24e9ac4b0c0ecd),
+                c5: Fp(0x2e2854e6f84ca5af),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xee23fb367952402),
-                    c1: Fp(0x15aa622a9653c190),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1d5576ed8064a097),
-                    c1: Fp(0x2274a35b594324ce),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x26cab7503b2f717),
-                    c1: Fp(0x381d7419e5045ec2),
-                },
+                c0: Fp(0xf98a31e65c3b5f8c),
+                c1: Fp(0xb623e5cd10c197f0),
+                c2: Fp(0x7407a86d505d7be3),
+                c3: Fp(0xa9f4af1db02078a6),
+                c4: Fp(0x72f88953220850f1),
+                c5: Fp(0xa510ba90e7aa32ee),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xb5d23c085717d8c),
-                    c1: Fp(0xbf0ff95d6742e4c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3aa2d0f787e660d2),
-                    c1: Fp(0x965e34d612ab641),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3609f4006a80f76),
-                    c1: Fp(0xec5e1ea5da2a92),
-                },
+                c0: Fp(0x376078db0031ff5c),
+                c1: Fp(0x777600f2014131bd),
+                c2: Fp(0xbb4894178d93d508),
+                c3: Fp(0x75b1b5cf36cc885d),
+                c4: Fp(0x6d8ae4f03e1e47f3),
+                c5: Fp(0x71d97cd5e8059747),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x33005078ffc06086),
-                    c1: Fp(0x1dcd337f3eeeebbc),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1f2d0d2a7b9db5f5),
-                    c1: Fp(0x40309f435ba7ddd9),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x669e1d4d783e8de),
-                    c1: Fp(0x1e1ba2081d4f520f),
-                },
+                c0: Fp(0x43b2d608552f2455),
+                c1: Fp(0x8754fc1ff6453ad4),
+                c2: Fp(0x4d2f03483dbc991a),
+                c3: Fp(0xa5b16e1465bb68f6),
+                c4: Fp(0xd7760ae4f33db5b6),
+                c5: Fp(0xedc167645e1c74d2),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x32a22a2c9ab7ed1a),
-                    c1: Fp(0x2dc1cbbe2fe194f8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x36a74abd154d8424),
-                    c1: Fp(0x7e08ec84448d367),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3ab07c33bb61bb5f),
-                    c1: Fp(0x1186ed7e9cd7e85),
-                },
+                c0: Fp(0x417058aede227be8),
+                c1: Fp(0xbf9e779c0cd4c00),
+                c2: Fp(0x70a593cfbababc6b),
+                c3: Fp(0x70f484637dbcbd5d),
+                c4: Fp(0x483c86ca295fe68),
+                c5: Fp(0xc8e716a005884bf0),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2f3449b7f597f00a),
-                    c1: Fp(0x1f66b45b2b6f87d0),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x294af011906ca60d),
-                    c1: Fp(0x337fa73c07ba5181),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xf3b0caffba52360),
-                    c1: Fp(0x1beded46b28bdcef),
-                },
+                c0: Fp(0x6f8ed76d67831839),
+                c1: Fp(0xaa6e0a882cade9ae),
+                c2: Fp(0x4c46fb7b48f1a4da),
+                c3: Fp(0x38cd3cc0ab8d92cc),
+                c4: Fp(0xb11fd52b2c5d5b9e),
+                c5: Fp(0xec4c68a299d1ec3d),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3bb22a481d0cb232),
-                    c1: Fp(0x7997208ff246dad),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xac32e6a226baf97),
-                    c1: Fp(0x11cebad135fb0edf),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x192fa3ade10484ab),
-                    c1: Fp(0x3bf9fe8080f27052),
-                },
+                c0: Fp(0x3c3e2708983436c1),
+                c1: Fp(0x87aa44b4b0016357),
+                c2: Fp(0x415c27a8217ce015),
+                c3: Fp(0xf00d135e01b3dff8),
+                c4: Fp(0x2f179dc97f0170d7),
+                c5: Fp(0xc14dbffdbe58c55b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x193c522346ea29a1),
-                    c1: Fp(0xae1ba1bf7a30c73),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1d358b8dba3734ee),
-                    c1: Fp(0x1465544507797a6b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1b614e1f62dada0f),
-                    c1: Fp(0x23974cf061243099),
-                },
+                c0: Fp(0xffc77339251dcc29),
+                c1: Fp(0x5eb3be2288cdd32a),
+                c2: Fp(0x2692d44c891fd098),
+                c3: Fp(0xd1a8253d57c4b3a5),
+                c4: Fp(0x5bd09e4331ee8026),
+                c5: Fp(0x82ffd50462ec3be6),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x20729a26bc46b59b),
-                    c1: Fp(0x455aa56aa31876d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x8d857c28206e2fd),
-                    c1: Fp(0x3b4c041c40fb5c53),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x197a33627d4bc790),
-                    c1: Fp(0x2b91173a628f70e8),
-                },
+                c0: Fp(0x997856e7e63fc11b),
+                c1: Fp(0xfbe8fe9e60a39e94),
+                c2: Fp(0x3dfe55e373a76503),
+                c3: Fp(0xf37e36e26b115ccd),
+                c4: Fp(0xaf31d9b77497674c),
+                c5: Fp(0x24154c0fe0d2d1a7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1122bc600fd6d90b),
-                    c1: Fp(0x274e4e0f6031d142),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x25b11fca35ebb88b),
-                    c1: Fp(0x7287f6ccae87fa9),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x203b736416b61874),
-                    c1: Fp(0x534a9f194e7743d),
-                },
+                c0: Fp(0x2b42b34d3a2b64f7),
+                c1: Fp(0xeec3e9bf6b8e44de),
+                c2: Fp(0x57d183053b5b71c9),
+                c3: Fp(0x3e3200cdba0035ec),
+                c4: Fp(0x41e18998fc587d99),
+                c5: Fp(0x4d68ee2b5983f53e),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3ca8119c8b9e59b4),
-                    c1: Fp(0xe57843d39a39916),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xfd64b2937ae12ac),
-                    c1: Fp(0x739435125544deb),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1af5362430a05b95),
-                    c1: Fp(0x3a50ad1c1ec6a7af),
-                },
+                c0: Fp(0x64bb0e1374ec827d),
+                c1: Fp(0x803f6eb7c7e4066b),
+                c2: Fp(0x1c67ffccc95fd77e),
+                c3: Fp(0x653c2942ba269d6b),
+                c4: Fp(0xb19fc60f454f8b61),
+                c5: Fp(0x74f3cd07a81b3098),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x40a2eb146a879993),
-                    c1: Fp(0x33666791836dabfd),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x17cd1e5b67e11eea),
-                    c1: Fp(0x1e3703f13f2911e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x200f9993316edae8),
-                    c1: Fp(0x129f3fffada044a0),
-                },
+                c0: Fp(0x9a8a96d7d1ee9b83),
+                c1: Fp(0x91f21e3f7ec0b9b4),
+                c2: Fp(0x45072cb71fdb9451),
+                c3: Fp(0xa233806218dcab3a),
+                c4: Fp(0x1c2d52bd803049a),
+                c5: Fp(0x7c487b3f8a6cadad),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x28ca5134e159e9f5),
-                    c1: Fp(0x74be3311bd00830),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x845fd3533319c50),
-                    c1: Fp(0x3ad0f64d2e3ca313),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x123407c23a623e48),
-                    c1: Fp(0x210bd09864cc9643),
-                },
+                c0: Fp(0x52baef6e6a2b7fb9),
+                c1: Fp(0xc8e7587cd4933a2e),
+                c2: Fp(0x97d3f15bd0589ece),
+                c3: Fp(0xb7a805116f08e275),
+                c4: Fp(0xcfefd18be6b64229),
+                c5: Fp(0x92c1e7886e5e07b8),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3b1f4fc97805c47c),
-                    c1: Fp(0xe89c7db17217bf9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x9f4fb50a008d3da),
-                    c1: Fp(0x2cb06800273255dd),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x17db8f55c766c2f0),
-                    c1: Fp(0x2c0972cafb631120),
-                },
+                c0: Fp(0x46628e4c0a4ee6c),
+                c1: Fp(0x755d1b56f31a1f7a),
+                c2: Fp(0x926cee17b037b976),
+                c3: Fp(0x6364bd4827d8a0f3),
+                c4: Fp(0xf0d06b7273a12369),
+                c5: Fp(0x515ef58354b8aa93),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x120ae61b5f064599),
-                    c1: Fp(0x35747ad440ffd73c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x125741c1c2c8d519),
-                    c1: Fp(0x1b4b88d377c8297a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xfd2af5afb2d75a5),
-                    c1: Fp(0x1cd0762d664a18b5),
-                },
+                c0: Fp(0xc52e86cc85e466e0),
+                c1: Fp(0x8a58d34ddc960e8c),
+                c2: Fp(0x62e9333b97f2d0f3),
+                c3: Fp(0xddfbe61a39653f83),
+                c4: Fp(0x97860bfd4a1f8c9),
+                c5: Fp(0xbcc89b9ac44a4db0),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x4bd31d05c26f084),
-                    c1: Fp(0x3b33aeda7eddfa6),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2c79e9ca8fe3e724),
-                    c1: Fp(0x33141618820272e7),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x372a9be2e477de9f),
-                    c1: Fp(0x1812ae657a8c3ba6),
-                },
+                c0: Fp(0x554cd2df5a942f04),
+                c1: Fp(0x476f2cf31ec34dcc),
+                c2: Fp(0xf6bf7b1c7042386c),
+                c3: Fp(0x1f91e46d1801e603),
+                c4: Fp(0x2f1ac22e3f71e6f3),
+                c5: Fp(0x2709676d40c1f362),
             },
             z: Fp6::one(),
         },
@@ -1266,249 +786,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2e25a5686455ebe9),
-                    c1: Fp(0x178d85ae8aad6c48),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3ed5cdb4293f4fe8),
-                    c1: Fp(0xcc34cc68fc26b30),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2cf56e2ebc6ac70c),
-                    c1: Fp(0x82b87316722253c),
-                },
+                c0: Fp(0xc5d0f56fbe1e409),
+                c1: Fp(0xd660b396cb42b161),
+                c2: Fp(0x48dd2bf0192dbdbe),
+                c3: Fp(0x53e5a6a89e7ff613),
+                c4: Fp(0x48eb615f764ce186),
+                c5: Fp(0xc923df55831feb22),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x340a8f2915b405),
-                    c1: Fp(0x327a53a9035f23d3),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2c4db617cb548426),
-                    c1: Fp(0x1f6a3b3a5ac24986),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x224708b0173b6558),
-                    c1: Fp(0x2741f9dcb2a0493b),
-                },
+                c0: Fp(0x53c2d59ae1a898ee),
+                c1: Fp(0x30cffb4a1dd9816e),
+                c2: Fp(0xd194b04a24c4bf89),
+                c3: Fp(0x359634d2999fea7),
+                c4: Fp(0x355ef4ed94d2d14f),
+                c5: Fp(0xb688f433df5321f),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x178f9b72b35f741b),
-                    c1: Fp(0x21ee87cbb5d42f35),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3b170908e30e88ba),
-                    c1: Fp(0x2f2d34a5596e8c64),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x398eacc60eba4217),
-                    c1: Fp(0x26d330879fed54bf),
-                },
+                c0: Fp(0xdbb3f59babbc909f),
+                c1: Fp(0x22338d048b893080),
+                c2: Fp(0xb3ff0b9a1dd9a825),
+                c3: Fp(0x8491288ec6acc008),
+                c4: Fp(0x166134edb6922f57),
+                c5: Fp(0xcdadccec992439c9),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x28ee45f5cc2fa3b),
-                    c1: Fp(0x19a30980cbae7329),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1d3ab896e735e431),
-                    c1: Fp(0x197f2ea9ef1b7db6),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x185ec3a2a6244b5b),
-                    c1: Fp(0x2b744ec39ccf9336),
-                },
+                c0: Fp(0x3a8df2943309a4dc),
+                c1: Fp(0x7107a100a733010a),
+                c2: Fp(0x8bf387d076477707),
+                c3: Fp(0x7f27a8cb305a12cd),
+                c4: Fp(0xdabb7d1895308bad),
+                c5: Fp(0x82762678fad863b8),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x35927217c7e6bdc0),
-                    c1: Fp(0x286919f8205cf176),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x161b36110ba184e0),
-                    c1: Fp(0x2c5be9901e61ba36),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x23d5eaae31a69bca),
-                    c1: Fp(0x7c798a6661ed1a3),
-                },
+                c0: Fp(0xa65e1554c44d0498),
+                c1: Fp(0x4b1d8151fd1a8146),
+                c2: Fp(0x304387d17ef1a24a),
+                c3: Fp(0x4b50c57a44c0f296),
+                c4: Fp(0xb073d690aa23058c),
+                c5: Fp(0x7ee18feaee3fc735),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1c08e17cd5a374fa),
-                    c1: Fp(0x3bd8c74aa0e30403),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1602a3378cded6fc),
-                    c1: Fp(0x415c4977a7e2ea82),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1146642656a0c4e7),
-                    c1: Fp(0x25ebaddd18aff04e),
-                },
+                c0: Fp(0x2fd995671faf437c),
+                c1: Fp(0x9e44ee2cdfefacea),
+                c2: Fp(0x407de76326034645),
+                c3: Fp(0xfec2997553be5eea),
+                c4: Fp(0x59187fab8b5136c9),
+                c5: Fp(0xd9a0657d3d2beb3),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1aa63f91b9874aee),
-                    c1: Fp(0x2cd4fefe040d307),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3894c30bac83de39),
-                    c1: Fp(0x1c07d99063c1d254),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2feb998f53056a6e),
-                    c1: Fp(0x3efc9ad2945450bb),
-                },
+                c0: Fp(0x4be76320c24939a0),
+                c1: Fp(0xd2bc90d0d85a5a5c),
+                c2: Fp(0x979cea4fcb3117b2),
+                c3: Fp(0xa92ceb340f167884),
+                c4: Fp(0xd4044556dbc91783),
+                c5: Fp(0xca1e3b3aaf060864),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3417f128c1c9c766),
-                    c1: Fp(0x1aa3feb86c162726),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x9e4386a6610eef2),
-                    c1: Fp(0xb034ecc21a06c90),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x24a6425ac5ef2727),
-                    c1: Fp(0x2d4453f3124859c5),
-                },
+                c0: Fp(0xc8800e2dd64c4776),
+                c1: Fp(0xc9ea431842c4ec92),
+                c2: Fp(0xcc32185b1cacd75c),
+                c3: Fp(0x699275c60230a945),
+                c4: Fp(0xfb6230a812269fe7),
+                c5: Fp(0x6a2b455b519a9287),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x330a3e5c362d22ea),
-                    c1: Fp(0x160ba1da33cdb3b9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2e6e003b05017606),
-                    c1: Fp(0x298f42e7d0c975d9),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1b43c7edf5d929e),
-                    c1: Fp(0x2b010fb77f4188bc),
-                },
+                c0: Fp(0xb8ee538ec59efa7),
+                c1: Fp(0x9e952b7d7715b8b1),
+                c2: Fp(0xbb6a6b1b26b9ebf4),
+                c3: Fp(0xcdfe75ec88001e73),
+                c4: Fp(0xafd85d66ef0d11de),
+                c5: Fp(0x2ec53f7598e4b3f4),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x315d0615df2843c3),
-                    c1: Fp(0x2d119a71048396b1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3d7d038f04dd6147),
-                    c1: Fp(0x1648abb691d404ca),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xb527edae3a413c5),
-                    c1: Fp(0x1568c9cf7f39dbad),
-                },
+                c0: Fp(0x1c0cdc3896256d65),
+                c1: Fp(0x84ac4f665db1686a),
+                c2: Fp(0x8d5e7a5a647f6c7b),
+                c3: Fp(0xffbaceeb665274a7),
+                c4: Fp(0x9a35c04d4fb7a148),
+                c5: Fp(0x4b0b6723f0eac6e8),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2ae33929d9f5f1fb),
-                    c1: Fp(0x47de99ee98fd139),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2fb14a85ca798111),
-                    c1: Fp(0x3cc8fa121d313889),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x24ca5d1cef51a28c),
-                    c1: Fp(0x33105ec92e95ffb1),
-                },
+                c0: Fp(0x221c492d53347ed5),
+                c1: Fp(0x1b9f890ec81cb05c),
+                c2: Fp(0x3ec343c83a6f6436),
+                c3: Fp(0xb214272b4277962c),
+                c4: Fp(0x83bd158045216f19),
+                c5: Fp(0xc0adf779514fb2f7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2cb3ddb2d67dd19a),
-                    c1: Fp(0x89491b07772b0c6),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x33e0d76b2598f0ec),
-                    c1: Fp(0x1935d79068ebf641),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1369e91c010a4606),
-                    c1: Fp(0x27b77fc4f33956ff),
-                },
+                c0: Fp(0x4251142b2c66201c),
+                c1: Fp(0xb3326827056d78a5),
+                c2: Fp(0xa357b9253d05499),
+                c3: Fp(0xd617f291f56049d2),
+                c4: Fp(0x2ed04c0c03e97b7d),
+                c5: Fp(0xfd7463ef72259ce6),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3b91e98810aa02a4),
-                    c1: Fp(0x2284ab07def5958),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xa5fb16df921230f),
-                    c1: Fp(0xb17f493346c76ca),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xbf06dadf7c4667e),
-                    c1: Fp(0x3445b83e6436037a),
-                },
+                c0: Fp(0x8b27035abd5bd1de),
+                c1: Fp(0x142fe3826b3ae3b3),
+                c2: Fp(0x462bc26c47c724ff),
+                c3: Fp(0x4ec7350fab00c2cd),
+                c4: Fp(0xc44e816b1cc626aa),
+                c5: Fp(0x3061fa0148ad7c05),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x23da3ae7468eb330),
-                    c1: Fp(0x21b90ea00c94bbe9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x295b9cfac385f0e0),
-                    c1: Fp(0x7f14a71d91038d4),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x20e3702b4aed5978),
-                    c1: Fp(0x3619cf4f04431a0f),
-                },
+                c0: Fp(0x786873d5c830ea51),
+                c1: Fp(0xa0e87e16b955ecd9),
+                c2: Fp(0x8e26d0d8e94e0cf9),
+                c3: Fp(0xb0f0f87b24fd9aa9),
+                c4: Fp(0xcb269ff8f75332b2),
+                c5: Fp(0xd4b71896875a601),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xff427424e34b76c),
-                    c1: Fp(0x2dd6d1bfba0b936e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2eeea57afa87c368),
-                    c1: Fp(0x65131d89539fc8b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3ff915fc078f2ab7),
-                    c1: Fp(0xb9ad96795b097cb),
-                },
+                c0: Fp(0x8a324f13600d57f4),
+                c1: Fp(0xcdb4d56d67de3abb),
+                c2: Fp(0xd73bbbee5dc12953),
+                c3: Fp(0x6c48fe510a78a723),
+                c4: Fp(0x19ed648fb3001f9b),
+                c5: Fp(0x60a6d30f01961e07),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x6acfbdb2bf99939),
-                    c1: Fp(0x184e46446c80b59c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x342fb947fd106258),
-                    c1: Fp(0xf99f46374dc1aab),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x14efc5499dbe58e3),
-                    c1: Fp(0x15b3719661c71bfc),
-                },
+                c0: Fp(0x5ea8b4a5543ea6eb),
+                c1: Fp(0xbd10d115089efb1a),
+                c2: Fp(0x31b43a8fb113f2c3),
+                c3: Fp(0xcd3268bbbbb2bc70),
+                c4: Fp(0xd55aa9f4e38621e1),
+                c5: Fp(0x140a606a82b92e9d),
             },
             z: Fp6::one(),
         },
@@ -1516,249 +940,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x616fe4a1676b585),
-                    c1: Fp(0x2bcb3a47453a6b5f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x26de220e617bf4f5),
-                    c1: Fp(0x16817dadb5cb122d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xc959a2ce05a7380),
-                    c1: Fp(0x62e40073c819722),
-                },
+                c0: Fp(0x25a286010392c2e4),
+                c1: Fp(0xebbfaede767d9164),
+                c2: Fp(0x4e5e55f6429445db),
+                c3: Fp(0x5df1d8f6f843c100),
+                c4: Fp(0xf87cb76e825227f2),
+                c5: Fp(0xaeefa0ab47b672e7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x11dcf0309c1b7cd),
-                    c1: Fp(0x328e291e678fb4eb),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x30cf946b2ee96c6f),
-                    c1: Fp(0x2a57cfc1e95a0b0f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x137556b9c39a2bae),
-                    c1: Fp(0x349d57e0aad6af76),
-                },
+                c0: Fp(0x9bf2333fe71410a3),
+                c1: Fp(0x8655b7f5fc9bfd6d),
+                c2: Fp(0x75435c0d264f2baa),
+                c3: Fp(0x9551eeb42f2373e6),
+                c4: Fp(0x814c17f97e6851a2),
+                c5: Fp(0xc645a994b326d07c),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xc33d85ce9bf7cb9),
-                    c1: Fp(0x110bda24af2da9e5),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x30827bc30acb1065),
-                    c1: Fp(0x2c5a3a5c7c00ec30),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3dabbd4e5eda60ae),
-                    c1: Fp(0x2a370de12d9c0255),
-                },
+                c0: Fp(0x9275c969ac581ce4),
+                c1: Fp(0x6f64637a28690708),
+                c2: Fp(0xec7138feb2f7a6db),
+                c3: Fp(0x2b04c11630bce012),
+                c4: Fp(0xdd359e541ac7244f),
+                c5: Fp(0xce74cc176061c818),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2210c81ea8024428),
-                    c1: Fp(0x3958eda28bdbf747),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2a213ce5354799f6),
-                    c1: Fp(0x1910e7bd5940df56),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xb6bc64f068a99b0),
-                    c1: Fp(0x18afbb9fa62bd98c),
-                },
+                c0: Fp(0x37c67241fe98f3d1),
+                c1: Fp(0xa5905d6f443fe040),
+                c2: Fp(0x75d7b3b980e84018),
+                c3: Fp(0x6264fe414b4ae01a),
+                c4: Fp(0xf5efeab8a60b9ae),
+                c5: Fp(0x42efb9548312aec1),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xe5ba39db0e98b4b),
-                    c1: Fp(0x3861ccd659c82757),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2d3fc54b93742e79),
-                    c1: Fp(0x5d5dca65adf2e59),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1e031e806db22671),
-                    c1: Fp(0x197ad5849e6b4437),
-                },
+                c0: Fp(0x45284b159b01e43),
+                c1: Fp(0x8eafc06588fea7cb),
+                c2: Fp(0x42cfd3e536a0ad6d),
+                c3: Fp(0xbc31c76d60b1c960),
+                c4: Fp(0x77a8d8d2bf738d51),
+                c5: Fp(0x2dbd1decf9c6363a),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x10ab026ed43a806),
-                    c1: Fp(0x403b7798fd0b5dad),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1ec2a836b6839b8b),
-                    c1: Fp(0x3ee7a37b518e44b9),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3a57764aa7655402),
-                    c1: Fp(0x414c1d66a3fde26a),
-                },
+                c0: Fp(0x42493b1da773056c),
+                c1: Fp(0xf21b3174890a36e),
+                c2: Fp(0x1f7536847e1756e5),
+                c3: Fp(0xd75eab84fbc2622c),
+                c4: Fp(0x4ae9804b50e8cace),
+                c5: Fp(0x88a9f4dd043db9c5),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1dded56454d72201),
-                    c1: Fp(0x2efe5d8bff2f17e5),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xcbb4904558d671c),
-                    c1: Fp(0x32a959f080232774),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1a0a4d995af3963b),
-                    c1: Fp(0x233c79c25aa542ac),
-                },
+                c0: Fp(0xc776e440d260bd58),
+                c1: Fp(0xab6652cc319c3535),
+                c2: Fp(0x14008cbb86ab2c0e),
+                c3: Fp(0xee9b99439a5f5a5b),
+                c4: Fp(0xf72a9eaa6c998d4b),
+                c5: Fp(0x121ad7b9dbd524a6),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x16e08db4784643e7),
-                    c1: Fp(0x2c6e1f5a22991624),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x31441f65dc78a2e0),
-                    c1: Fp(0x14ef4b0e2275ec7e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x14ae80e16badfcd),
-                    c1: Fp(0x71e26e3c1654177),
-                },
+                c0: Fp(0xb83d55749f388efb),
+                c1: Fp(0x1ed6495a4af0506e),
+                c2: Fp(0xc8feebe57909de90),
+                c3: Fp(0xb094c454a10893a4),
+                c4: Fp(0xbf2baa231a04cbf8),
+                c5: Fp(0xd4152278e02d89b4),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1b9fbd204661a740),
-                    c1: Fp(0x3c6ac087336b463d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x21338bc589430860),
-                    c1: Fp(0x125b8696716031be),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1e31604c17543a13),
-                    c1: Fp(0x2d1f3eaf59029174),
-                },
+                c0: Fp(0xa6f2700a78e79bd9),
+                c1: Fp(0xa652b2fcdd74256d),
+                c2: Fp(0x1c0597960369fc16),
+                c3: Fp(0x68abf1ceed1975ff),
+                c4: Fp(0xb3e76ec1a2d261ad),
+                c5: Fp(0x6f0161adea3180a7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x166dbe32062af235),
-                    c1: Fp(0x3e9712a462b7e355),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2ff18d83d56fccdb),
-                    c1: Fp(0x36347f493c68d555),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x20cfd9c418e09ff4),
-                    c1: Fp(0x3b096bf392167505),
-                },
+                c0: Fp(0xd6fb40e27fb7d3e),
+                c1: Fp(0xf65e23a03eee2830),
+                c2: Fp(0xf41ebb43e17c1f49),
+                c3: Fp(0xad351d70ae7fdbb5),
+                c4: Fp(0xd18aa389d1f56be6),
+                c5: Fp(0xf1319901e7b04235),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x289b972fe72a6ed7),
-                    c1: Fp(0x345588e453ee5b37),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2b8354c6b463009d),
-                    c1: Fp(0x357585fe9ec95032),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2a7f2577bbbb2805),
-                    c1: Fp(0x82af3e284f4096f),
-                },
+                c0: Fp(0x7773b0c0dc1c7f17),
+                c1: Fp(0x45d0e8a52f890feb),
+                c2: Fp(0xc5a4526b93a74973),
+                c3: Fp(0x83f999212ee492c),
+                c4: Fp(0x2e0479a16b8c6012),
+                c5: Fp(0x23af54b6d7b78bf8),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2ef3e59ac966fdda),
-                    c1: Fp(0x23346b87f2aa42f9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x36f02985df99f088),
-                    c1: Fp(0x1951b16bdf91c406),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x233139c4fb3138ed),
-                    c1: Fp(0x338c5e0bbdb4a6dd),
-                },
+                c0: Fp(0xd9a9b22f266622ed),
+                c1: Fp(0x6825c552a1de0dae),
+                c2: Fp(0xcb1fa9d0571e53c5),
+                c3: Fp(0x1c925eec06149b78),
+                c4: Fp(0xfdbfd330d431a3d2),
+                c5: Fp(0xc3108ecb819aa203),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3a80b9f4f1688b2b),
-                    c1: Fp(0x33b1f2c641cc0f36),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x215aafaee2b499b8),
-                    c1: Fp(0x3371b6a51025e336),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x17575823d4d63fc7),
-                    c1: Fp(0xf75541b866811b6),
-                },
+                c0: Fp(0xc4250c58e9da9733),
+                c1: Fp(0x1cbda03e99720daf),
+                c2: Fp(0x4a2733d1d4d61289),
+                c3: Fp(0x2f374a8ae8bdbb55),
+                c4: Fp(0x86c9b86b2cc9b6d3),
+                c5: Fp(0x2e0172c484eedea4),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x517eb75c33ce322),
-                    c1: Fp(0x2b841f189d48077),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x9a32111f720faa9),
-                    c1: Fp(0x181a9fd6f30f4ab0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2a3930e02285ed2d),
-                    c1: Fp(0x127c45c8aa3c8b7f),
-                },
+                c0: Fp(0x80049e4e53a0c8c8),
+                c1: Fp(0x1dd112d886bfc9ac),
+                c2: Fp(0x2be090ba336ba145),
+                c3: Fp(0xd2da0cf2da90ee54),
+                c4: Fp(0x5e098fb1e698c85d),
+                c5: Fp(0xf706e89e6b35e1cc),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x24e4e586cede78e1),
-                    c1: Fp(0xc8bd1e3a2823b2b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3cf252c9addaf9eb),
-                    c1: Fp(0x3a93417bee4bac31),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x39731e52d147d388),
-                    c1: Fp(0x2ea2f0dc67f7278c),
-                },
+                c0: Fp(0x319358b097e2407b),
+                c1: Fp(0x2f25b2c44fd687cf),
+                c2: Fp(0xc21e2f68a1e65da2),
+                c3: Fp(0xdc23a854a0ca2c6a),
+                c4: Fp(0x43d266e647c4b1e9),
+                c5: Fp(0x2668c1cd5750b7fe),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x28ec8e196989494a),
-                    c1: Fp(0x417c617a06cc07d6),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x37fc16148b99a681),
-                    c1: Fp(0x29b403c0b20e6382),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1b2aae027973ef8),
-                    c1: Fp(0x3f0da0cdf63e7da9),
-                },
+                c0: Fp(0xc125ce2c023f31e2),
+                c1: Fp(0x57be94634feeb929),
+                c2: Fp(0x6c1b4808b57373af),
+                c3: Fp(0xc882bfea1749d8ea),
+                c4: Fp(0x66a962f39ed68a4d),
+                c5: Fp(0x9963475c0bc5de42),
             },
             z: Fp6::one(),
         },
@@ -1766,249 +1094,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3dc878986f31d250),
-                    c1: Fp(0x28f082cba82e2d72),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x37888c2c02cdf81e),
-                    c1: Fp(0x2e255f20169390d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3a48e5998cb0d0be),
-                    c1: Fp(0x1272e76540784592),
-                },
+                c0: Fp(0x521c85a5e06e9949),
+                c1: Fp(0xd07878ffdfa88388),
+                c2: Fp(0x61db1f1c01fd9df3),
+                c3: Fp(0xa4136a7b3bcfaf5b),
+                c4: Fp(0x8494fe0c31abe767),
+                c5: Fp(0x4f04496571868dbd),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xfac95f4a55302f1),
-                    c1: Fp(0x1e23f699dfe2a8a8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x347569c9a220786f),
-                    c1: Fp(0x39bb6b4a07288df6),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3c27b243c4b400f2),
-                    c1: Fp(0x66c5b937123fe78),
-                },
+                c0: Fp(0x412fb83ab0bcc984),
+                c1: Fp(0x5aa880a18264a2c0),
+                c2: Fp(0xb2117ac753c75d47),
+                c3: Fp(0x6e3bfdfa9053a4f),
+                c4: Fp(0x4e37ae6ab8e0bbaa),
+                c5: Fp(0x593e44b82f1860d7),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3c85433c120a5667),
-                    c1: Fp(0x1827cfebeab3b4ba),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x29a47d124db9588d),
-                    c1: Fp(0x2f9143f11435982),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2a1c55b8269f631c),
-                    c1: Fp(0x347c6c40a81c9d60),
-                },
+                c0: Fp(0xf8489c2045981fb9),
+                c1: Fp(0x606153ce87460ea),
+                c2: Fp(0xf735880829ba074b),
+                c3: Fp(0x484870638574c4bb),
+                c4: Fp(0xe993d9c022c56b7),
+                c5: Fp(0x6010c6947bed2551),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1ad260b3d48efaff),
-                    c1: Fp(0xe5901d22d592958),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x9fb17591497537f),
-                    c1: Fp(0x33efa29a96967ac2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x14ce7a7564531f46),
-                    c1: Fp(0x3ee64ca3c7be2ffb),
-                },
+                c0: Fp(0x49a89d5022965daf),
+                c1: Fp(0x6d38c356f7752a5d),
+                c2: Fp(0xa1e8744007cd6609),
+                c3: Fp(0x382dc8ac9809c9a0),
+                c4: Fp(0x8e6a7ec29bab96a),
+                c5: Fp(0xa56de04771a3ecba),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3100cba2dc9bf24b),
-                    c1: Fp(0x38cd066fdff046b0),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x239828c8ade271dc),
-                    c1: Fp(0x1c70a2bce143a340),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x19113f6930720604),
-                    c1: Fp(0xb5e3dff5492f3ee),
-                },
+                c0: Fp(0x8e6269ac20192965),
+                c1: Fp(0xee511f3e73324da9),
+                c2: Fp(0x776ab5f2faf2d5ce),
+                c3: Fp(0xb1b8eecbd89d7ce2),
+                c4: Fp(0xd119575155f79cb6),
+                c5: Fp(0x442a69fa769110d2),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1eb4098200c057e7),
-                    c1: Fp(0x371df4dea153fa6d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x179e84a749c91888),
-                    c1: Fp(0xc202097ee1c75e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x27fd28f735a7c04f),
-                    c1: Fp(0x26ec1a6c1cef46e8),
-                },
+                c0: Fp(0x71748233b7627dad),
+                c1: Fp(0xa201a646f7e4695d),
+                c2: Fp(0xb7ffc736cce05c9),
+                c3: Fp(0xf8f688c567cb9526),
+                c4: Fp(0xcb460df83169ffd4),
+                c5: Fp(0x445dd6ae06d3c115),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x161ca90789efa7c4),
-                    c1: Fp(0x3e80b43a3c618b10),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x40babc783012fbc5),
-                    c1: Fp(0x2aaf75a5edd3f50c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x119b441b5a980d1e),
-                    c1: Fp(0x3427f3472223763e),
-                },
+                c0: Fp(0xde886c6c8c5a0115),
+                c1: Fp(0xbe97ad0d3b453d7f),
+                c2: Fp(0x2eebdd3e8d28b9b2),
+                c3: Fp(0x76a9049909c1e240),
+                c4: Fp(0x8e19b8549d082363),
+                c5: Fp(0x22a0b22972f2fd00),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2594d84e419d9cd1),
-                    c1: Fp(0xf0de490f459e04a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1343ac16ed8f9244),
-                    c1: Fp(0x19e9e8318a2f98f1),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2f638f1ff29c79aa),
-                    c1: Fp(0x3761f2f007cb4c90),
-                },
+                c0: Fp(0xa85bc022b852f5de),
+                c1: Fp(0x29a5f2cefdb1574c),
+                c2: Fp(0x17d83b1a072695c2),
+                c3: Fp(0xd39a4a0a55d03871),
+                c4: Fp(0xf8c7cfbb2b16d4a),
+                c5: Fp(0xfcd45bc87b6d0839),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3edf535a4a880755),
-                    c1: Fp(0x151c4799be06665b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2e23598c85b657a2),
-                    c1: Fp(0x9713821c7005b19),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2ab2533ee5958ef3),
-                    c1: Fp(0x2803a718dd566f56),
-                },
+                c0: Fp(0x3a8fce7017fbc1a6),
+                c1: Fp(0xe698ee7c5fbf3c2a),
+                c2: Fp(0x12fc5706f34a8233),
+                c3: Fp(0x870a4344c5f0044a),
+                c4: Fp(0xc7f46f57c6546dd9),
+                c5: Fp(0xd8270af0a472c047),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x13ac54c7823e8830),
-                    c1: Fp(0x18c8014a0673c2ae),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2186ab519ac9af56),
-                    c1: Fp(0x16d896a6bbf0b6c0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1ea0ac117e3d31dc),
-                    c1: Fp(0x20f75f4459f687dc),
-                },
+                c0: Fp(0x21ddc1b8b6abc27b),
+                c1: Fp(0xd28aa566dd93df99),
+                c2: Fp(0xf691a7140c11b21c),
+                c3: Fp(0xcb5b9baf781420d2),
+                c4: Fp(0x8e667ce9329ce326),
+                c5: Fp(0xb910eff43fbd60ea),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x11894a01ba9fc21c),
-                    c1: Fp(0x1254f02c99086ccf),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xc3c9ab46dbc5b74),
-                    c1: Fp(0x43f6116251be1d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x19632c705c496d10),
-                    c1: Fp(0x22df7ab58493d719),
-                },
+                c0: Fp(0xd505de4980a96f97),
+                c1: Fp(0xa73318d4995438a9),
+                c2: Fp(0xeeb65ee2f30de966),
+                c3: Fp(0x254e7e6148dc30ff),
+                c4: Fp(0xf94d501ebbb6d258),
+                c5: Fp(0xe5b82a53d903cf68),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x27ec803cddb3624c),
-                    c1: Fp(0xff16695633007ec),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xfb089c3af60e0b5),
-                    c1: Fp(0x40e5d2ee0089fb47),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x25960f04fd153c22),
-                    c1: Fp(0xe4e82ed88c82fd6),
-                },
+                c0: Fp(0xe0547d93cacdefe0),
+                c1: Fp(0x8cf6f6dc211a7d66),
+                c2: Fp(0xe0c018e68327e26d),
+                c3: Fp(0x6285c55aa2562a29),
+                c4: Fp(0xe59ec0ee44c77bf3),
+                c5: Fp(0x98001be569b6ccb9),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2308e28be0dd5655),
-                    c1: Fp(0x5166ba0c1261be9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3cd97fa93947ac9f),
-                    c1: Fp(0x76efa4d4ad85cb3),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xb0cf7a51b46ea06),
-                    c1: Fp(0x3f15eaf51c859d07),
-                },
+                c0: Fp(0xa725e304e0b46aa6),
+                c1: Fp(0xe48ed7d904620346),
+                c2: Fp(0x3a6d9574d11dbbdf),
+                c3: Fp(0x8b85a60fd69c1bed),
+                c4: Fp(0x50905a56699aca0b),
+                c5: Fp(0x732640e941eb5495),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x19c899ecfeab0bdf),
-                    c1: Fp(0x12c7be2b1fd3e178),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x38d70b0b4e7465be),
-                    c1: Fp(0x518b329e3a42b93),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x33ccebd05e0c11dd),
-                    c1: Fp(0x3051d4611c01f84e),
-                },
+                c0: Fp(0x80e1bd54825f1e7),
+                c1: Fp(0x162e6e0988cf3ed9),
+                c2: Fp(0x19378e93fedba48a),
+                c3: Fp(0x892560881c6d5299),
+                c4: Fp(0xa376a8f49d1bfe0f),
+                c5: Fp(0x4fd9156465a63dd4),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x37de56da98f63f77),
-                    c1: Fp(0x4126ead1eeb04c3e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1ce447fb7db5954e),
-                    c1: Fp(0x1d7e40e2ffcde330),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3c459dd5509d0079),
-                    c1: Fp(0x2a1760371f06252d),
-                },
+                c0: Fp(0x51f9cf3b52bb8367),
+                c1: Fp(0xebe4f844c0428c1d),
+                c2: Fp(0xa910f2e72fa551e7),
+                c3: Fp(0x95e1fb508309ddca),
+                c4: Fp(0x7851f2c4450952d8),
+                c5: Fp(0xa3905b53d23cde44),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x348f3af9ba96b463),
-                    c1: Fp(0xa8af9b161739de8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x206a1d8427c0614a),
-                    c1: Fp(0x2ed656be560fd9f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x383910f5c7c5aca3),
-                    c1: Fp(0x3a0976ba9dc39af7),
-                },
+                c0: Fp(0xdafea55f8a72b9e1),
+                c1: Fp(0x74baea7707e2709d),
+                c2: Fp(0xfa1a9ea2b589762b),
+                c3: Fp(0x66ab523c2389f748),
+                c4: Fp(0x567a53464df79545),
+                c5: Fp(0x9100178fc3f1667c),
             },
             z: Fp6::one(),
         },
@@ -2016,249 +1248,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x287ac0ade52d111),
-                    c1: Fp(0x9b021ec92770310),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x39422eb5d5f01606),
-                    c1: Fp(0x3e68be23f5e24fff),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x33cbd6b3a48350d9),
-                    c1: Fp(0x29bb1c2cca93252d),
-                },
+                c0: Fp(0x92c71d593f3a9948),
+                c1: Fp(0x4cc73713858ab4fe),
+                c2: Fp(0x9fcbe5be4b347d2e),
+                c3: Fp(0x2297d1487dac393e),
+                c4: Fp(0x680f5d85cdf865cf),
+                c5: Fp(0x893f424141614f4a),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x156d04286c6da481),
-                    c1: Fp(0x2d7f6cce8a686a56),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2ffd12de16bd3268),
-                    c1: Fp(0xed2e01f3f91d635),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x27c650c0ee11db52),
-                    c1: Fp(0x28b828ee2eecce3c),
-                },
+                c0: Fp(0x320d2a839dcaca8e),
+                c1: Fp(0xef5be720048f7d62),
+                c2: Fp(0x80d788c47bc5f741),
+                c3: Fp(0xa38b78a7522309ad),
+                c4: Fp(0x7c815ce0d32816b3),
+                c5: Fp(0xe04edecafacd9a20),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2d06679cf7aae757),
-                    c1: Fp(0xb19b1b24496a233),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2397efd958d9884d),
-                    c1: Fp(0x12de2c08e36e7e7a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x39ff41337e5fa3d4),
-                    c1: Fp(0x11f7efe9edca1a9f),
-                },
+                c0: Fp(0x2e0950de493f67ae),
+                c1: Fp(0xcc55efc1c092e0c0),
+                c2: Fp(0xe94b69d942354b3f),
+                c3: Fp(0xa7c855e247bc11cf),
+                c4: Fp(0x7f4ac7d23a5d6ffd),
+                c5: Fp(0xcfdd087d967e9a63),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3b409f0e40562a94),
-                    c1: Fp(0x6574d1df5ce3bd6),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x20b20c476704195d),
-                    c1: Fp(0x2cb79e7a0cd70176),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x25a3092d1b17f2ea),
-                    c1: Fp(0xe0a8031abc3f417),
-                },
+                c0: Fp(0x75b281f098dd180a),
+                c1: Fp(0x5582e388fd95557b),
+                c2: Fp(0x7d9bb0c30838e03f),
+                c3: Fp(0xddea76f414713f45),
+                c4: Fp(0x971dde94bc75a774),
+                c5: Fp(0xb78f136df06299d1),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3668f671e4aa2fc8),
-                    c1: Fp(0x3f83531bfca542c1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x22146f3f0c7c17ac),
-                    c1: Fp(0x102d1170a701a8d5),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1493b8c8e5c2e328),
-                    c1: Fp(0x3c3e011a76fa4291),
-                },
+                c0: Fp(0xd1d469314a5ce253),
+                c1: Fp(0xc3a5ea7d4706329b),
+                c2: Fp(0x1d0b8b0c553cf6d6),
+                c3: Fp(0x57216234a4199b4a),
+                c4: Fp(0x33c431b5a5092d19),
+                c5: Fp(0xb7867746de536ef7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3625af298cff46cf),
-                    c1: Fp(0x2f65b09f967599a6),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3e907d441f3b2515),
-                    c1: Fp(0x23460e1fa8098007),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1b3c76a36803b06e),
-                    c1: Fp(0x1be262f1f5e63c26),
-                },
+                c0: Fp(0xef4453cae9ad3577),
+                c1: Fp(0xf320792d8bfe19fa),
+                c2: Fp(0xf76c25bde281e077),
+                c3: Fp(0x5a78036a1f1785d9),
+                c4: Fp(0xdf918d8516b952c1),
+                c5: Fp(0xac1dabeec8b9c5bb),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x25cb4caf1e4fb440),
-                    c1: Fp(0x2a6e54d596615b0b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3f02a5667054c3e9),
-                    c1: Fp(0x1768fa8f9a59df44),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x5f5ec8b893551bd),
-                    c1: Fp(0x2780587bac38535),
-                },
+                c0: Fp(0x958748eb91e92eb9),
+                c1: Fp(0x9d0563407e4e5be5),
+                c2: Fp(0xea9a5a6a1240720b),
+                c3: Fp(0x5c3ff7ba760bf159),
+                c4: Fp(0xd417c314e50fac2),
+                c5: Fp(0x593566197edae096),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1aef2e611e7104b0),
-                    c1: Fp(0x233cbc500158092a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3d39d044dd2e5443),
-                    c1: Fp(0x3da3443f054a06f6),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x9ef20d5332e8fde),
-                    c1: Fp(0x1cb86b46f12de4f6),
-                },
+                c0: Fp(0xc29fe594e4a949),
+                c1: Fp(0x40ce33a7984e4ff1),
+                c2: Fp(0xf12e4eb0869b3830),
+                c3: Fp(0x3cb36bd2839bab41),
+                c4: Fp(0x550e4ca95fbb27e),
+                c5: Fp(0xe4d12e38032dbcd0),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xb6ab9c9bdfd7810),
-                    c1: Fp(0x3ef047360af542c2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3914215463ec0ca6),
-                    c1: Fp(0x2d58c55147a3b78b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x22fe5ae542edffe0),
-                    c1: Fp(0x342b80fc14bd377d),
-                },
+                c0: Fp(0x2f625b491f6570b9),
+                c1: Fp(0x7163bca9ff81fef3),
+                c2: Fp(0x6d9b45e7e8de43bd),
+                c3: Fp(0x1fa6a9d908b4cd34),
+                c4: Fp(0xbb8297201158e0e4),
+                c5: Fp(0x9c4832a3f2ce068e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x929afb5b62174cb),
-                    c1: Fp(0x2cb96fe613588cb4),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3fb781e5328b400b),
-                    c1: Fp(0x2cde0432027e6745),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x48646c532719d4),
-                    c1: Fp(0xad34becd64303dc),
-                },
+                c0: Fp(0x9abb3db248811ad3),
+                c1: Fp(0x9075f28359839e14),
+                c2: Fp(0x4ea3721e83727bac),
+                c3: Fp(0x5d3254a5f2d01298),
+                c4: Fp(0x8962c985157689f7),
+                c5: Fp(0xc7e3d9fca475d10e),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2b1c74b8b01bef12),
-                    c1: Fp(0x28d8447f62dc619e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3062906311d0e49),
-                    c1: Fp(0x3939c583207b3916),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xcdf4f9cf62b8b1),
-                    c1: Fp(0xf77b2b38a3aa8e6),
-                },
+                c0: Fp(0xee09be44a787c76f),
+                c1: Fp(0x43f26b87f38e4b2c),
+                c2: Fp(0x9bd0d2fa9d17066a),
+                c3: Fp(0xafbf625164d25b30),
+                c4: Fp(0x1499c8145d109c29),
+                c5: Fp(0xc370e1ba4aa2ad9f),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x356eb67cd8a773ea),
-                    c1: Fp(0x1c430be72cf24e49),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x6e974cfb65b9d3f),
-                    c1: Fp(0x3d55c9789f87841e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x34a8b1afcb9299e5),
-                    c1: Fp(0x119730fc46772b29),
-                },
+                c0: Fp(0x532fd4d614632d3b),
+                c1: Fp(0xb07a3686e4eb02c3),
+                c2: Fp(0x3ab476bb382e869d),
+                c3: Fp(0xcf0991f104586e8a),
+                c4: Fp(0x6270cf4188ead2bb),
+                c5: Fp(0x2895f4b606bb5cfe),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3ec3bce93c59e292),
-                    c1: Fp(0x1b68c530fb300f45),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x15115eef6e9d093a),
-                    c1: Fp(0x1dfbee23696ef2b1),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x11579cfce4998b27),
-                    c1: Fp(0x94ec8da20931e6d),
-                },
+                c0: Fp(0xfca86c4693c8cb47),
+                c1: Fp(0x571a38f1596f090a),
+                c2: Fp(0xab80f88d0de43b4f),
+                c3: Fp(0xa6c97d9ccd2bb98e),
+                c4: Fp(0x62fa8a4231e92e9a),
+                c5: Fp(0x458826fbdb957991),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x21cfbf7eeb2af312),
-                    c1: Fp(0x2bacfa05d69d1f06),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2b486cddf176f3ce),
-                    c1: Fp(0x35208dc75e7be2c0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x32fe2d6195af36e1),
-                    c1: Fp(0x2114b20fee12d330),
-                },
+                c0: Fp(0x211929e506a7f85),
+                c1: Fp(0xf1d1713dd79dff02),
+                c2: Fp(0xe9c110b9d467af37),
+                c3: Fp(0x4e4799e4748230a7),
+                c4: Fp(0x60b33db6b5913747),
+                c5: Fp(0xd811bb56c61fe1b9),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x29a58de990080082),
-                    c1: Fp(0x13dd498a04234b89),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3a05eb9f5fbb07f8),
-                    c1: Fp(0x2a123e4206c9690c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1b7e8eaadb27e62d),
-                    c1: Fp(0x3381b02b76d410c0),
-                },
+                c0: Fp(0xfca857920a8a73d),
+                c1: Fp(0x5f53e535d9acfa2f),
+                c2: Fp(0xa17cfd8a9e5e49e4),
+                c3: Fp(0x6d3542c487a8c69e),
+                c4: Fp(0xbbd1f50948c2de46),
+                c5: Fp(0x5525e1a24ffe1c86),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x36685937115ce890),
-                    c1: Fp(0x2e5908916e561856),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x17c98bbd5767cdab),
-                    c1: Fp(0x3ebff75754c67c0b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xa2513695e0610db),
-                    c1: Fp(0x2bb1e4ca4d411777),
-                },
+                c0: Fp(0xe592a32de21c628a),
+                c1: Fp(0x1cc8941e6f51d65e),
+                c2: Fp(0x9a88c29eb0d64ef1),
+                c3: Fp(0x6e1543ec025f102a),
+                c4: Fp(0x70c3ff4723b29955),
+                c5: Fp(0xa5e890c275f8cc8a),
             },
             z: Fp6::one(),
         },
@@ -2266,249 +1402,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1a85d0df1d63a674),
-                    c1: Fp(0xf26c72270adcc40),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x9750c1bc2b52516),
-                    c1: Fp(0x2167534e39881f4c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3690182c16c8dbf),
-                    c1: Fp(0x1b3c2d37cc1079ec),
-                },
+                c0: Fp(0x72c414e057ff2982),
+                c1: Fp(0x177b5d410cc4f2ed),
+                c2: Fp(0x35cecee31d514b54),
+                c3: Fp(0xaca919175777410),
+                c4: Fp(0x6ea57d35c94c7969),
+                c5: Fp(0xabd9275254c56371),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3e1158e9b045c86e),
-                    c1: Fp(0x11d0be2bfe364007),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1075ef9213b896f8),
-                    c1: Fp(0x3b31bc3d5d92d3d8),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x30db07ed8ad4535f),
-                    c1: Fp(0x3ff64674ca5d76d6),
-                },
+                c0: Fp(0x51f52454f2b288e0),
+                c1: Fp(0xe39d413f4afbf5c3),
+                c2: Fp(0x450735c21f46c4fe),
+                c3: Fp(0x7355ab8d2f6a3c9c),
+                c4: Fp(0x5422759b0a84758b),
+                c5: Fp(0x988eeb9a3ec5ecb7),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xf6cf19398f54888),
-                    c1: Fp(0x4dacf29cd4b5c77),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x16cb81e96ff0c648),
-                    c1: Fp(0x2217eafa7d1ce4bc),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xb292440af2dfee9),
-                    c1: Fp(0x34e0b09ee6f7c776),
-                },
+                c0: Fp(0x5f2376539bf44328),
+                c1: Fp(0x96a1fabf43f396d2),
+                c2: Fp(0x719f1349e8a41ed6),
+                c3: Fp(0x581b7c30606bba9b),
+                c4: Fp(0x90ab40de5e43aec8),
+                c5: Fp(0x50f2dc3b0906d7c7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x210a551f999e61f9),
-                    c1: Fp(0x377ea7139980b630),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3f23c89d0c4a696d),
-                    c1: Fp(0x2e3155a20d8ff554),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1be0ce017fe7c841),
-                    c1: Fp(0xc29754bbb721),
-                },
+                c0: Fp(0x6812cabcfad71b74),
+                c1: Fp(0x7343c6ece2f387d6),
+                c2: Fp(0x49b141d3ebf29908),
+                c3: Fp(0x421242beea251c59),
+                c4: Fp(0x90d1a7d3c358e208),
+                c5: Fp(0xb3212a9431785c34),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x943d5b444946481),
-                    c1: Fp(0xc4a8bfc03f3ad70),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x71ed5d7f898fbae),
-                    c1: Fp(0x39e9183cb124651d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x33091acf37dd9815),
-                    c1: Fp(0x2f6897e77005bd2b),
-                },
+                c0: Fp(0xba1f221db0f41ce8),
+                c1: Fp(0x4be7aea265b5d3ee),
+                c2: Fp(0x8f74683ca31ea177),
+                c3: Fp(0xd7fdccfdebcee58b),
+                c4: Fp(0x2fbd48cd4be2615f),
+                c5: Fp(0x59f2d26f8c4e3a21),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2e3aae8aab2f8e25),
-                    c1: Fp(0x1a51646b9c60e8d1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x16c631e714f55b5d),
-                    c1: Fp(0x3ed93648563c6ed4),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x4b40489a3aef6af),
-                    c1: Fp(0x3576fd368ea6d855),
-                },
+                c0: Fp(0x3fce31d471c173c5),
+                c1: Fp(0x3bb80cc9ccc3cc2d),
+                c2: Fp(0xc3e8a667bcb7e79f),
+                c3: Fp(0x768be5c031a82383),
+                c4: Fp(0x5a692fc701cfdc3b),
+                c5: Fp(0xc9bab65683204fd),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x49b6f5cf7c91b7d),
-                    c1: Fp(0x2a39a440c3c72733),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x15f0cf8e93c31c64),
-                    c1: Fp(0x88722da3dee1583),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2eca90952382eeb2),
-                    c1: Fp(0x252da352bbfe399b),
-                },
+                c0: Fp(0x9e0f38b0db708106),
+                c1: Fp(0xd34c0a7e0a93bced),
+                c2: Fp(0x4f813eb81cce90bc),
+                c3: Fp(0x354abcadd3877118),
+                c4: Fp(0x95abdcdbec0a95d3),
+                c5: Fp(0xaddf4b73d1690edf),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2151478922a02160),
-                    c1: Fp(0x16b2af298624965a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3971ef9997a2513a),
-                    c1: Fp(0x899be5d865f1aa4),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x17f8fc869be1f1e),
-                    c1: Fp(0x233a7e5042de47d8),
-                },
+                c0: Fp(0x8a1b3b07f7a29fa1),
+                c1: Fp(0x4beec2156c996dda),
+                c2: Fp(0xfb39e32ec45cbd08),
+                c3: Fp(0xfe6dcc2d1cbdef0),
+                c4: Fp(0x927b1f3b96c137a1),
+                c5: Fp(0x393a1122d10c19f6),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3ee6608520a06c2e),
-                    c1: Fp(0xea7fbaea450b87d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3862cf3b5b20026d),
-                    c1: Fp(0x1db76ae694b3a4be),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x31f83c05b67a5b67),
-                    c1: Fp(0x1ca810624fe7a2ba),
-                },
+                c0: Fp(0x239db2aa6812c418),
+                c1: Fp(0xbaa87f08c9074235),
+                c2: Fp(0xce3b3b09df6840f3),
+                c3: Fp(0x5954fa795df12f34),
+                c4: Fp(0x93c1e942b2cb2393),
+                c5: Fp(0x831c0d9a5323849b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3ef9ccde998a6219),
-                    c1: Fp(0x3d74f272ebc33e49),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x7fb9cb8721a76c1),
-                    c1: Fp(0x2da3ba8c5e9e2db5),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xd0f92ccd2511936),
-                    c1: Fp(0x15c9a2b81d7860c2),
-                },
+                c0: Fp(0x4be9f51b74094b0),
+                c1: Fp(0xe639048cddb430a9),
+                c2: Fp(0xaa7ec771454402ff),
+                c3: Fp(0xbb93d1f76e26b35),
+                c4: Fp(0xd61be065b41d2796),
+                c5: Fp(0x49bb9282f0a9ed4b),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x25e2644d0c81e36b),
-                    c1: Fp(0x30441189b7bedd15),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x20c1f9bf464db68e),
-                    c1: Fp(0xd3ab36ae88f92d3),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x29893867ed390314),
-                    c1: Fp(0x854714c5e8d56a6),
-                },
+                c0: Fp(0xae86e4fa13dd0bc1),
+                c1: Fp(0xba4c5505c1616404),
+                c2: Fp(0x187f816994cc1af2),
+                c3: Fp(0x7c15b3be43424d5d),
+                c4: Fp(0x21134acb3ea832bf),
+                c5: Fp(0x8035540eee9140bd),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2a07e637cf64a4d9),
-                    c1: Fp(0x19d24f70d6158c7f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3e12a30dafeb943e),
-                    c1: Fp(0x2dfdc0991a317f8a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3a03f9264b9a6d3d),
-                    c1: Fp(0xe4ed56d5a54dd61),
-                },
+                c0: Fp(0xd923204374ff20d4),
+                c1: Fp(0xb5cdb4448208b6bd),
+                c2: Fp(0xc2bd168b88eeb61f),
+                c3: Fp(0xe145887c197e8428),
+                c4: Fp(0xa70d9c7893d3205d),
+                c5: Fp(0xd556bf82ab6cdd8b),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x17964f806da554d3),
-                    c1: Fp(0x390d9cd3d71f54f9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xf7523d31d125e25),
-                    c1: Fp(0x14f01895b9beb379),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1195c56084a59d16),
-                    c1: Fp(0x3c6602cd8dcdddf8),
-                },
+                c0: Fp(0xb6674f0b2135da05),
+                c1: Fp(0x4b8e32f732bcc462),
+                c2: Fp(0xc24442e8f3ac1328),
+                c3: Fp(0x2d12041df4ed9939),
+                c4: Fp(0x67be488d30ebdeef),
+                c5: Fp(0x89a3fd5bd10de0a2),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x13e9590ed1785d86),
-                    c1: Fp(0x317ecbcb51d21952),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x151e6d544af4cef3),
-                    c1: Fp(0x2c29f07cb56923cc),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xd5053b121d87953),
-                    c1: Fp(0x97e3aff3d853663),
-                },
+                c0: Fp(0x51ca7ca8cf770484),
+                c1: Fp(0xd47e9033fd7eaae1),
+                c2: Fp(0x20628d54a6c7ceff),
+                c3: Fp(0x6d733cce88880257),
+                c4: Fp(0xc98405521bd26acd),
+                c5: Fp(0xa230552de1ed9245),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2397e845d0ca4816),
-                    c1: Fp(0x204a412409821c1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x17e5e3b84ff0eb55),
-                    c1: Fp(0x32f3c65757db41d0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x354e3aafc2bc8c45),
-                    c1: Fp(0x3828148d9b584d73),
-                },
+                c0: Fp(0x8526482f8f500b45),
+                c1: Fp(0x9789284d2f0650b2),
+                c2: Fp(0x23e704935d516ee5),
+                c3: Fp(0x95f8dd760c08b71d),
+                c4: Fp(0x90bbd64c340cf13f),
+                c5: Fp(0x21622f2a8d560bca),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x4169881a81f3dae4),
-                    c1: Fp(0x2a27cb7b449f6567),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x12fdf96b3c69d274),
-                    c1: Fp(0x2a1506a3ec9b0e7),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x16dcb5f2cf88f22e),
-                    c1: Fp(0x3a64213a0ee14991),
-                },
+                c0: Fp(0x23070255a41b920e),
+                c1: Fp(0x4d2be7121596f620),
+                c2: Fp(0x6e98ac6d80b0f970),
+                c3: Fp(0xd0726db6a466ccde),
+                c4: Fp(0xf52c498d2ce21ac),
+                c5: Fp(0x9133975b4d6dd7b9),
             },
             z: Fp6::one(),
         },
@@ -2516,249 +1556,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xfb14d6c2b7d67b9),
-                    c1: Fp(0x3e5ab00549220ae2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xe53ac6a4018c399),
-                    c1: Fp(0x16bca6b4fa61fd7c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x28a09c4d611d7516),
-                    c1: Fp(0x2d690a0f396d1dc3),
-                },
+                c0: Fp(0x570f85c1ac503900),
+                c1: Fp(0x6f2ea4d1a90706e7),
+                c2: Fp(0xd7777093a1838c07),
+                c3: Fp(0x6e8aaee7744622d5),
+                c4: Fp(0x6099484519471986),
+                c5: Fp(0x67c478cb77c2c3d7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x19467a7c68f11909),
-                    c1: Fp(0xc1f5315df6b9a49),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x24d8890c9b957b6d),
-                    c1: Fp(0x167c03411e41d58a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1472693b435d9ef1),
-                    c1: Fp(0x7b42f926febe83),
-                },
+                c0: Fp(0xa8bf330fd2d27f82),
+                c1: Fp(0xe9184debdab2f63c),
+                c2: Fp(0xaaa9a2d07bd104cf),
+                c3: Fp(0x8c1f59d6dde6a2c7),
+                c4: Fp(0x1613aef156f811ce),
+                c5: Fp(0x45e9ab0c644a2ee2),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1b17ad97ba25bad7),
-                    c1: Fp(0x1f7ffc875c0771c5),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x7146ead1c02041),
-                    c1: Fp(0x3a9cfb8a35671b96),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1a06f09b63ef8d25),
-                    c1: Fp(0x10d38cf04f746665),
-                },
+                c0: Fp(0xfa7292663a2b8f13),
+                c1: Fp(0x799da7e59f66188f),
+                c2: Fp(0x4fcfbf9d8eb1e67a),
+                c3: Fp(0xdff9bde35a033ea9),
+                c4: Fp(0x508179c762a9494c),
+                c5: Fp(0x8d80f0d266131dc7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xdd9f9121cae9f73),
-                    c1: Fp(0x20ab9652af51b58a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3a96912264ab79d2),
-                    c1: Fp(0x29da1e720bf13e65),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x17853c0705a57367),
-                    c1: Fp(0x3686d6d13f3b213a),
-                },
+                c0: Fp(0x4719c0de05346ea5),
+                c1: Fp(0x79747f38668b39bf),
+                c2: Fp(0x523c49416c4d4788),
+                c3: Fp(0x14f32542241522ae),
+                c4: Fp(0xa8b97484b979b5a9),
+                c5: Fp(0x86d72b4e437b6dd1),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3dd24262227de355),
-                    c1: Fp(0x1b35b45efae697ac),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3a29794044131f7e),
-                    c1: Fp(0x22c00eb34e58e13e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x24cfedf6167c3d53),
-                    c1: Fp(0x3cc1fb7ee61146a7),
-                },
+                c0: Fp(0x336c1b7935ffeaef),
+                c1: Fp(0xf4d0440c92e2b825),
+                c2: Fp(0x7a4221062f45086c),
+                c3: Fp(0x6cc2d5afa1effed7),
+                c4: Fp(0xb45da1d0f32aae32),
+                c5: Fp(0x91b5b30fdab1f61e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1970973731cdb6e4),
-                    c1: Fp(0x1c7b9667e221c4f0),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x24ab0e9343e9fef7),
-                    c1: Fp(0x3cb01a87ddb0c128),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1bf37b4ad2fa44ad),
-                    c1: Fp(0x37b6bfb9df4c1b47),
-                },
+                c0: Fp(0xa506ac5f9ee0acc6),
+                c1: Fp(0x9a3d8064fbcf042e),
+                c2: Fp(0xc3476b2e5a6e8413),
+                c3: Fp(0x5d2e569bb4a1ede3),
+                c4: Fp(0xec7bf1698ba737e2),
+                c5: Fp(0xfc5d79b5f2f89a95),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xc36a3e9a7ca8c4a),
-                    c1: Fp(0x30f007a2f78fb29c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1c0825dfab0a61b),
-                    c1: Fp(0x13f6a20df6cf49ae),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3ab422891f77f866),
-                    c1: Fp(0x117597cd2633e723),
-                },
+                c0: Fp(0xea03164565d7603d),
+                c1: Fp(0xe5eb175d958de679),
+                c2: Fp(0x7c2fae1d1e9c010),
+                c3: Fp(0xb25209ed02d759a5),
+                c4: Fp(0xad9dd87a3c81a2),
+                c5: Fp(0x766a3d93f08da640),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3e4f77c12f077419),
-                    c1: Fp(0x300b0c60aaa01f5c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xe5c567c9eaef2c6),
-                    c1: Fp(0x3a8e9e88a8c401f9),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x26e0597004e70647),
-                    c1: Fp(0x3bc89467a15af24b),
-                },
+                c0: Fp(0xcfe442b773e0932d),
+                c1: Fp(0x77f74425db4abc64),
+                c2: Fp(0xdaca23dab56464b3),
+                c3: Fp(0xbb9848265e93f82e),
+                c4: Fp(0xa8e37247000bb9c9),
+                c5: Fp(0x42bff700ca488524),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2697e3250b556030),
-                    c1: Fp(0x5d7fa93e03b56d0),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x165cc2ffd6f38499),
-                    c1: Fp(0xdcaed4cee40c811),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3078d6b706c39ba4),
-                    c1: Fp(0x1ef0226df4d96c55),
-                },
+                c0: Fp(0x1d42cd5a3f56a65e),
+                c1: Fp(0x87c1e3ca68b407e6),
+                c2: Fp(0xb647a03b71e5e64e),
+                c3: Fp(0x4447e61c1054ba60),
+                c4: Fp(0x8f9b711931e1ae76),
+                c5: Fp(0x626c3dbbf54c8b2a),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3f462aa3e3893dac),
-                    c1: Fp(0x3e5cf77696cbc05c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x25cf5ee660d66c1a),
-                    c1: Fp(0x290563293ea88c1c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x39de54675b8fede7),
-                    c1: Fp(0x34b2a28c651fe41d),
-                },
+                c0: Fp(0x16e592b4a73221b5),
+                c1: Fp(0xcd4dae3025ab2fa3),
+                c2: Fp(0xe16eea20fa939ace),
+                c3: Fp(0xce532aba7869b060),
+                c4: Fp(0xddc62718392ecf89),
+                c5: Fp(0x64a3874d835ae872),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x20e2e0b571591649),
-                    c1: Fp(0x3cba1ec6c1d01cad),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3e8f4f0afd0787b),
-                    c1: Fp(0x29025de34c8e9d6d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x26a717b71780f88a),
-                    c1: Fp(0x2d89d039f0a5fc6),
-                },
+                c0: Fp(0x46768fa75e3c1c42),
+                c1: Fp(0xac8a73a83835d5f7),
+                c2: Fp(0xc7bdde2b8b65e6c1),
+                c3: Fp(0x4f7d752acf24399a),
+                c4: Fp(0xb002bc1bd079bc3c),
+                c5: Fp(0x80d2826f0e70b22c),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2af15a085bdfa7d8),
-                    c1: Fp(0x5254b63e7b61573),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xd7effd4b5814a59),
-                    c1: Fp(0x1ed7b2961ec573ee),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x553db4fe77505ef),
-                    c1: Fp(0x1dbe85b6c918e2d7),
-                },
+                c0: Fp(0xaa5b1846cfb5bc38),
+                c1: Fp(0x538a583103fcc4a2),
+                c2: Fp(0xe61416d147e745e7),
+                c3: Fp(0x667f2de2200673a1),
+                c4: Fp(0x7a58581fb4455716),
+                c5: Fp(0x3ac2d5d3272d8d27),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2fb4bd16ccaafe3d),
-                    c1: Fp(0x4c6294c1477333e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x8c2215e5db36f6f),
-                    c1: Fp(0x3ec7504ee261b1dc),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xb2e3caeb26ee0cb),
-                    c1: Fp(0x322928ebbf7f61d0),
-                },
+                c0: Fp(0xdeb47f77efcbb7a8),
+                c1: Fp(0xb15d3bf62abce9ed),
+                c2: Fp(0x84a7e48a93971c99),
+                c3: Fp(0xcfbf01cdefaac3b5),
+                c4: Fp(0xf119500ae04170a3),
+                c5: Fp(0x23c346172deb488b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3ffefba7611b9de9),
-                    c1: Fp(0x206073968d4bf179),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3828e7084e13a327),
-                    c1: Fp(0x24ac52a75de41a47),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x231bd1c6bdacfda7),
-                    c1: Fp(0xc04d4e7ef634c64),
-                },
+                c0: Fp(0x67a0d4caa46354aa),
+                c1: Fp(0x323e3740a1a773cf),
+                c2: Fp(0xad4ee53aadd45b87),
+                c3: Fp(0x258c81e948b432ad),
+                c4: Fp(0x6b17dabdfbe08cac),
+                c5: Fp(0x184609d0148784cf),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x17d831551279cf5a),
-                    c1: Fp(0x18e45b6d3707b6f7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x28bd25f0463ce638),
-                    c1: Fp(0x3601f8bdfe83cc3a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x24389e82df9bd917),
-                    c1: Fp(0x33098d96db04f1f9),
-                },
+                c0: Fp(0x39475d8d130bd39c),
+                c1: Fp(0x99553c92e7aa1f23),
+                c2: Fp(0x92bed56f90684fb5),
+                c3: Fp(0x956f1d84bd3b46f6),
+                c4: Fp(0x183d51771a32368e),
+                c5: Fp(0x3a5595305a57a881),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x123fdc4758d51f94),
-                    c1: Fp(0xce23291933dc2e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2eba3d6400585cd5),
-                    c1: Fp(0x3a11efcac410766f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x40c0ab2d93bc2e5),
-                    c1: Fp(0x6ca9550485312ad),
-                },
+                c0: Fp(0x204dfb6df923ee1e),
+                c1: Fp(0x58e57b66393da5ad),
+                c2: Fp(0x8cca6b339bae8eeb),
+                c3: Fp(0x79dc2291a2e73b88),
+                c4: Fp(0xe927e23d447de236),
+                c5: Fp(0xdeb9ec9fe4e7c44c),
             },
             z: Fp6::one(),
         },
@@ -2766,249 +1710,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x266dea4e1f4c99c4),
-                    c1: Fp(0x30820d6d89e0b128),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x30f91076061f10f7),
-                    c1: Fp(0x25032007b70ae2f7),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2b92cc82eda0fd44),
-                    c1: Fp(0x11c2e96ae55850d4),
-                },
+                c0: Fp(0x19281e76286dfdeb),
+                c1: Fp(0x79be0673e04fd21a),
+                c2: Fp(0xf35cdbd9dc926363),
+                c3: Fp(0xa14c13fe75ece04a),
+                c4: Fp(0xc908f7a65d1463f2),
+                c5: Fp(0x62fb33873c1a65d2),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1151b3e025c03d10),
-                    c1: Fp(0x2ae6b0fd6c40841d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x28fed8b79338bf07),
-                    c1: Fp(0x2a0fdbab19cff68),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x394844db5ead9291),
-                    c1: Fp(0x15c8fbbcba143022),
-                },
+                c0: Fp(0xd8a46ccc665b4ad6),
+                c1: Fp(0x5e3bc30b2582edfe),
+                c2: Fp(0x58cdf8d83d326049),
+                c3: Fp(0x714f8400b063ac17),
+                c4: Fp(0x6ca4680f131eb360),
+                c5: Fp(0x3c40b092666dafe1),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x28b3b4df996afb2b),
-                    c1: Fp(0x1449a512c0e5b812),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xec5ea61bb4ff354),
-                    c1: Fp(0x26e20e7609861980),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2beef1a0be865c50),
-                    c1: Fp(0x1dccd3334e08dd94),
-                },
+                c0: Fp(0xf3c9a4961d7fff03),
+                c1: Fp(0x84934c0e920c24f3),
+                c2: Fp(0xe2a01cfb3f5e5841),
+                c3: Fp(0xe8f8dc3b206ea3d6),
+                c4: Fp(0xe609d0bb1642f865),
+                c5: Fp(0xed8935899370df73),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1d09fc7a0f20951e),
-                    c1: Fp(0x1f2fc573acdeec25),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3d5d2bad79fa37fe),
-                    c1: Fp(0x292da96c1f8ec493),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x161cdd1157a88197),
-                    c1: Fp(0x2fc8e11908e7433f),
-                },
+                c0: Fp(0x38f2dcc542cd019b),
+                c1: Fp(0x463d6fbedab18142),
+                c2: Fp(0xed426294ce4680c7),
+                c3: Fp(0xab75c598f41948f1),
+                c4: Fp(0x63f8e16a870934d9),
+                c5: Fp(0x539343834654f85c),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xbaa6397a02b7a9c),
-                    c1: Fp(0x1edb16e74ed05c4e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2ca486567931c395),
-                    c1: Fp(0x3831cce9e17f22f7),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x128761df4a1de088),
-                    c1: Fp(0x4118ee5984e59be2),
-                },
+                c0: Fp(0x418ecc00d3f147a6),
+                c1: Fp(0xba94dadee61922ac),
+                c2: Fp(0xfa4a1220aaac5171),
+                c3: Fp(0xcf3291e73c4634bd),
+                c4: Fp(0x7957f55072fd5829),
+                c5: Fp(0xf5cbd80b0a4586c6),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x35106bb5c584c60),
-                    c1: Fp(0x4cd6d6ebdb476f3),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2fd344d6e9dce669),
-                    c1: Fp(0x40cfb9a6ebb80948),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3a200ed610a16914),
-                    c1: Fp(0x30fb19f0e42e2ae3),
-                },
+                c0: Fp(0xfd5d9cd4a0a9a70a),
+                c1: Fp(0xa1f5f6e081ba54cc),
+                c2: Fp(0x289c3e36aea09e04),
+                c3: Fp(0xa65b6df04f6975dc),
+                c4: Fp(0xef1429d3c5796018),
+                c5: Fp(0x97e19dbbfd6c8524),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x279ece3c731fa4c2),
-                    c1: Fp(0x3119352810b22b2b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xc4302d84bbfc06e),
-                    c1: Fp(0x24fe2eda7c2bcca8),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x33c4f14ae39994cd),
-                    c1: Fp(0x1e7f108eeeafd4fd),
-                },
+                c0: Fp(0x9b2a03e8af0cefaa),
+                c1: Fp(0x53d9f17eca3ec707),
+                c2: Fp(0x3e3bd966524debd8),
+                c3: Fp(0x9e6b82d282b1eeb5),
+                c4: Fp(0x9245db9149251e65),
+                c5: Fp(0xb5244b31157922d5),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1d2e94793e2c735d),
-                    c1: Fp(0x376c4590b8381818),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x282db3c9ac054c99),
-                    c1: Fp(0x2801bb8621e5e71d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x36e42543564c1b30),
-                    c1: Fp(0x1e1bcaf06f8228d0),
-                },
+                c0: Fp(0x8bbb207cca695bd6),
+                c1: Fp(0xbc50f9063918316),
+                c2: Fp(0x2991641e8cbd0eb8),
+                c3: Fp(0x95dbf328ddae29ba),
+                c4: Fp(0x509ecf76f1f95f7f),
+                c5: Fp(0xff10259289f6eeb1),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x939f334723a5de2),
-                    c1: Fp(0x2fcdd89d042c7d9d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x22359c770a11f903),
-                    c1: Fp(0x275b5f46d0821f66),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x408698a828cb85a3),
-                    c1: Fp(0x3e1e59f170d8c857),
-                },
+                c0: Fp(0x4bc7d1527655d34c),
+                c1: Fp(0x2642e37ca2799b4b),
+                c2: Fp(0x5bd2ac582bf88027),
+                c3: Fp(0x69030583d7b0ea22),
+                c4: Fp(0x10748e9166243506),
+                c5: Fp(0x880e3cdc8b3c8f4e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x28245e10e53f4811),
-                    c1: Fp(0x2baa604adbc56411),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3aae92b6b46f1aa7),
-                    c1: Fp(0x34ced76fdb676324),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3380be2a45d353ae),
-                    c1: Fp(0x2676ec3d22fec84e),
-                },
+                c0: Fp(0x7dbea128532fce97),
+                c1: Fp(0x3563183c329e1fb6),
+                c2: Fp(0x6bbc4fc0ad49221d),
+                c3: Fp(0x3277855b5be39703),
+                c4: Fp(0x77a8ade79173cf05),
+                c5: Fp(0x847c144a7e8c9459),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1c47dbfd43940f5e),
-                    c1: Fp(0x195070c41342465),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1080a1d4b1780b78),
-                    c1: Fp(0x8770676e382eb56),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1d4566d52c8385b2),
-                    c1: Fp(0x15df59b8e05f7c67),
-                },
+                c0: Fp(0x1620952adff78b54),
+                c1: Fp(0xcc67201e4b9328e8),
+                c2: Fp(0xabd0b7758dfd3900),
+                c3: Fp(0x9ee4beb0a2e59b92),
+                c4: Fp(0x10fdba4ab3b259fa),
+                c5: Fp(0x4df7f6b7e54e7f95),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3a6fe7a787970f64),
-                    c1: Fp(0x12e488e86509d30c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x16374150c71e32e0),
-                    c1: Fp(0x15a608633fb69a4d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1a0d46d2ee8eba58),
-                    c1: Fp(0x1ed031933267d9a0),
-                },
+                c0: Fp(0xedf8fb7130cb8123),
+                c1: Fp(0x25ccfb736dd3694b),
+                c2: Fp(0x344e226cc4884dd0),
+                c3: Fp(0xb0346a76f0e3a211),
+                c4: Fp(0xdcb1ddac724ea5c),
+                c5: Fp(0xac8e77dfaceb156f),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x4ff5fb2e8c30ff3),
-                    c1: Fp(0x340b90a2bdd869a6),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x35533ddbace957ce),
-                    c1: Fp(0x30df9d9cfa62fee1),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3a353f6bc9ec59f),
-                    c1: Fp(0xca698cad8b7e39f),
-                },
+                c0: Fp(0x60111e9612ff474a),
+                c1: Fp(0x94fe965bf8a31f1f),
+                c2: Fp(0x67abd719b0169d99),
+                c3: Fp(0x70f19dc2bd575b90),
+                c4: Fp(0x26c38c8a413bec34),
+                c5: Fp(0x2c90ad495df0f89a),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3eb5cb48341ce60e),
-                    c1: Fp(0x3532aded18a01c2d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x8726da93d452dac),
-                    c1: Fp(0x4d11da258a402bf),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x28d84fc09a794b39),
-                    c1: Fp(0x4de43acba58ecab),
-                },
+                c0: Fp(0x8eac4505861ab9c1),
+                c1: Fp(0xcc387de4b38cfa9c),
+                c2: Fp(0x36606f470f54dc3e),
+                c3: Fp(0xb1a3f6325eb56371),
+                c4: Fp(0xcf3fc1773f4f534a),
+                c5: Fp(0x405982e03a0824b6),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xd737e0e7b80c77a),
-                    c1: Fp(0x20fc3bb674b1095d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3229f62e8ee6e37),
-                    c1: Fp(0x372502594877bc5c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1c368987996d2b5f),
-                    c1: Fp(0x3e5416d1cf3da56f),
-                },
+                c0: Fp(0xec30cc060bd43ae9),
+                c1: Fp(0xf1dc51a31e4676ec),
+                c2: Fp(0xfdf7e961edbb3234),
+                c3: Fp(0x67aecb68c577d5a8),
+                c4: Fp(0xaf99bc243266b440),
+                c5: Fp(0xe5c1d86b4b49123b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x15737bd1556fe9ed),
-                    c1: Fp(0x1fecba0616789851),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x27fbd635187a5f3),
-                    c1: Fp(0xbd9bd7ca056af97),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2da3818670b69418),
-                    c1: Fp(0x1d1bbe495ed77241),
-                },
+                c0: Fp(0xab9f2cdfc930bed0),
+                c1: Fp(0xb2d932b49c9fe4d6),
+                c2: Fp(0xbc07e68ce7b87596),
+                c3: Fp(0xe84b7414be0312c0),
+                c4: Fp(0x17f97f7e0d84b745),
+                c5: Fp(0xa14668cf49ed5d8d),
             },
             z: Fp6::one(),
         },
@@ -3016,249 +1864,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x320fc92add444717),
-                    c1: Fp(0x17bbe4919230c5f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3e78adab3e9e8e51),
-                    c1: Fp(0x37552b422799c032),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2152b3c80b02f2d4),
-                    c1: Fp(0x701b1144b2e3b8a),
-                },
+                c0: Fp(0x7afd0612e2710602),
+                c1: Fp(0x75a18c5c84f7cf4e),
+                c2: Fp(0xe25ba7a2b8b5f25),
+                c3: Fp(0x42203c2c1931dc7c),
+                c4: Fp(0x404c9913049db93d),
+                c5: Fp(0xe21d1e2ead680fa5),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3582695953925342),
-                    c1: Fp(0x3672a3cdde13ad67),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x78acd050c0b32ef),
-                    c1: Fp(0x1f04d5da882c0f58),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x150862a8b88725c6),
-                    c1: Fp(0x8d72fba85e8e9),
-                },
+                c0: Fp(0xa1a3090177ba3492),
+                c1: Fp(0xac743397d650d8ee),
+                c2: Fp(0x8599cb87abd49567),
+                c3: Fp(0xe26d5e49a43c8cb5),
+                c4: Fp(0xb4880540a9c3021),
+                c5: Fp(0xa446a73cf4bbf205),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3672727eea2e3f4c),
-                    c1: Fp(0x2fe6e4dbc6726b56),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x296a78cc1b04c9ea),
-                    c1: Fp(0x2ffb00eeb6d04a71),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x8a1b98e94637620),
-                    c1: Fp(0xc426d4fb81fe62d),
-                },
+                c0: Fp(0xb9b44616bc2a3c1b),
+                c1: Fp(0x58224831125c2262),
+                c2: Fp(0xf5cb8fab8cb42b62),
+                c3: Fp(0x93bcc7d182e93413),
+                c4: Fp(0xf625147d12d9c709),
+                c5: Fp(0xf16619de9e2361b6),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3b5cdb2c20de631d),
-                    c1: Fp(0x40c4871c8d0c8762),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2e7243601c8d0e97),
-                    c1: Fp(0x2c7981b29f7c1cf6),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x36aa53701b7703f6),
-                    c1: Fp(0x344e017ea23436f5),
-                },
+                c0: Fp(0x663669981d38b07),
+                c1: Fp(0x1ac750a175fd9ac),
+                c2: Fp(0xa8877e97ce88b67b),
+                c3: Fp(0xfdfd9a0965e5fc5b),
+                c4: Fp(0x858632f2939c4802),
+                c5: Fp(0xf467c80af3fa8cba),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xa59c4d74259f933),
-                    c1: Fp(0x3800016a23cd9d11),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1cca12b835bff62e),
-                    c1: Fp(0x2261d2b88f19edf2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1c5e9163c8676e7a),
-                    c1: Fp(0x2717ba06be68fa84),
-                },
+                c0: Fp(0xe3d2f2352e08802b),
+                c1: Fp(0xce1e48c496f2a204),
+                c2: Fp(0xdbb7d018fc6ece65),
+                c3: Fp(0xc8511bb15d8b7fe5),
+                c4: Fp(0xf3d1576025169b33),
+                c5: Fp(0x85a864b5d464f13),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x169850fa19685743),
-                    c1: Fp(0x16b7a502ccc74d89),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1faa8eac48f31ea7),
-                    c1: Fp(0x1c8331ff5c800b1d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1a8616d269409b39),
-                    c1: Fp(0x1e4fe1832a0b427b),
-                },
+                c0: Fp(0x81470ce7fa9655d7),
+                c1: Fp(0x8aa3426f298f3f45),
+                c2: Fp(0x8d180b1083b63504),
+                c3: Fp(0x956840bd0268dc71),
+                c4: Fp(0x671d55412e3e47e6),
+                c5: Fp(0x77101bb13f730ca0),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1091c8dc968b8ff),
-                    c1: Fp(0x2ac3212dc9a71ce2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2716bfb193d80236),
-                    c1: Fp(0x1e49bc101c753b01),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x255213a61cee582f),
-                    c1: Fp(0x18a7eed73bf9dcc8),
-                },
+                c0: Fp(0x1f8f9186922d9cf0),
+                c1: Fp(0x2ac59f3d65ef4980),
+                c2: Fp(0x9965cd091fbc0425),
+                c3: Fp(0x4fa2a770912758ff),
+                c4: Fp(0x65bafa54ec2f0b3e),
+                c5: Fp(0xb4e2876505269ca6),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1ff5b8faea87a3d7),
-                    c1: Fp(0x2813aa58c1f052e7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3a76eff9068d0e47),
-                    c1: Fp(0x2a10f408347d8aa4),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xdc354dc73c87a61),
-                    c1: Fp(0x25c52b0c931f062e),
-                },
+                c0: Fp(0x676e4a9555da9cac),
+                c1: Fp(0x23eea6241b504547),
+                c2: Fp(0xcfb35b2545836c5b),
+                c3: Fp(0x92cc0ef4ee72db94),
+                c4: Fp(0x649d040f9ca13611),
+                c5: Fp(0xbaa2e126ac275ff0),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x37c8db35cea25d95),
-                    c1: Fp(0x3d2045cd327cde22),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2a60ead1d2d8b521),
-                    c1: Fp(0x2826889c2d6989e1),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3b96c7a93d2e22b6),
-                    c1: Fp(0x6212c742c23150c),
-                },
+                c0: Fp(0xc77175f7b9f9205),
+                c1: Fp(0xced899da745467ed),
+                c2: Fp(0xad28d82583e0891b),
+                c3: Fp(0x6f1362a6ef9eb54d),
+                c4: Fp(0x83bf8e8cc584d4),
+                c5: Fp(0x3e51acaaaf5de1f4),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x25f0d5220ca7f328),
-                    c1: Fp(0x1afb7d72e5d3d1ef),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x182003cc1bb7d1e),
-                    c1: Fp(0x486a57355077f03),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xe035bc3d6c80104),
-                    c1: Fp(0x1cb4ff867134b8be),
-                },
+                c0: Fp(0x39234c6e8bf8727d),
+                c1: Fp(0x40cfcc728e6ee76c),
+                c2: Fp(0x711d3d8b5f6c279f),
+                c3: Fp(0x2a40c326fe79c605),
+                c4: Fp(0x5ea3a10e693d86b2),
+                c5: Fp(0xb4b9ae1c006301cb),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2d1accc11e88778a),
-                    c1: Fp(0x5503208f5a375a1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2da7fe7703c43916),
-                    c1: Fp(0x155dd6225d462db5),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x38b4fef8554fb78c),
-                    c1: Fp(0x30e716f95eb1e3b8),
-                },
+                c0: Fp(0xf54ef5760d65102a),
+                c1: Fp(0xbda72d84cc644d8d),
+                c2: Fp(0x63abe2daffd0995),
+                c3: Fp(0x43095fef00a7b161),
+                c4: Fp(0xd70367dd0bc8a143),
+                c5: Fp(0x16079e5ba472b13c),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x23ec9c2ffa2de145),
-                    c1: Fp(0x256712e99c69720c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2c1d97203cb44780),
-                    c1: Fp(0x2e92040de9d1ce7e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x233d67af1d3b5646),
-                    c1: Fp(0x16e0f94e4dbba0f7),
-                },
+                c0: Fp(0xeec29cf89a975054),
+                c1: Fp(0xec3884e857783121),
+                c2: Fp(0x635ba69f6ec1d8e6),
+                c3: Fp(0x710d0042a7b2a28b),
+                c4: Fp(0x4f8c49fce929e687),
+                c5: Fp(0xc50a4d9734661511),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x235b2e1a1e50a474),
-                    c1: Fp(0x1dcb07d7e4f0be4d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1d8891b851627118),
-                    c1: Fp(0xb3496fd5c8d85e2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3c12ca6b07b42635),
-                    c1: Fp(0x64e792fa7fa82b1),
-                },
+                c0: Fp(0x1d7fe864376994c1),
+                c1: Fp(0x286d25f0dfbb1fec),
+                c2: Fp(0x18d7fe4de14bd970),
+                c3: Fp(0x7548fa1dcf2f45da),
+                c4: Fp(0x31a6ad13db047926),
+                c5: Fp(0xbfdb5c4b752736bb),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1b6459992ea54c28),
-                    c1: Fp(0x29d9bb457ed579c8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2bb6d345e3affe41),
-                    c1: Fp(0x29ba055fe1961881),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3591a9f10ae2c8d9),
-                    c1: Fp(0xfa3bd633d003296),
-                },
+                c0: Fp(0x15ae77ea1ecc7084),
+                c1: Fp(0xacfa970956050f82),
+                c2: Fp(0x75e7dcffaa77631a),
+                c3: Fp(0x5773d35209dbb7a1),
+                c4: Fp(0x1f7edb999215136),
+                c5: Fp(0x6a9eb5e34a090b0f),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x4118f87e47fad35d),
-                    c1: Fp(0x37845ce834769ef2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2b786603f3ef066c),
-                    c1: Fp(0x19838c60991931),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1aa8c21fb546bf9b),
-                    c1: Fp(0x3ce89e0d7bba35dd),
-                },
+                c0: Fp(0xc9032486b2630ec9),
+                c1: Fp(0xac60e00d388bff),
+                c2: Fp(0xea645deca881f974),
+                c3: Fp(0xdc3a0dea18ec8883),
+                c4: Fp(0x651a1e353fb1424),
+                c5: Fp(0xfeef68d87bd720ca),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x33bbd6c813043fcf),
-                    c1: Fp(0x3b9a79170a25e484),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2ccbe79625cec859),
-                    c1: Fp(0x1c4d721674076b83),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x313b99fb00f30390),
-                    c1: Fp(0x2433cbb808f58b63),
-                },
+                c0: Fp(0xd22a32d39724b2b3),
+                c1: Fp(0x79613d895da2ce24),
+                c2: Fp(0xbaa8c3f20159193b),
+                c3: Fp(0x256734fe83951fd6),
+                c4: Fp(0x41b4317e141b4816),
+                c5: Fp(0x40b1c7c9aef1907b),
             },
             z: Fp6::one(),
         },
@@ -3266,249 +2018,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xe9b6b12d3763a2c),
-                    c1: Fp(0x144c27932f9acb14),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x5f65941e67172f7),
-                    c1: Fp(0x3eefb1a5af6b1a02),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x40ae6b52180c1bc0),
-                    c1: Fp(0x3986f7feaeebe658),
-                },
+                c0: Fp(0x4305435f868a4277),
+                c1: Fp(0xac394c4ededd1224),
+                c2: Fp(0xe8d58b0405e6c7db),
+                c3: Fp(0x9fa77d55ccc09b2),
+                c4: Fp(0x59b2f0ccf062ea74),
+                c5: Fp(0xe21cd618c2fa0f18),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x34437b278abd2c66),
-                    c1: Fp(0x2bd7b37e9cefd04c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x368419828fe1e3d0),
-                    c1: Fp(0x3eee18da0a35116f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x244cfdb916349612),
-                    c1: Fp(0x39da08a26efc70e8),
-                },
+                c0: Fp(0xe81f3555b59f2b01),
+                c1: Fp(0xe7da9fa9e8550bf5),
+                c2: Fp(0xf475582b7055ee9b),
+                c3: Fp(0xc6a8541ef543ddb),
+                c4: Fp(0xdbccc94ac86e2a15),
+                c5: Fp(0xc686925e988e7c68),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x17d327c07ab31817),
-                    c1: Fp(0x9e5006772ec2908),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x63b2b5196f1db98),
-                    c1: Fp(0x16f715b68eab63fb),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x31f6ea981d9bcdf9),
-                    c1: Fp(0x65dcbf96ffc1af4),
-                },
+                c0: Fp(0x5a4c813bf2bca8eb),
+                c1: Fp(0xcb3355513e7ce20d),
+                c2: Fp(0x426e1b71e4da3bac),
+                c3: Fp(0x6172b97314fcc56c),
+                c4: Fp(0xd156ae902927d8f3),
+                c5: Fp(0x55092ec26a27a0a9),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x286bcaaa56380c78),
-                    c1: Fp(0xdfc6cb6553f6470),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3460bec1ee5dae48),
-                    c1: Fp(0x20b04adfbb44b91c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3b7b177ddc5c492f),
-                    c1: Fp(0xb8bf49cb4366195),
-                },
+                c0: Fp(0x7ea50cc2487a8f87),
+                c1: Fp(0x73f6042c1baa93e7),
+                c2: Fp(0x9531108f33052312),
+                c3: Fp(0x5a71db00fde3dcf2),
+                c4: Fp(0xd02abbe8bc89e665),
+                c5: Fp(0x15adaa2cfbd7a46),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xa7731d325abe684),
-                    c1: Fp(0x1193081fb7a9e7c1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3a4b7d2385f6d725),
-                    c1: Fp(0xb98399010bb17ef),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x16d3550087d84944),
-                    c1: Fp(0xc95eda685b60619),
-                },
+                c0: Fp(0xede96ee1b4b28d40),
+                c1: Fp(0xac4caf5686dd3bff),
+                c2: Fp(0xf78509a82b3471b4),
+                c3: Fp(0x4eaaddfd5ba0a761),
+                c4: Fp(0x6d068fb1e439d52b),
+                c5: Fp(0xc28d3e3ff2e77be1),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3f2977ba548a4eb),
-                    c1: Fp(0x1780a68bf5ec750e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x28d1e3630166f782),
-                    c1: Fp(0x277f877eb7241f8a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1a42e41469d62139),
-                    c1: Fp(0x394765e8e8f8a19f),
-                },
+                c0: Fp(0x7b0a21144b4fc389),
+                c1: Fp(0xaadaaba1ae1a143a),
+                c2: Fp(0xa00284d11cdbd2e8),
+                c3: Fp(0x4a7cfe0331493ca1),
+                c4: Fp(0x63bd553b8f163c50),
+                c5: Fp(0x8eb1a203e082ade1),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1a6df351fb5bffb3),
-                    c1: Fp(0xad3c3b4076076c3),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3dc7bf6f0fa6a027),
-                    c1: Fp(0x2afe8326f4ad9374),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x14b2c3b7c6398136),
-                    c1: Fp(0xfa53732d509a095),
-                },
+                c0: Fp(0xb5d3f26c32d28f40),
+                c1: Fp(0x5875a5b7e25a774f),
+                c2: Fp(0x48e35930f2eff717),
+                c3: Fp(0x7c46af9fc7c14f6),
+                c4: Fp(0xd4fbeceeeb2421d3),
+                c5: Fp(0x29a9124c7d146bae),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x31c43cdc3537c82c),
-                    c1: Fp(0xd8b87b2a8ee47ae),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x35d20886e2937ce1),
-                    c1: Fp(0x20f5fcbd89dfdff2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x145a4d462db77756),
-                    c1: Fp(0x25cafb3bb198aa89),
-                },
+                c0: Fp(0xd24a5170942d873f),
+                c1: Fp(0x5b6a1cdf1a2e78e1),
+                c2: Fp(0xd004eb19aeee9cbc),
+                c3: Fp(0x1cdc2114c4e159bb),
+                c4: Fp(0x5d2b64d0c3232a5f),
+                c5: Fp(0xe2831baa4245ec4d),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x674ecb7f6aafcfa),
-                    c1: Fp(0x3015796da9b99906),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x12b6dd54475ada80),
-                    c1: Fp(0x32b607b1193e03f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3cd091dceb48b903),
-                    c1: Fp(0x6fe9e0f8caeb878),
-                },
+                c0: Fp(0x9bea360afbe03df),
+                c1: Fp(0x90e350ee5b86d541),
+                c2: Fp(0xff2556a4fa997a98),
+                c3: Fp(0x2a1a8ea55c18ee32),
+                c4: Fp(0x8845a53fc52d33d9),
+                c5: Fp(0xc85f01755af1c16),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3bd0a2b7547846a),
-                    c1: Fp(0x3dba673e5c3631d5),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x230eca9769e10e9a),
-                    c1: Fp(0x234ccd0f6a81859a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3ef99a2ebb7cf891),
-                    c1: Fp(0x3b5cf2de6cc9bcea),
-                },
+                c0: Fp(0x2039b9d2d882e005),
+                c1: Fp(0xb83d53e6f36a57a),
+                c2: Fp(0xb3d50069bd010632),
+                c3: Fp(0xa8795bd5ff1b3fe8),
+                c4: Fp(0xc695726370d0ae10),
+                c5: Fp(0x4508787fe7115a4f),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1266f0024125b400),
-                    c1: Fp(0xc2f35acb7844d75),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x16e1668a7336512e),
-                    c1: Fp(0x2781caef8eebe120),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3706e26b8e80032d),
-                    c1: Fp(0x20475391ad5f235e),
-                },
+                c0: Fp(0x407fccbea3f50e2c),
+                c1: Fp(0x6862ba484fea94ac),
+                c2: Fp(0x37db567b52e5dd8a),
+                c3: Fp(0x9455055e4e773897),
+                c4: Fp(0x133e28b55ed6a6c1),
+                c5: Fp(0x28d416669e228161),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xd2ac4218f3da38b),
-                    c1: Fp(0x1e93e79ef34829a1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3b13f60092b0e9b2),
-                    c1: Fp(0x15ceb34f26e00815),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xac684e3ac0e48ab),
-                    c1: Fp(0x1e27ace28ac60fca),
-                },
+                c0: Fp(0xfa93bf002306c14e),
+                c1: Fp(0x890f5238b4ba2259),
+                c2: Fp(0x601b06cdea0d9e00),
+                c3: Fp(0xe1592793940d305c),
+                c4: Fp(0xcc9a12c5a472e0f4),
+                c5: Fp(0xe7b47faed19db7c9),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x30213649fa7cee16),
-                    c1: Fp(0x2696b4216577d14b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x17cf87cd9266e619),
-                    c1: Fp(0x10d9821ffa0f62f6),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1559e7cbd39b3ecd),
-                    c1: Fp(0x2c8fe6570e3877a2),
-                },
+                c0: Fp(0x8f3f765108c06d89),
+                c1: Fp(0x792ac7ecf5695131),
+                c2: Fp(0x75c3869e761d7733),
+                c3: Fp(0xf3de1604a9e3070b),
+                c4: Fp(0x6792a00538960a6c),
+                c5: Fp(0x2136e72a682c9d54),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xd1fd7c6ff714f08),
-                    c1: Fp(0x14dcafec109b1a93),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1971fddf26d0df31),
-                    c1: Fp(0x402e1050d23203b6),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1d5041bc9e493ce2),
-                    c1: Fp(0x2f134f05355272da),
-                },
+                c0: Fp(0x915fcdefeba28ff),
+                c1: Fp(0x4f5b31ddec84df1b),
+                c2: Fp(0x736872688ae81cbc),
+                c3: Fp(0x78c1fd8536249f93),
+                c4: Fp(0xad4111a7aabb3c63),
+                c5: Fp(0x6dc774bf40505958),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1b96d0165cf00e69),
-                    c1: Fp(0x23c5a6de8e153553),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2783cac51e2322f4),
-                    c1: Fp(0x39c1eb85e113f522),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x28530f6903a5b00a),
-                    c1: Fp(0x1cfbf28ed81bb387),
-                },
+                c0: Fp(0xad957bc80e8e9ceb),
+                c1: Fp(0x189d7c6deebc7ac5),
+                c2: Fp(0x7924329f38b20efe),
+                c3: Fp(0xda91d3c25f18a998),
+                c4: Fp(0x84a6cbdb85d7db36),
+                c5: Fp(0x508439e82c0d5c7e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3c6d5f9a0e247861),
-                    c1: Fp(0x25e6defcd8a53bba),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x6fe4fb445c78e84),
-                    c1: Fp(0x343c36af674da4e2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3951e424d04e245b),
-                    c1: Fp(0x12b3aca7791d1ed2),
-                },
+                c0: Fp(0x65b7dce83f66b157),
+                c1: Fp(0xea45788009d31faa),
+                c2: Fp(0x53aeefc07f16c231),
+                c3: Fp(0x9bb88e448bd67d99),
+                c4: Fp(0x2061d1eebd83b588),
+                c5: Fp(0x79ddc35562b797a8),
             },
             z: Fp6::one(),
         },
@@ -3516,249 +2172,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x29efc6d5b9c0f0a8),
-                    c1: Fp(0x1e81d2d86001f0c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3482ccb9d6525897),
-                    c1: Fp(0x10544fd5c8c7e58b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3d7ab4552caf7169),
-                    c1: Fp(0x3ac288d12eebf49c),
-                },
+                c0: Fp(0x576d1290c5a0c30d),
+                c1: Fp(0x36e7350334936b73),
+                c2: Fp(0x44183b6ee1e2cc31),
+                c3: Fp(0x55fa02f582cd086b),
+                c4: Fp(0xe5d28ca901032ebc),
+                c5: Fp(0x1e8897f435b8675e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x40c09d8c1eb4d444),
-                    c1: Fp(0x18a6b7f8a49184b8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2ec430cd5f5639d2),
-                    c1: Fp(0x2bdc44e9a799f5d0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2e2e1e0247fd4cee),
-                    c1: Fp(0xa5db6d56a7d83e3),
-                },
+                c0: Fp(0x33d0a938c882ea61),
+                c1: Fp(0x13151dfbf2a9ab34),
+                c2: Fp(0x322a2d7b91eb197c),
+                c3: Fp(0xad239fe0f2bd2ab8),
+                c4: Fp(0x1e600124557e09ad),
+                c5: Fp(0x848389d19c6cff91),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x48712e2cd4d5688),
-                    c1: Fp(0x2dd4a01b3f7f9557),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x117db0b1e16d65a9),
-                    c1: Fp(0x144462f08b661b61),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xd7827b1df4bf60d),
-                    c1: Fp(0x1bbbdf3485c6e93e),
-                },
+                c0: Fp(0x4cbe8ea64ebfe9c),
+                c1: Fp(0xfa66c753b4a9304d),
+                c2: Fp(0x3880542636cb0672),
+                c3: Fp(0x54eab86c38f0e599),
+                c4: Fp(0xc8bbfd68d40efb54),
+                c5: Fp(0x57abb2ad1e212b20),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x35f90d88e190d17),
-                    c1: Fp(0x25f83cc756301ea6),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2bd6da0430e90832),
-                    c1: Fp(0x6aa65703273bb2a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2a72e4f05785e6),
-                    c1: Fp(0x1658e3d44859628b),
-                },
+                c0: Fp(0xf662dbcedb489e3f),
+                c1: Fp(0x6efbda7ea074c2dc),
+                c2: Fp(0xe693bfd3d2e6ce80),
+                c3: Fp(0x3d3ba1e929c2300),
+                c4: Fp(0x4f6e568e6636dd2),
+                c5: Fp(0x4cd05cdf3ac94397),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x8f2d1d6bdfd8eca),
-                    c1: Fp(0x5e97618bb73c167),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x22232a3ea92f6543),
-                    c1: Fp(0xfc1d4550fc6ede9),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x29d338c53b0d32e4),
-                    c1: Fp(0x9c3f6334972a7ed),
-                },
+                c0: Fp(0x2ab5e1d9d012ed51),
+                c1: Fp(0x35dc071288bee101),
+                c2: Fp(0xf9d713693b500fc6),
+                c3: Fp(0x7fbe402bbe696ae8),
+                c4: Fp(0xfd0b9bf6de4aa6c),
+                c5: Fp(0x413521d3d1270a2b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x13714bafd118c4f6),
-                    c1: Fp(0x151404481a6706ec),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1da2cc09988643b7),
-                    c1: Fp(0x3424f25aa80b1d01),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x38b31c50531391fc),
-                    c1: Fp(0x12571c3d79b23814),
-                },
+                c0: Fp(0x8b766243e53ee209),
+                c1: Fp(0x87a1e3c01329d7f9),
+                c2: Fp(0xf4c4eeec09203c1),
+                c3: Fp(0x6d3b92355664ed16),
+                c4: Fp(0x2edf685e3fdba21f),
+                c5: Fp(0x3feaadb7817ccd76),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x412cea24f55b1b90),
-                    c1: Fp(0x38e0e0998ec23e7c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x29fe1cfb8877b160),
-                    c1: Fp(0x1e5a45f048cb504e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x33cd9397d5e2bcf1),
-                    c1: Fp(0x3baca0be86ce6bde),
-                },
+                c0: Fp(0x850f4cd99d3557e3),
+                c1: Fp(0x49f50222e8a4254),
+                c2: Fp(0xb0f0a43b08208872),
+                c3: Fp(0xd60da3be07bdb084),
+                c4: Fp(0x880e92d9bdd000e0),
+                c5: Fp(0x7f2ba665618faa07),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1fcec5c26059ce10),
-                    c1: Fp(0x317819986be7047),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3a11ee896a6d16c9),
-                    c1: Fp(0x3af9b96fb4a1ead8),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2e2494eb7ac6dcd9),
-                    c1: Fp(0x1646846eabfae155),
-                },
+                c0: Fp(0xae02a9537fb26538),
+                c1: Fp(0x21c96221559a635),
+                c2: Fp(0xb9022c5bc337f174),
+                c3: Fp(0x893ccaa0ee02ef43),
+                c4: Fp(0x97091c91ae5a708b),
+                c5: Fp(0x8ba88ae847916105),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3f022e8949259ebb),
-                    c1: Fp(0x3c1257af2cf47695),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3bde598eb60994fa),
-                    c1: Fp(0x3b3682121cab309),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1ada5463a22cdc2a),
-                    c1: Fp(0xbdb1cdfbab054a8),
-                },
+                c0: Fp(0x46fadcc7f8e418aa),
+                c1: Fp(0xef2e49b7a5033053),
+                c2: Fp(0x73841526702c3089),
+                c3: Fp(0x9958e556a53d29a0),
+                c4: Fp(0xc12c3c525ad5607f),
+                c5: Fp(0x58f0160a7e1df387),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x17f7ae0d2899c057),
-                    c1: Fp(0x312902708dfa187),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2e8b7877f1289de9),
-                    c1: Fp(0x2e18563f57019b1a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3e3b1f0e27c22536),
-                    c1: Fp(0x2811058ed39989da),
-                },
+                c0: Fp(0xeeabbe2727e4ade0),
+                c1: Fp(0xb11054386c48c952),
+                c2: Fp(0xa2f95a7bff9d8b8e),
+                c3: Fp(0x8bbd81a6c1e4d4c3),
+                c4: Fp(0xde0fc53ae7a1af71),
+                c5: Fp(0x8c99568d06add62e),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x379a72ae64f630f3),
-                    c1: Fp(0x256ca157e274e717),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xe1d5df21642ad2e),
-                    c1: Fp(0x2d0b04e15b8dcb8),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1d7040a6e5d26c96),
-                    c1: Fp(0x38d9026ae5cb799b),
-                },
+                c0: Fp(0x1016459c467c6387),
+                c1: Fp(0x6f2bbc7432ffdcd8),
+                c2: Fp(0x9628f7732b593241),
+                c3: Fp(0x11d4e577136128e5),
+                c4: Fp(0x8f9f6aa9cd19d816),
+                c5: Fp(0x498ab754838c11fe),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x28649616d6f072fb),
-                    c1: Fp(0x2c41b76238c0f967),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x73d7682032d154a),
-                    c1: Fp(0x20aa64ff109a88ef),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x5eb461c616d7c39),
-                    c1: Fp(0x39f55ba5cc6f1bd3),
-                },
+                c0: Fp(0x6f6d64587f0abe8c),
+                c1: Fp(0xad7f31a70b2aabd4),
+                c2: Fp(0x2b07abea15bf78cb),
+                c3: Fp(0x19fc282ec5c95a24),
+                c4: Fp(0xad0ee31d3b567e12),
+                c5: Fp(0xbae4e124c2e50615),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3199040eab64f700),
-                    c1: Fp(0x1c67705995d9247d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3aa56a110ccd3d0a),
-                    c1: Fp(0x2d05a49af05ad474),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x5c76b5024113609),
-                    c1: Fp(0xa31896ee3b1e836),
-                },
+                c0: Fp(0x2c8caeff2ee042f1),
+                c1: Fp(0xa7e2b8e9d21b6c67),
+                c2: Fp(0xd1fc60fd008350b),
+                c3: Fp(0xc0fc619bb35b96ae),
+                c4: Fp(0x5fe86d424c1708d8),
+                c5: Fp(0xe5c63531e3ca5b09),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3571e660b1c3252e),
-                    c1: Fp(0x357af3fd94b8df6c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2b11b5374b7fbc93),
-                    c1: Fp(0x11fa5cb4d8a5c710),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x36399a755133e553),
-                    c1: Fp(0x2c503910e6ee504a),
-                },
+                c0: Fp(0x88645ea406154d2b),
+                c1: Fp(0xce728869b28c512a),
+                c2: Fp(0x544e4e0357320821),
+                c3: Fp(0x1b1f6a243be3883a),
+                c4: Fp(0xe36b66f543836003),
+                c5: Fp(0xf999b391602396f1),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3410ac2429b3389),
-                    c1: Fp(0x27c91aa80d48e721),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3d178ab4fc64380d),
-                    c1: Fp(0x20328cc079819eef),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x35c7ed4abff10af0),
-                    c1: Fp(0x32db1b34c6e5bce4),
-                },
+                c0: Fp(0xd2b7c29339020363),
+                c1: Fp(0xd95f84718552446f),
+                c2: Fp(0xa7dc05c29349dc42),
+                c3: Fp(0xc98a9e6e8c8fbf06),
+                c4: Fp(0x3da743e45c03062e),
+                c5: Fp(0x349851b6573616ea),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x37c488ded3e1ca49),
-                    c1: Fp(0x19a363a08837bf7c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x334c1e638ed46e7),
-                    c1: Fp(0x3a1cd480fe2582f0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2883ade49461f016),
-                    c1: Fp(0x2f5beafd6caf5b3c),
-                },
+                c0: Fp(0xe0cf46226d11fabc),
+                c1: Fp(0x5c77e0394cddea94),
+                c2: Fp(0x9bda2d9434f48985),
+                c3: Fp(0xa000573b7392341c),
+                c4: Fp(0xf5b2741144d958a5),
+                c5: Fp(0x90fba782691d738d),
             },
             z: Fp6::one(),
         },
@@ -3766,249 +2326,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xcbad61a3747f1c5),
-                    c1: Fp(0xe92783a676f0576),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x4086a138c95044bd),
-                    c1: Fp(0xac02bc45c5bdd1),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x375f7efe914c115a),
-                    c1: Fp(0x17e72a1d9a22be62),
-                },
+                c0: Fp(0xe9a6157f0dcff242),
+                c1: Fp(0x91ad1b8c545292c8),
+                c2: Fp(0x62c450a87c0373c4),
+                c3: Fp(0x653c212eaa9be27d),
+                c4: Fp(0x50e020f2c779d587),
+                c5: Fp(0x26b93872187843da),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1d567c20da6324c3),
-                    c1: Fp(0x5571bfaed1ca48a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x415888ffc5b8591a),
-                    c1: Fp(0x3fd588d564fd9a5b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3afea2ac950563d7),
-                    c1: Fp(0x1559e9f806820298),
-                },
+                c0: Fp(0x3633f22a4b4d2160),
+                c1: Fp(0x4c7c9aa0bfcbc5df),
+                c2: Fp(0x788048c0d35fa3e4),
+                c3: Fp(0xc4fc4424a43095cb),
+                c4: Fp(0xbe3e32c2c1ea4472),
+                c5: Fp(0xd9ed7b9f1e0d500e),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x47b761b526591a),
-                    c1: Fp(0x34d071a2071006c0),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x292d05e5de049ef6),
-                    c1: Fp(0x35a7885650978e89),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x241162f955ed73e2),
-                    c1: Fp(0x27b7ac69f4cb1b4f),
-                },
+                c0: Fp(0x87441b1ba1511a90),
+                c1: Fp(0x32a3799b1aa8240c),
+                c2: Fp(0xabe5bf0f311e94d5),
+                c3: Fp(0x597eccb05c1a32c7),
+                c4: Fp(0x83da74101a81d88b),
+                c5: Fp(0x1f2b62a72c6b955b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2c4fcfaf2b31d075),
-                    c1: Fp(0x3bc0165a172aa917),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3c3702acfd0fc921),
-                    c1: Fp(0x2b47a6d9ed3e0b97),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x22c84d61d2644759),
-                    c1: Fp(0x5c28a479b2ff91b),
-                },
+                c0: Fp(0xcb5f369afcaab88d),
+                c1: Fp(0xcc68da72e2c62b55),
+                c2: Fp(0xd634f29bc590f3f0),
+                c3: Fp(0x49064d6397d449fb),
+                c4: Fp(0x9a3aa25a028cb5c7),
+                c5: Fp(0x588088f09128eb63),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1b3acd0400865aed),
-                    c1: Fp(0xe47253ca19d861e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2a39e8c1a5c7765b),
-                    c1: Fp(0x28560d1aa00722b2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x264193c9e75239da),
-                    c1: Fp(0x1a5088158743e445),
-                },
+                c0: Fp(0x720fd090b139d70a),
+                c1: Fp(0xeec7fd9d340bab28),
+                c2: Fp(0xdffb3219b968019c),
+                c3: Fp(0x2e8203a2180879c2),
+                c4: Fp(0xc1f942a179f4b1ef),
+                c5: Fp(0x14a45796854f9677),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x892d56a02393b3a),
-                    c1: Fp(0x22ac24db36ee18de),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1267063834e3a9d1),
-                    c1: Fp(0x22ff952adf36d2bc),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3c11f4fd974b92d1),
-                    c1: Fp(0x3e94b1e61150de02),
-                },
+                c0: Fp(0xd939eca70fa5854f),
+                c1: Fp(0x7000d8f34e5f0173),
+                c2: Fp(0xe9383aed0f5c2b83),
+                c3: Fp(0x6b3bcb4bcaa56d30),
+                c4: Fp(0x428fc94df6dfe796),
+                c5: Fp(0xd4d4ebf1557e230c),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3c246766d7271127),
-                    c1: Fp(0x1ea6f2c7b1ba7eaa),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x122ca2b8e6e2e33c),
-                    c1: Fp(0x351d5bfb5074134c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x113843ac958995b3),
-                    c1: Fp(0x4a0a013cbdbf81c),
-                },
+                c0: Fp(0x739897b50d7e6452),
+                c1: Fp(0x7b98c09584e8192c),
+                c2: Fp(0x10fd3243bdf88027),
+                c3: Fp(0x16b58dc39fc3f960),
+                c4: Fp(0xc509447331b02817),
+                c5: Fp(0x4e944988ad556eeb),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x5cd2f99b33f0381),
-                    c1: Fp(0x3d75d854fbf133ab),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x29b5b0f23bad1474),
-                    c1: Fp(0x7e2c16756be6cf2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x305009ef75fec960),
-                    c1: Fp(0x14d4da04bf855ba4),
-                },
+                c0: Fp(0x4e4b087cf4441ab6),
+                c1: Fp(0x5f8221c1e2e7ac66),
+                c2: Fp(0x83e821f901fd02fd),
+                c3: Fp(0xa6c7c661aef76d1a),
+                c4: Fp(0x26c00aa4f8d2e65),
+                c5: Fp(0xeacd6a3942f220a8),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xe10eac97cb16922),
-                    c1: Fp(0x244f3254b1b81419),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x4005f5dcc39ec917),
-                    c1: Fp(0x116116d7baf1cba6),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x12db56aab48e7183),
-                    c1: Fp(0x38b6d6dca05efb7c),
-                },
+                c0: Fp(0x4362db003470a59e),
+                c1: Fp(0x7f7f8397b9514cce),
+                c2: Fp(0x76832c6c4259035),
+                c3: Fp(0x5da6eae869648a4),
+                c4: Fp(0xca7740d69f0b6d58),
+                c5: Fp(0xe18ccae476db5e8c),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x193c9a72190a380a),
-                    c1: Fp(0x309958838a4bf926),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2696544ddfc21e2b),
-                    c1: Fp(0xda5931905e0ef9d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x158b6afc26a5cdd0),
-                    c1: Fp(0x28f7b8f575f03f24),
-                },
+                c0: Fp(0x82699e1e26c19da4),
+                c1: Fp(0x8067c3488b695c04),
+                c2: Fp(0x7533948a3b22a84f),
+                c3: Fp(0xec471a820e6103db),
+                c4: Fp(0xbf214744d1d94814),
+                c5: Fp(0x297c80351a099100),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x138c64e067c84710),
-                    c1: Fp(0x244f80a033ee859b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1a47a5143700c7c5),
-                    c1: Fp(0xe2e3385bd024013),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x164b5a44cf388270),
-                    c1: Fp(0x318d0aed18b9f8be),
-                },
+                c0: Fp(0xa3d99335c2852cdf),
+                c1: Fp(0x9c74aefd6914ee5d),
+                c2: Fp(0x57690f8adee79836),
+                c3: Fp(0xed73f25a0d032f70),
+                c4: Fp(0xd2e8942d5fb48787),
+                c5: Fp(0x17c0836f53db1ac0),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x9e556a72bc76369),
-                    c1: Fp(0x1d19c1ad5dc9a284),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2a022254fbd3aca1),
-                    c1: Fp(0x3c3153540ef43c06),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x33e2fc2ce7a71d89),
-                    c1: Fp(0x1a8ff91fe3ab9c7c),
-                },
+                c0: Fp(0x98c1f2bea0b66d3),
+                c1: Fp(0x337f92bf70fe715f),
+                c2: Fp(0x3bce2fddeedd4377),
+                c3: Fp(0x9a10e2c3c86a651c),
+                c4: Fp(0xee99345e77c229fd),
+                c5: Fp(0x96407623dae013e8),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x184d234e398a929e),
-                    c1: Fp(0x4e7115428ccedd5),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1b742cd4cebc2187),
-                    c1: Fp(0x2939250a10b29893),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2c65a3d31c912152),
-                    c1: Fp(0x350afa48a0e19208),
-                },
+                c0: Fp(0xa266d7baf7d3b6c2),
+                c1: Fp(0x38c7666363c7cdb1),
+                c2: Fp(0xe9abd6e58f33702c),
+                c3: Fp(0x16d1c3ea27ad202b),
+                c4: Fp(0x7e63f662b2370cdd),
+                c5: Fp(0x9643b6c5949baaf1),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x183e4cd41fa0ab67),
-                    c1: Fp(0x82b530b8ac15ac),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1966937b52aa6b95),
-                    c1: Fp(0x113a87848fcdfe1),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x23c2a25704b19afb),
-                    c1: Fp(0x19a4f7b0009bd399),
-                },
+                c0: Fp(0xc6ba540930653973),
+                c1: Fp(0xa4d7bdf155da36b0),
+                c2: Fp(0xd05bcb6a54a8c47),
+                c3: Fp(0x41388f44048880a6),
+                c4: Fp(0x15330853448c40f0),
+                c5: Fp(0x1edc20cacd4725aa),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x17212e39549d0662),
-                    c1: Fp(0x36e2335722230e9b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x33e399cc52bf049),
-                    c1: Fp(0x153bafc9d53e7e9c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3c913754056595),
-                    c1: Fp(0x37ee9da99a0f0fbf),
-                },
+                c0: Fp(0x29707b2b2f7768c5),
+                c1: Fp(0x279adcff3cb7f56e),
+                c2: Fp(0x88b3127db42899da),
+                c3: Fp(0x3153d769dde71123),
+                c4: Fp(0xdac1537473b30ea0),
+                c5: Fp(0x58d311e55b53d329),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x23f93d5990ccc38f),
-                    c1: Fp(0x39315f80594b895a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x411159f03f84deb4),
-                    c1: Fp(0x120936d1b229bf46),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2f92335eb7752880),
-                    c1: Fp(0x262258272156bbfa),
-                },
+                c0: Fp(0xcc2b7fbe39151c37),
+                c1: Fp(0x4612398c1bfb9417),
+                c2: Fp(0xe2b7faffb93c9457),
+                c3: Fp(0xd3a34218e57b2514),
+                c4: Fp(0xdbe8085def38d827),
+                c5: Fp(0xb31cde82baab4eb9),
             },
             z: Fp6::one(),
         },
@@ -4016,249 +2480,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1fe604e53b1618bc),
-                    c1: Fp(0x15c25d4f69454a66),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x345519e1ea3fb422),
-                    c1: Fp(0x3878111ed391eb72),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x142eaade50a3b6d4),
-                    c1: Fp(0x32e10970347596aa),
-                },
+                c0: Fp(0x1840e04fec484266),
+                c1: Fp(0x2f12137e0bf7144d),
+                c2: Fp(0x2475e55ab121d7c5),
+                c3: Fp(0xe25499363197d51c),
+                c4: Fp(0x5eaebc9210fd152a),
+                c5: Fp(0x190973f7387854c6),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2accc4424b7690ea),
-                    c1: Fp(0x10de80d7049a7964),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x20654776777bfecb),
-                    c1: Fp(0x1aa712d7d95860e5),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x28e32be25bdd62c2),
-                    c1: Fp(0x40c4f085a7d99c13),
-                },
+                c0: Fp(0x9db907e6b449f037),
+                c1: Fp(0x409e4478af283f5d),
+                c2: Fp(0x7b69b6cd6dfa85cd),
+                c3: Fp(0xcad55b07b705cba9),
+                c4: Fp(0xc2b0e272e32e7302),
+                c5: Fp(0xb8726b125e6f5229),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x31f8d0428e5bbc8),
-                    c1: Fp(0xd26d627a47c1ebf),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x8b2b0621bb03030),
-                    c1: Fp(0x1f31f31b57e942cd),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x29caed7379a8231a),
-                    c1: Fp(0x196b141b3eef2c6f),
-                },
+                c0: Fp(0xe3402fe546187956),
+                c1: Fp(0x4d0816ee45a77692),
+                c2: Fp(0xb5b00df940b354af),
+                c3: Fp(0x2221ffc7c6db285f),
+                c4: Fp(0x3b5ada2f9cbb5eb1),
+                c5: Fp(0x6974e85e5f19a12e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xfb176c189f3b510),
-                    c1: Fp(0x3d86b3f0d180ba03),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3ce5543993af1969),
-                    c1: Fp(0xe0ce40890925964),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x83a79e72cf782dd),
-                    c1: Fp(0xf067c0b161bd458),
-                },
+                c0: Fp(0x537ef7afbd870aaf),
+                c1: Fp(0x5f8fde0d669d311b),
+                c2: Fp(0x9faaaba5cf162f99),
+                c3: Fp(0xef02302291859e75),
+                c4: Fp(0x565f9e06179c08f8),
+                c5: Fp(0xa82c964abf04f6d2),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x26b60723a0e2416a),
-                    c1: Fp(0x23f8d72f69ccfc5c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1aab273331f79121),
-                    c1: Fp(0x29fd41720e0b770),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x15953b8f441f60ac),
-                    c1: Fp(0x2444c6c4f4bb8c71),
-                },
+                c0: Fp(0xadc739bab43fd929),
+                c1: Fp(0x268eb4c86f144d7c),
+                c2: Fp(0xe5bc2be6c3596d6b),
+                c3: Fp(0x76d6a794807f103d),
+                c4: Fp(0xeb3ef5d058a472c7),
+                c5: Fp(0x9614c29b2ad030f1),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1017f4722c9397ed),
-                    c1: Fp(0x3feefb24f8dad7f6),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x15ddde4d1ec41db),
-                    c1: Fp(0x6d8f656682778a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3b75aa7a4f27b99f),
-                    c1: Fp(0x28c48b4c2260ce1),
-                },
+                c0: Fp(0xbb80e00e526326c8),
+                c1: Fp(0xc50bc17af8ecca7a),
+                c2: Fp(0x1f52c21e17b0def),
+                c3: Fp(0xd258abdfe0c7b821),
+                c4: Fp(0x5eb7689c54cd7f36),
+                c5: Fp(0x5f4f370c04811b6d),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xefe308ffe9ed1f0),
-                    c1: Fp(0x41090e100320c2e7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1f98defe7a37cf3a),
-                    c1: Fp(0x2814b8f49d9618d7),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x154a99a5808056e9),
-                    c1: Fp(0x3e816c14ebe54a8),
-                },
+                c0: Fp(0x5d2870e6aa54eb1b),
+                c1: Fp(0xbd7cbc2eeb175094),
+                c2: Fp(0x2a8eb346c420141c),
+                c3: Fp(0x89111f132646b9cc),
+                c4: Fp(0x2702b52a1594468c),
+                c5: Fp(0xc12d981ca4cfe5ad),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xf4d15b09cd2007f),
-                    c1: Fp(0x10c15085c3c6c60c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1e9b455d099d538f),
-                    c1: Fp(0x1cad8448bac540d0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x22593c0b391bbdca),
-                    c1: Fp(0x17a2f9bc6aeb8acf),
-                },
+                c0: Fp(0x1885d4e554d526c8),
+                c1: Fp(0x9f831d4d323c3367),
+                c2: Fp(0x9fe220f93d4ba75),
+                c3: Fp(0x415dfd4ca7c7b998),
+                c4: Fp(0xa0e1c74b0a4028c3),
+                c5: Fp(0xf55821a1abd23b5f),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2e56a899e9c574dc),
-                    c1: Fp(0x200e58760f65bdd2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2e0df8ea348e2a9e),
-                    c1: Fp(0x3ad634c67ac15873),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x173928f377ff0640),
-                    c1: Fp(0xb5260c3d0c1b807),
-                },
+                c0: Fp(0xe25da02c1e03ff5f),
+                c1: Fp(0xcc6105ba02f4f74b),
+                c2: Fp(0xfc3585de9c3e0f6a),
+                c3: Fp(0x9ce597ccb87764cf),
+                c4: Fp(0xa833f941e97499b4),
+                c5: Fp(0x101e0b2d5a682a54),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x33afe2d0202a9899),
-                    c1: Fp(0x255a5bcc08350560),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x8b7db91db33bc52),
-                    c1: Fp(0x2cc395e0e4efeb77),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2ebc64dbca103da8),
-                    c1: Fp(0x3db9cdc55dd1b012),
-                },
+                c0: Fp(0xc6adecb8bf4c33d7),
+                c1: Fp(0x5c3f15d240968979),
+                c2: Fp(0x65fa18e26dc831b7),
+                c3: Fp(0x825f563688dbfee4),
+                c4: Fp(0x90bdd5037db9e793),
+                c5: Fp(0x90997e598582dcac),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xf146ef542729cf4),
-                    c1: Fp(0x104cda0726d89f51),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x13b263bb00eb08c2),
-                    c1: Fp(0x3727c23766f5ae29),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1147c57300b7d71a),
-                    c1: Fp(0x14841ac15c35a0ea),
-                },
+                c0: Fp(0x7fa975d6d71aa2bb),
+                c1: Fp(0xe9b5712465ff2a3d),
+                c2: Fp(0xa12aeb2e5b4c2116),
+                c3: Fp(0x9c857cb8578f3a70),
+                c4: Fp(0x8a63ade5b55d8ca4),
+                c5: Fp(0x2313caa7db2766bb),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x475ab387825ae26),
-                    c1: Fp(0x40f4263660073e82),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x201e3ceefa7235e3),
-                    c1: Fp(0x209211ccedea02c7),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xdf1ee4c601507d3),
-                    c1: Fp(0x10babc8bce28663a),
-                },
+                c0: Fp(0x7798eec256f92436),
+                c1: Fp(0xdf95702143c4a746),
+                c2: Fp(0x82d58fd147ca8496),
+                c3: Fp(0x5426ed40e3c3503),
+                c4: Fp(0x163718ad3878fca4),
+                c5: Fp(0xcd20ab94d45383a7),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x17e28e9246d2a3bb),
-                    c1: Fp(0x3c82a79eeae7238e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x30a0d5c71fc133ef),
-                    c1: Fp(0xd55e82db1ff55a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xfcaee69dceb8ea0),
-                    c1: Fp(0x3c3bf2b61eb6a7e7),
-                },
+                c0: Fp(0x13ba3e0ff4398f03),
+                c1: Fp(0x846bc6d2cc52a06c),
+                c2: Fp(0x17a67c8bccf176d5),
+                c3: Fp(0xb9f0324cb1205d4d),
+                c4: Fp(0x12be5803710acd7f),
+                c5: Fp(0x7a1a1781fdbc452c),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x383d8b0beb0f7764),
-                    c1: Fp(0x32615a4e1a227fb1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x40c1b7d5ad253d3b),
-                    c1: Fp(0x3452c0e87a920029),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x4142ec91100892c3),
-                    c1: Fp(0xf82de63212a9349),
-                },
+                c0: Fp(0x9637173ba07c6d0b),
+                c1: Fp(0x2a4c5ee45e11f3a1),
+                c2: Fp(0x7c290817e5cd3efe),
+                c3: Fp(0xd694f032e70d5fa6),
+                c4: Fp(0xf1b0e6baf0f9542d),
+                c5: Fp(0x1cb4fa581392e8d4),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x297d243f72013bd6),
-                    c1: Fp(0x15f388a6d9d41ca0),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2675b2051a600774),
-                    c1: Fp(0x22cf185c5cad745e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x14572766fd26ea16),
-                    c1: Fp(0x2ec2039d97230762),
-                },
+                c0: Fp(0x9a1fb07590007947),
+                c1: Fp(0x2c764507965ed5d2),
+                c2: Fp(0x3c93826611c6b860),
+                c3: Fp(0x18977a29adf540e8),
+                c4: Fp(0x3e54820e1ed6683b),
+                c5: Fp(0xff19d012771d8eb1),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3ac8e307fd5029c7),
-                    c1: Fp(0x367ba9f27280c4fd),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x326e9d0df904180a),
-                    c1: Fp(0x6af129d513f683b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x145eba537847b3ba),
-                    c1: Fp(0xa6947c1cc4de8b4),
-                },
+                c0: Fp(0xcfc27d8b59d11d24),
+                c1: Fp(0x587a720da19993ba),
+                c2: Fp(0x3d545e196228fe12),
+                c3: Fp(0x86a4e268afcc7832),
+                c4: Fp(0x98ea3e6769347c0d),
+                c5: Fp(0xf02e2fcc272e374d),
             },
             z: Fp6::one(),
         },
@@ -4266,249 +2634,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x35ace11388d80d9f),
-                    c1: Fp(0x27b6e2dc46b363b3),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3348a485e0ad904a),
-                    c1: Fp(0x268b9d098ee8d348),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x26d7b26d54936578),
-                    c1: Fp(0x290a4c60e9fb3c36),
-                },
+                c0: Fp(0xc105a5aaab8281a9),
+                c1: Fp(0x809459cfb754f33e),
+                c2: Fp(0xb136b6c9a23c9a69),
+                c3: Fp(0x94c09306034c0e1),
+                c4: Fp(0xc06d730d50145067),
+                c5: Fp(0x494ac87c55f77d66),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3fa7ab576ecf652d),
-                    c1: Fp(0xb94f8d1180412ba),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3cafbc36cea92220),
-                    c1: Fp(0x1f47a18de37b8926),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x29e5d28d925b11fe),
-                    c1: Fp(0x17da48b01eac592b),
-                },
+                c0: Fp(0x6aaabb93221dd586),
+                c1: Fp(0x9652f3c2275786a4),
+                c2: Fp(0xacee591104c09c75),
+                c3: Fp(0x79ed356e5800a8c4),
+                c4: Fp(0x4bec8f16b079b6bb),
+                c5: Fp(0xde7ed76b2bc2eaf7),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3be699cae7341033),
-                    c1: Fp(0x34ba0b99d5a6439d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xc6adfd9b7874e18),
-                    c1: Fp(0x4174b5849eeaed),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x135dfa87f113363d),
-                    c1: Fp(0x3b4c2f45cbbc96e3),
-                },
+                c0: Fp(0x821f22ed2b161453),
+                c1: Fp(0xe61a1bd820c86c29),
+                c2: Fp(0x3e0316f0f803fa72),
+                c3: Fp(0x7c630b579dd4c0ce),
+                c4: Fp(0x6d244d513cb6ba1f),
+                c5: Fp(0x83c977569326223d),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2ee6f757fc0671f5),
-                    c1: Fp(0x5c06a328bbf2046),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x381f81a3820bb853),
-                    c1: Fp(0x1cb62c44e2dc8776),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x30657c08bab6d7cf),
-                    c1: Fp(0x380f93f2c3012faa),
-                },
+                c0: Fp(0xf6fa4fbcdfe6bdcc),
+                c1: Fp(0x2c89ed7803c2628),
+                c2: Fp(0x7f5a01a19e7d1655),
+                c3: Fp(0x316b3e33585ea8c0),
+                c4: Fp(0x1a374f7ce07a8f9),
+                c5: Fp(0xca1ae03af5940ac8),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x30a2e880fed2d926),
-                    c1: Fp(0x278634dfaa1f61ca),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x135d0e99d77e5964),
-                    c1: Fp(0x2d9d0302674b1ebe),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3431649aa5919fbf),
-                    c1: Fp(0x26e4fb11969ba74f),
-                },
+                c0: Fp(0x600dbc073512da73),
+                c1: Fp(0xb90baab4f36682fe),
+                c2: Fp(0xc1ce0dd4fdffc105),
+                c3: Fp(0x5257d8ef4eb94ffb),
+                c4: Fp(0xa0f0b7a7920068f1),
+                c5: Fp(0xf26cca4da559e0fe),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x25ebe1067197d8eb),
-                    c1: Fp(0x22a3420446c1b8fe),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x330df8b2986df003),
-                    c1: Fp(0x3bde4a3ba9a76d01),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x14cb1ad312d6fafd),
-                    c1: Fp(0x23101b670a373b83),
-                },
+                c0: Fp(0xfbdbd3756deedc4b),
+                c1: Fp(0x7ce0c0d674d9dc02),
+                c2: Fp(0x2b1886e171458084),
+                c3: Fp(0x6e83b8811173521b),
+                c4: Fp(0xa5a007e7d140d9e6),
+                c5: Fp(0xb8d337e634ba25d0),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x17c5be9e63c8073b),
-                    c1: Fp(0x3d55db029d7b62ec),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2cb73a99b37c577c),
-                    c1: Fp(0x15748f005d292447),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xd3feb4c00f4c582),
-                    c1: Fp(0x169f01505f408e34),
-                },
+                c0: Fp(0xe76d23dd24f9d31a),
+                c1: Fp(0x60b6cc438117abab),
+                c2: Fp(0x4734a4b60b8a47c2),
+                c3: Fp(0x430d3d6b7cb46894),
+                c4: Fp(0x89f385a8349cacaa),
+                c5: Fp(0x5e7811a582d71ed7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3139fb55b887425),
-                    c1: Fp(0x222abe45d11d4a83),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1b11706d5c8402e3),
-                    c1: Fp(0x1d74171322ebc4ae),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x62af604f15a7562),
-                    c1: Fp(0x1bbd08887fa7fc0a),
-                },
+                c0: Fp(0x479e9f93e86484cf),
+                c1: Fp(0xa22874580eccf98a),
+                c2: Fp(0x129c81b131f07a5),
+                c3: Fp(0x69403c1db1a2e15f),
+                c4: Fp(0xdabf3c4b22d18af2),
+                c5: Fp(0x27999ec879bd7a3e),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x25c6ed0278ed2155),
-                    c1: Fp(0xbccd6638d2d8b7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1fa871104b28c341),
-                    c1: Fp(0x3d2e43af4463be9b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xe4c666d16719141),
-                    c1: Fp(0x28d2025e5850822a),
-                },
+                c0: Fp(0x88e05160057cb53d),
+                c1: Fp(0xcb11141d62c4285d),
+                c2: Fp(0xbcb34c72e0fee9bc),
+                c3: Fp(0x4aa4235d8733a3ea),
+                c4: Fp(0xbc3015e1036f72bd),
+                c5: Fp(0x25b0935e4be6a687),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3acb03b377c9f7b2),
-                    c1: Fp(0x39bafd749c27236f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xef86f199f16551d),
-                    c1: Fp(0x1da8d84a3edfb41d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2b5cebbb4aaa5c9a),
-                    c1: Fp(0x285f9c6c1a87da90),
-                },
+                c0: Fp(0x7ee22f6d3133c381),
+                c1: Fp(0x4760155520fe2b43),
+                c2: Fp(0x676153181c07e3c6),
+                c3: Fp(0x4b738ae983d50a2d),
+                c4: Fp(0xb77f56c178487f56),
+                c5: Fp(0xb76cc5831a9ad4a2),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x12802c083f2a1bf8),
-                    c1: Fp(0x4018cd2e8db7afc9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2e84f0f0158c96bc),
-                    c1: Fp(0x2bcc174d9bf0860),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2fd47e7df7eb07c8),
-                    c1: Fp(0x3202b433c64e6039),
-                },
+                c0: Fp(0xcd6b35de1271530b),
+                c1: Fp(0x9523b88170b509eb),
+                c2: Fp(0xc0cc06d58faf6a79),
+                c3: Fp(0x72133201e7a29359),
+                c4: Fp(0xf064690ac225bfed),
+                c5: Fp(0xd6b1514800de77ef),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xf3afe5791296fa2),
-                    c1: Fp(0x2fdb2a033711fb72),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2f411feea96c84d9),
-                    c1: Fp(0x166a554d8a606282),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x33ff39f4d0fb9901),
-                    c1: Fp(0x396c484909713e00),
-                },
+                c0: Fp(0x4c84e8b8a9655e79),
+                c1: Fp(0x913f462edeb22820),
+                c2: Fp(0xf88e9a5286d0980a),
+                c3: Fp(0x15410e2ad457054a),
+                c4: Fp(0x2c0711c1c5f86854),
+                c5: Fp(0x3ba1865dbc522bb1),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2969571449d90c9b),
-                    c1: Fp(0x3061b0aafe64a7e9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xcb7c94fa8f03aa2),
-                    c1: Fp(0x65e22943e13d7e0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x19eb521f3fe1b3a8),
-                    c1: Fp(0x2964a729ddd25dc1),
-                },
+                c0: Fp(0x77434dca83a44b03),
+                c1: Fp(0x5453391a239bf658),
+                c2: Fp(0xbdc8ad4fb0e67196),
+                c3: Fp(0xe66566ce284b11dd),
+                c4: Fp(0x2701608874b1777c),
+                c5: Fp(0xce445c8054255ba5),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x19443ef25f20de39),
-                    c1: Fp(0x24a8675fc7352594),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x27b333a0d808348c),
-                    c1: Fp(0x11213ea7b5b4199c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3cba514d80069a6b),
-                    c1: Fp(0x2fa2b04721ad1648),
-                },
+                c0: Fp(0xb8139a820e237e56),
+                c1: Fp(0x8589ce316167a004),
+                c2: Fp(0xec31500b6eb2f13f),
+                c3: Fp(0xae1687cef765192e),
+                c4: Fp(0x561cd537ec15b66f),
+                c5: Fp(0x31fe55308eb93fde),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x11fd94c793f2ce61),
-                    c1: Fp(0x3cdf2f2ec2b23b53),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1cb219281c60729),
-                    c1: Fp(0x3561eda7736dd573),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x22c59b5f46ae28ca),
-                    c1: Fp(0x25fb032500d20d22),
-                },
+                c0: Fp(0x4eacb4641467ad12),
+                c1: Fp(0xac193dd3682f14e4),
+                c2: Fp(0x274068bf912cfbd3),
+                c3: Fp(0xbce636f706d71e47),
+                c4: Fp(0x43c4fd4491a7fcb5),
+                c5: Fp(0xc7c3490baee3cc33),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x278b7b6f4e2cacae),
-                    c1: Fp(0x3081f1c598bca01b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3d9d0d1d4b3b8267),
-                    c1: Fp(0xdc908b4ff96b12d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x27c86aa886504ce8),
-                    c1: Fp(0x23b7c3ec1d6980a0),
-                },
+                c0: Fp(0xc7788954a043ea38),
+                c1: Fp(0x3ac511332d93d430),
+                c2: Fp(0x41f6df6870252605),
+                c3: Fp(0xaca102a80ca1e494),
+                c4: Fp(0x6334f26676eb6161),
+                c5: Fp(0x88ef82d1d0868377),
             },
             z: Fp6::one(),
         },
@@ -4516,249 +2788,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3ea788ab81a0fd9a),
-                    c1: Fp(0x2486c6e534c68c64),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x25cfe310deeb8588),
-                    c1: Fp(0xea4c851e3f51702),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3b4dedae16c62ee9),
-                    c1: Fp(0x3afa6e666ea75348),
-                },
+                c0: Fp(0xd3b929b68f52a668),
+                c1: Fp(0x2bdc9bf185668bf2),
+                c2: Fp(0x1cfd515e128fb4be),
+                c3: Fp(0x8ebeb836dfc27ec9),
+                c4: Fp(0xf8aec94b365f882),
+                c5: Fp(0xa7d5250797e68755),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3868a9327ca33149),
-                    c1: Fp(0x103379569ef93d03),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1726bdfdad6152a),
-                    c1: Fp(0x319f6c8e34aeaba2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1a2cef24df807760),
-                    c1: Fp(0x20b12f2fb2d0e9b3),
-                },
+                c0: Fp(0x54f4b51ac18bebab),
+                c1: Fp(0xd8054e38b3b25dbf),
+                c2: Fp(0xd53da86fd5e74ded),
+                c3: Fp(0xea7cdf15555b01ee),
+                c4: Fp(0x9345cd59f1440c6f),
+                c5: Fp(0xf2d29581a72fca19),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3d245cf04f5791b),
-                    c1: Fp(0xca64828d6843170),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xaa2a223f9411476),
-                    c1: Fp(0x1629f961c1958c99),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x4111b26550884190),
-                    c1: Fp(0x38611b4faa31892b),
-                },
+                c0: Fp(0xd1176f3189b43a10),
+                c1: Fp(0x4754487b1025034d),
+                c2: Fp(0xf517d0be7a67ee9b),
+                c3: Fp(0x59a027760412b8e6),
+                c4: Fp(0x94bb88319d7301b9),
+                c5: Fp(0x4f410bcf0192aad5),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1593fa390af3e41e),
-                    c1: Fp(0x1576d62862411632),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x151cd7c58c1efa41),
-                    c1: Fp(0x2cf0479c3e878103),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3835f28bbd67bfb7),
-                    c1: Fp(0x151e7219bc402465),
-                },
+                c0: Fp(0xd35c4c0af1189b75),
+                c1: Fp(0xfa553392749997e4),
+                c2: Fp(0x15a5a455835c09fe),
+                c3: Fp(0x7050a3416618097),
+                c4: Fp(0xa7d1c26d81d834d),
+                c5: Fp(0xb1baf2af4ffa86c4),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x106afb8cbfcb1c19),
-                    c1: Fp(0x4024c483b55f7a9d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x34beffdb82238aca),
-                    c1: Fp(0x3349f3d3346d3eb),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3c90bad089e45b5a),
-                    c1: Fp(0x30c6e8e0676397f0),
-                },
+                c0: Fp(0xecf52dc9e92fa451),
+                c1: Fp(0x1f2401f037a392bf),
+                c2: Fp(0xbe3c8dc642bc52d8),
+                c3: Fp(0x8518b763f63f122c),
+                c4: Fp(0x28f238795d1b386c),
+                c5: Fp(0x15c60c4eed2967b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2ecdd4244cab2682),
-                    c1: Fp(0x26ccebe43d02fa08),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1bdf568b5abd822e),
-                    c1: Fp(0x1c72fec1983c24b9),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x32cde7da5a2e7c04),
-                    c1: Fp(0x35ed7b9b5444f32c),
-                },
+                c0: Fp(0xf14965e2eda8a89b),
+                c1: Fp(0x5028e85af825c7d7),
+                c2: Fp(0xba40dad554ac09a7),
+                c3: Fp(0x3e81938fb102426d),
+                c4: Fp(0xe0756f2226973498),
+                c5: Fp(0xa981c8a9161594b),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x244ecf2565296a73),
-                    c1: Fp(0x158ef4064604bd0e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x161a7d5be454922e),
-                    c1: Fp(0x351d7d3f45ec7bd6),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2e8fe708a1bcd8c3),
-                    c1: Fp(0x213c3ba3e9f1dfa2),
-                },
+                c0: Fp(0x539c0bebc562cfad),
+                c1: Fp(0xae62664c9d049115),
+                c2: Fp(0xf7f162446f647848),
+                c3: Fp(0x6db625e0a854a2c6),
+                c4: Fp(0xb1fe8033385ef1db),
+                c5: Fp(0xbccf808e98c2918),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x371ef979730f229c),
-                    c1: Fp(0x3244140f23f57d2a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x27725837096104c0),
-                    c1: Fp(0x10cafa232a61d8c5),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1ce40b6fbbf88b54),
-                    c1: Fp(0xc71abed0f3429e4),
-                },
+                c0: Fp(0xe35678365fe0b40a),
+                c1: Fp(0x8ed120b00ec64315),
+                c2: Fp(0x1311a09c0376af82),
+                c3: Fp(0xb1cc4720009fd1db),
+                c4: Fp(0x79888cd1d959c028),
+                c5: Fp(0x93d88fff2339a06c),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x187b027472b89360),
-                    c1: Fp(0x1e87db21f34a946f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1a2dfb40ea68f923),
-                    c1: Fp(0x24e21b8dc660feea),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xe2b721e3f0f6a0b),
-                    c1: Fp(0x1501bee4f2739f64),
-                },
+                c0: Fp(0x7a2a0aae4bbbaf37),
+                c1: Fp(0x75ab4598bc668de7),
+                c2: Fp(0x287aa00a3ae0659),
+                c3: Fp(0x838621fd37ced3cf),
+                c4: Fp(0x8ce4dbca7df196f1),
+                c5: Fp(0x7793c5f8fe444d4d),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2c190831060d2c3f),
-                    c1: Fp(0x8106685876814ca),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x13008c33bdf43e64),
-                    c1: Fp(0x34e397fe69bdef76),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x17c25f35a10bacc0),
-                    c1: Fp(0x2d2f85e4610580fa),
-                },
+                c0: Fp(0x8b5e35c7d36ab99c),
+                c1: Fp(0x8b8c3fec0f921ab0),
+                c2: Fp(0xcfed8a13725646cd),
+                c3: Fp(0x8215b61fe9532efe),
+                c4: Fp(0x9288c19c9ca030d9),
+                c5: Fp(0x9c39fb558f123130),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x344e347c90910a35),
-                    c1: Fp(0x270b3bb9ae08cdd9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2e9afa51eca61db4),
-                    c1: Fp(0x33f3fb71058e55ec),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x134dd53bdeffd836),
-                    c1: Fp(0x3c22c1c5f94a82e4),
-                },
+                c0: Fp(0x7d4182361af6f353),
+                c1: Fp(0xc1752ee6e03131f3),
+                c2: Fp(0xea2a99e147926859),
+                c3: Fp(0x68ef9962a4e3adc6),
+                c4: Fp(0xac9350eaba7752c2),
+                c5: Fp(0xc0db5271a027f7c5),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x82c95604367dd63),
-                    c1: Fp(0x18eb43838bffd616),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xa43fa9b277a9201),
-                    c1: Fp(0x343bfbc46372bd06),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1873b7c40f058862),
-                    c1: Fp(0x248cc6d14fe66c4d),
-                },
+                c0: Fp(0x6212a7025a3724ac),
+                c1: Fp(0x66a221639141926d),
+                c2: Fp(0xee436c9765e020f1),
+                c3: Fp(0x2ad555ae4490719f),
+                c4: Fp(0x918fc91bebc24f26),
+                c5: Fp(0x5240627405f374bf),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x180d3c6028d3c445),
-                    c1: Fp(0x337d79cadde79058),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2e4e08874cfbf8cd),
-                    c1: Fp(0x190f8ec01b4e3994),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x33a06241b402850d),
-                    c1: Fp(0xe0552d2809f2478),
-                },
+                c0: Fp(0x8b28e9c177f20a9),
+                c1: Fp(0xe4f639d6b291ff11),
+                c2: Fp(0xc4b3bfe05b86e274),
+                c3: Fp(0x24e262cb028647bd),
+                c4: Fp(0xd9f6b866f55512e4),
+                c5: Fp(0x28f9e590cef31d6c),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x302e96910e19a8e7),
-                    c1: Fp(0xb9ee0f3b65cd639),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xa4e8355e5e0fde5),
-                    c1: Fp(0x2f21d6c7669e9d10),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x119ebe7bad6dcdb7),
-                    c1: Fp(0x2dcc54ab42cbcf19),
-                },
+                c0: Fp(0x12af4ae4163bbead),
+                c1: Fp(0x86f82a7ea4a3b31a),
+                c2: Fp(0xe062007aee21f70a),
+                c3: Fp(0x60e13a331e1ca32),
+                c4: Fp(0x9f21c550d2929f6a),
+                c5: Fp(0x1778f1a4aa359b7a),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x214142d066497e3b),
-                    c1: Fp(0x26fc29b5e269fbd5),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xcab7d6fdd79b53f),
-                    c1: Fp(0x47665ad8c0dbe41),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1dc0dc89de799be0),
-                    c1: Fp(0x2a380f311e216d4f),
-                },
+                c0: Fp(0xb2d68239d3ff71d5),
+                c1: Fp(0xc4801b3bf921da0c),
+                c2: Fp(0x91c7ea42ac2ae98c),
+                c3: Fp(0x5a8728b87649d971),
+                c4: Fp(0x84880a0fa36c0663),
+                c5: Fp(0xc5dce2c9706fbb14),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x313ecc609b0bba65),
-                    c1: Fp(0x26034fdde1e4bb00),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x277e614cd68f1577),
-                    c1: Fp(0x12165771786fda0d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2b21d78a77a25e89),
-                    c1: Fp(0xe911edb7cc9aa4c),
-                },
+                c0: Fp(0x434e22a8a5c6a182),
+                c1: Fp(0xede9f9e2e9aefab1),
+                c2: Fp(0x5901d316a5c131f9),
+                c3: Fp(0x52102fe6dc301127),
+                c4: Fp(0xb339cdb53b50efef),
+                c5: Fp(0x86a0a2696ab79688),
             },
             z: Fp6::one(),
         },
@@ -4766,249 +2942,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xa66868701499899),
-                    c1: Fp(0xcdbe76635826edb),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xbd96d0df4a9869c),
-                    c1: Fp(0xf3249ce7c748f45),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x31447f390ca58f40),
-                    c1: Fp(0x168c7bfd69f6aae8),
-                },
+                c0: Fp(0x9edcbc4866e79b43),
+                c1: Fp(0x918414e039cf8a0c),
+                c2: Fp(0x594b4f6127fb7995),
+                c3: Fp(0xa654ca741742bbeb),
+                c4: Fp(0xdb7000443b27c929),
+                c5: Fp(0xc8c09bd517dbc8f7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x29ea28b000c1216a),
-                    c1: Fp(0xc006a512ed86383),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2184bfd8eba79752),
-                    c1: Fp(0x3c30ec0a692a22a3),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2a87baec268ea488),
-                    c1: Fp(0x36305263ab7cc76e),
-                },
+                c0: Fp(0xb7cd7c831ee562d),
+                c1: Fp(0x7c89df57787d2c3e),
+                c2: Fp(0xdb25ee58c201bf6e),
+                c3: Fp(0x14130ce818c92e3f),
+                c4: Fp(0xf424ef3187ab5882),
+                c5: Fp(0x1dc1565f98eda93e),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x22914d5bc6aa3426),
-                    c1: Fp(0x3c14c4f5e0e1890c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x36e7ae8e3fdcbfda),
-                    c1: Fp(0x3947687ae16cab),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x376400f381955e39),
-                    c1: Fp(0x3053a1537900f436),
-                },
+                c0: Fp(0xa60bed6011e9887c),
+                c1: Fp(0x6761d1679b9c1b04),
+                c2: Fp(0x9f87fd3847b82346),
+                c3: Fp(0xf795f8ff3b7f473b),
+                c4: Fp(0x2dadf46a02b3d2de),
+                c5: Fp(0xc138eb3f38838bbb),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3b59e828e9287248),
-                    c1: Fp(0x31e3b418c03f0e08),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x45dbead6ea5fc18),
-                    c1: Fp(0x326413511203a603),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x23786732e5009717),
-                    c1: Fp(0x26c4630d631cd64),
-                },
+                c0: Fp(0xdb55133353bc7cc2),
+                c1: Fp(0x4bf262f3a7ef98ee),
+                c2: Fp(0x4e6d6ae2ae8c7ea1),
+                c3: Fp(0x5f233d0b62519439),
+                c4: Fp(0x9c2635d802389a50),
+                c5: Fp(0xcf9ed79a19b7fff9),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x25bcf58b363cc51d),
-                    c1: Fp(0x17a4f0b12267dc85),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x20b2cb3a0dc737b5),
-                    c1: Fp(0x3d7c34c547acae60),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3e524f5a78ee7474),
-                    c1: Fp(0x27002435a4294378),
-                },
+                c0: Fp(0xdb011cc23530df44),
+                c1: Fp(0xa7ee887830802555),
+                c2: Fp(0x67dbf755e0eec901),
+                c3: Fp(0x6468aeb892bad760),
+                c4: Fp(0xb8f8c9fd2bdbca89),
+                c5: Fp(0x1bce03a6fc856e59),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3eb8ae98e91b8f20),
-                    c1: Fp(0x733e167672758f4),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x4014e8ef326e4a58),
-                    c1: Fp(0x333085981d30d8fc),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2f491e6e7154cdb),
-                    c1: Fp(0xf85425f5d9eb038),
-                },
+                c0: Fp(0x8107fac51ff3bc19),
+                c1: Fp(0x30bc9d1dc7ff36e1),
+                c2: Fp(0x704ac204e1d40166),
+                c3: Fp(0x65196428e80ecb23),
+                c4: Fp(0xa8485bbf9b450e40),
+                c5: Fp(0x7293344cac5b15c4),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1f4f97c2d77c8bfb),
-                    c1: Fp(0x2e7e902971094bd7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xff8a6dfb6a55a9),
-                    c1: Fp(0x272746de279138cc),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x318e2d12f350a344),
-                    c1: Fp(0x273fe5461026d21c),
-                },
+                c0: Fp(0xc447123590272855),
+                c1: Fp(0x8ef8c4618cd82226),
+                c2: Fp(0x13022f5d786b6eb2),
+                c3: Fp(0xe75e0f32bca3cfe9),
+                c4: Fp(0x94db37c42c627f6b),
+                c5: Fp(0xb9513436baea2606),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x34d3f9ab54d1672f),
-                    c1: Fp(0x529b528fea7b0f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3992bd2d65a12253),
-                    c1: Fp(0x90e3d46bebee8db),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3c3f3714ca7a97df),
-                    c1: Fp(0xbd4101bf4443527),
-                },
+                c0: Fp(0x21d0817c6e750c88),
+                c1: Fp(0x64f55e805b50d8cf),
+                c2: Fp(0xad50251cdaaa051c),
+                c3: Fp(0xa2d16de9c7d9ffc1),
+                c4: Fp(0xb91cb3aef566c471),
+                c5: Fp(0xa4e1637f18f46cd6),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x401631cb86625526),
-                    c1: Fp(0x3f35e77f7346d156),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x40dd1ef63b601150),
-                    c1: Fp(0xae6344e5ec1a073),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x18a70e4880ffc5cb),
-                    c1: Fp(0x1dd84414961aa815),
-                },
+                c0: Fp(0x374234db6838e2fc),
+                c1: Fp(0xf8a732f1a5a853f),
+                c2: Fp(0xd4a62f01b7ae8018),
+                c3: Fp(0x33e45c7f9efa2a5),
+                c4: Fp(0x323dfb749d3602e5),
+                c5: Fp(0xc04b9bce17824a13),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xac1acdfb54236fc),
-                    c1: Fp(0xd0c2c4641313285),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3d44ee3951e1ec5e),
-                    c1: Fp(0xb1836b4b5e051a5),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x689844c1f190793),
-                    c1: Fp(0x6ee39d695056ba8),
-                },
+                c0: Fp(0x5524d9ceec16f849),
+                c1: Fp(0x2dff155de4f80a0f),
+                c2: Fp(0x656d19d70ae6fa1e),
+                c3: Fp(0x25ac7bdbe64ec6d),
+                c4: Fp(0x14389372405cdc2f),
+                c5: Fp(0x20329d71326e0c94),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3c5f91aeac99a0a9),
-                    c1: Fp(0x3214a54b7831e81b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2ec352d496490f22),
-                    c1: Fp(0xadfaff9b49c0d96),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3f1fa3fc5b207db0),
-                    c1: Fp(0x215783e03ce9aab3),
-                },
+                c0: Fp(0x90e6619c94768b90),
+                c1: Fp(0x5743c7ea63fd2dc),
+                c2: Fp(0x3eb00359eaa577b0),
+                c3: Fp(0x91ba15515421a52),
+                c4: Fp(0xa9d40fd490a2d6bd),
+                c5: Fp(0xe8ddb3b10a93bf87),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2a047cb9da6c2bae),
-                    c1: Fp(0x3f2b095404425af5),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x581cb6502c4db00),
-                    c1: Fp(0x3c05eaf0085be05),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x13ced73b74494c2e),
-                    c1: Fp(0x180261e3a463302a),
-                },
+                c0: Fp(0xe787d00c29a5f2a6),
+                c1: Fp(0xd1dec580df172d43),
+                c2: Fp(0xf9d7aa70a1576c23),
+                c3: Fp(0x262e8e0a017f50c7),
+                c4: Fp(0x97207188e1873728),
+                c5: Fp(0xd89d6b162f54d733),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x169673bad78ae947),
-                    c1: Fp(0x34e29fa8c2cf81b3),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2cfa21135708e258),
-                    c1: Fp(0x3414c36fabf16e52),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x119b953c2c747b57),
-                    c1: Fp(0x3f9f9f38c4d29bf0),
-                },
+                c0: Fp(0x70bf4a78ac0478ee),
+                c1: Fp(0x4b710004bb29d64b),
+                c2: Fp(0x5235b1c9cd9aa844),
+                c3: Fp(0x1d006946a01cb473),
+                c4: Fp(0x840eea30e80b268a),
+                c5: Fp(0x6a0b48337656e4a9),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x55eeb99683cf25a),
-                    c1: Fp(0x3cff0192378e5edc),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2938548504f59da4),
-                    c1: Fp(0x4099ffbdcc636602),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x373858cb0a04df2b),
-                    c1: Fp(0x29ce781a113b6743),
-                },
+                c0: Fp(0x7c06f5247ad63c67),
+                c1: Fp(0x4ef04d0e4a8fb84d),
+                c2: Fp(0x4d353d5d144bd4f4),
+                c3: Fp(0xe3c3cde60804d1d7),
+                c4: Fp(0xb58caaa2cdc7b782),
+                c5: Fp(0x1939e855db852c58),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1c8ddffd95b1bc32),
-                    c1: Fp(0x247790d1c72afd7f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x168609c273cd07e),
-                    c1: Fp(0x1a3e56ab9cc63544),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x14430d346f512466),
-                    c1: Fp(0x30a719a27b5b7c9f),
-                },
+                c0: Fp(0x81c5810dde8e3c51),
+                c1: Fp(0xed1de7a7dfcc92a9),
+                c2: Fp(0xd5c6b6e22c9822b2),
+                c3: Fp(0xf158e2c0fb9c11a8),
+                c4: Fp(0xcaff53802c3402f6),
+                c5: Fp(0xa5c73c8ec7720275),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3a9ec2411bfc7c3),
-                    c1: Fp(0x30860ae318332f36),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x15f01698b82efeef),
-                    c1: Fp(0x360e09a61e03a448),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1b9667ef3680ed37),
-                    c1: Fp(0x15feafe937400328),
-                },
+                c0: Fp(0x8f8c54df78bfa997),
+                c1: Fp(0x77d90fe11ff63a5e),
+                c2: Fp(0x88f30bb13667a020),
+                c3: Fp(0xd1be46511d80a677),
+                c4: Fp(0xbcf745a1387d8502),
+                c5: Fp(0xc02989879ea7fe33),
             },
             z: Fp6::one(),
         },
@@ -5016,249 +3096,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x215936fc162af248),
-                    c1: Fp(0xfde1d603524283f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xd1548322d55c54b),
-                    c1: Fp(0x166d1fd15fd14cde),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3df68b7b9275eabc),
-                    c1: Fp(0x2fe582bfffdba90c),
-                },
+                c0: Fp(0xd9d9046550ca85df),
+                c1: Fp(0x3702b91f6652134e),
+                c2: Fp(0xa566ef35a4820fed),
+                c3: Fp(0xae2e0b9a90a99766),
+                c4: Fp(0x1c1f7dc842efe75a),
+                c5: Fp(0x3aeb9b70194fa08),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x18f349654095ed73),
-                    c1: Fp(0x4032d1739688ecb7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x39007dc086ec5f4e),
-                    c1: Fp(0x1972c2329673a472),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x372dc5d44acf6ae3),
-                    c1: Fp(0x3c6f7aad7b94d5af),
-                },
+                c0: Fp(0xec9e27b976fe9ddd),
+                c1: Fp(0x394bae5143b9b543),
+                c2: Fp(0xee01fc1968cb7eba),
+                c3: Fp(0x8826ed76e04ce415),
+                c4: Fp(0x43469398041d563c),
+                c5: Fp(0x3701a707db87440f),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1b13d4f2f98ac7f5),
-                    c1: Fp(0x1880bdfbdf5d0c10),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x24944c895ed728ba),
-                    c1: Fp(0x2fd800917d6cda02),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x116953de58e2c248),
-                    c1: Fp(0xf69d43674298d47),
-                },
+                c0: Fp(0xb9a2e0a5f80350bf),
+                c1: Fp(0xaa06d125a11d6b67),
+                c2: Fp(0x4fcf8ff2f309365f),
+                c3: Fp(0x6226ec7ab663c24c),
+                c4: Fp(0x99b69eea23957673),
+                c5: Fp(0xd051fd820ace4c4e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2164a93b9b2b9756),
-                    c1: Fp(0x6609f55ac4fda6d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1e08df7203f79888),
-                    c1: Fp(0x3f26b11273b99062),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x195dcc6556d24e0d),
-                    c1: Fp(0x3cd4da7d15eb1481),
-                },
+                c0: Fp(0xffdc7476b7a4cd84),
+                c1: Fp(0x39fae061b7970468),
+                c2: Fp(0xf3c35b735e98c836),
+                c3: Fp(0xf2c3db74e6203134),
+                c4: Fp(0xd3876761d5c31397),
+                c5: Fp(0xf20286804840e591),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xa089d756ac1e984),
-                    c1: Fp(0x1296166bc7de70f1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x35b8f894985162a7),
-                    c1: Fp(0x3fcc60a5bc2b9abb),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x184b88c71273506b),
-                    c1: Fp(0xf466bd19731cb01),
-                },
+                c0: Fp(0xc829b128992f227b),
+                c1: Fp(0x44fd7d15fd845c8),
+                c2: Fp(0xfd164c01f56ba3ed),
+                c3: Fp(0x7ccd5f8840eda8),
+                c4: Fp(0x21a8bba83c9b4e96),
+                c5: Fp(0xa9c2c5c7e830f091),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x20d7fcadcf10afc2),
-                    c1: Fp(0x17a929a436d6fd97),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2606ebbfec3f1dd5),
-                    c1: Fp(0x2dea67e3413d8ccb),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2facca6ca33859cf),
-                    c1: Fp(0x2aa6db0b236fdf9a),
-                },
+                c0: Fp(0x87c860301b4cf0db),
+                c1: Fp(0x385ba66ae617ec3a),
+                c2: Fp(0xce178ee126b59d9d),
+                c3: Fp(0x9cce9eeb89a8beba),
+                c4: Fp(0xb1a9859fc405bb3f),
+                c5: Fp(0x194ca934c5d3c4aa),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x16c4dc34036f3d92),
-                    c1: Fp(0x50028210422445a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3658698e08131f3a),
-                    c1: Fp(0x32b7b0b22da26e4a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x7518a51ef5150d6),
-                    c1: Fp(0x2e148576a70ce532),
-                },
+                c0: Fp(0xe4752c4609617c90),
+                c1: Fp(0xa399216b12f15a77),
+                c2: Fp(0x98fa476a3a99158d),
+                c3: Fp(0x23e3f31bad7b0d98),
+                c4: Fp(0xf25930a6725ef787),
+                c5: Fp(0x210e97f69665735c),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x83e6ea38842bde),
-                    c1: Fp(0x37fb700e2e543e30),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3573f69b98efd97f),
-                    c1: Fp(0x400e5eab4cf9df99),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3e6c48da9bf3fe22),
-                    c1: Fp(0x224b477e03e1ff67),
-                },
+                c0: Fp(0x338c00363c65e2ea),
+                c1: Fp(0xbf5baf0d02842354),
+                c2: Fp(0xeab244164a616007),
+                c3: Fp(0xc385e2427a730b95),
+                c4: Fp(0xa88382cd1a0fd10),
+                c5: Fp(0x307c95f962fc10a7),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3764b3d5057cf31a),
-                    c1: Fp(0x1bfb07f58ce30d88),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3d655450c9072140),
-                    c1: Fp(0x31d01686a8116541),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1e6fa37916d6a937),
-                    c1: Fp(0x1a0b684fd97dc25d),
-                },
+                c0: Fp(0x7007b1bc682a9e45),
+                c1: Fp(0xabfc64eeb88817d9),
+                c2: Fp(0x3aaf4d670be25e7f),
+                c3: Fp(0x57f11dea56400441),
+                c4: Fp(0x3d32c389e4b7c99a),
+                c5: Fp(0x36e6566400062f89),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x27355dab59df4b08),
-                    c1: Fp(0x2c87ee0e0d2dc679),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x270cc0b747b50457),
-                    c1: Fp(0x344f65ca206f6882),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2d13311f4bf170ca),
-                    c1: Fp(0x24dc30c0b10f18d5),
-                },
+                c0: Fp(0xe23121d223720837),
+                c1: Fp(0x36685ee4f92822b0),
+                c2: Fp(0x6093918d514c076f),
+                c3: Fp(0x785e6a5390c51a90),
+                c4: Fp(0xffd75e794d900542),
+                c5: Fp(0xf6828ce8a5fef934),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x272ec1b9a902ee2d),
-                    c1: Fp(0x2278e9188ea77549),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xd9c843a4c95eb98),
-                    c1: Fp(0x5219c5bdb791b64),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1eeecadfaacd9862),
-                    c1: Fp(0x1203c514ed57c598),
-                },
+                c0: Fp(0x10baa9c4d95fe818),
+                c1: Fp(0xae365a58d0308490),
+                c2: Fp(0x3faef3ce8cb18e27),
+                c3: Fp(0x3bb20c664986f2da),
+                c4: Fp(0x4622187cd320d228),
+                c5: Fp(0x8ca22a1598c3702a),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x11b443673d52740),
-                    c1: Fp(0x1eb2db54542dbae9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x18b69e69fa940067),
-                    c1: Fp(0x2bfd127acd768fc0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1d6b031f72209960),
-                    c1: Fp(0x3ddd6cd1b4e79338),
-                },
+                c0: Fp(0xc3ca87c7f4077c71),
+                c1: Fp(0xcadd46c0dba02897),
+                c2: Fp(0xb4ba42f81547065a),
+                c3: Fp(0xd605b7137bb17258),
+                c4: Fp(0x97aa4cc92495ffd8),
+                c5: Fp(0xbdd24d95699b8b08),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x389f7095e1aad15b),
-                    c1: Fp(0x2c6d03d72461fb78),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2f6209f0561b5984),
-                    c1: Fp(0x2668ee598e92cddf),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3326b3cae179b4b1),
-                    c1: Fp(0x40eddd2a589f1cb),
-                },
+                c0: Fp(0x5f4eb553a208778),
+                c1: Fp(0xe969da4d7d9fc4dc),
+                c2: Fp(0xa1cfdbf98e30056a),
+                c3: Fp(0x5cd6a1ecdc3c676),
+                c4: Fp(0x69ad99c5366f2b00),
+                c5: Fp(0x62ee64d019c97287),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xf4bedb7c3c2decc),
-                    c1: Fp(0x21913aea9db4710f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xac95a18e7d19050),
-                    c1: Fp(0x12279a6dcb559388),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x6a02e50aec95825),
-                    c1: Fp(0x2b6f750f181cc9c4),
-                },
+                c0: Fp(0x3c07110139707358),
+                c1: Fp(0xd028652bc7aaabc5),
+                c2: Fp(0xe6a4ce2edbe09b4c),
+                c3: Fp(0x293f9c33f6a4d7b6),
+                c4: Fp(0xc4df64ef8a1e1f42),
+                c5: Fp(0x6b75027d60193742),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1f9a5a2984b28a8b),
-                    c1: Fp(0x84951699ca9238a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1621c77c3676993e),
-                    c1: Fp(0x8265af812f52bb5),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3e77ff6d436c2000),
-                    c1: Fp(0xc25f2d715a8a7d1),
-                },
+                c0: Fp(0x42f70287823f65d1),
+                c1: Fp(0x1b68ee5b41518e39),
+                c2: Fp(0x2e10a9541cfa3762),
+                c3: Fp(0x7479348fe23589db),
+                c4: Fp(0x3b419e4e16165b64),
+                c5: Fp(0x53af1ded869fe5fc),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1d2a37c9c7e872fe),
-                    c1: Fp(0x6856278a6aac9b1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x39bc4eaf2d3ef2d0),
-                    c1: Fp(0x24212615bf483525),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1e9550764e3bea7f),
-                    c1: Fp(0x2960983768ab241b),
-                },
+                c0: Fp(0xcdd7979c08c42a98),
+                c1: Fp(0x78fbd469f5e69787),
+                c2: Fp(0x60a3ec0749b835de),
+                c3: Fp(0x968f785fedd11ceb),
+                c4: Fp(0xd794ce4e7b682778),
+                c5: Fp(0xf9a70f55c2818cd7),
             },
             z: Fp6::one(),
         },
@@ -5266,249 +3250,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1a43732400613507),
-                    c1: Fp(0xcc0f34a1fe93b82),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x8fe7d2be82bfe3e),
-                    c1: Fp(0x3aa33198fd633294),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3cace4aa236e78ab),
-                    c1: Fp(0x3d5c8bd326d587ea),
-                },
+                c0: Fp(0x2ebfa62650e2c801),
+                c1: Fp(0xc4488a62c7fda36a),
+                c2: Fp(0x22db1f3ebd897748),
+                c3: Fp(0x9a2b6edf4fdc64d8),
+                c4: Fp(0x554d8d72c155734a),
+                c5: Fp(0xb4422e00cdf54acf),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1ad13b6d4d34fec7),
-                    c1: Fp(0x122c9ba548430cef),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xe801b5457a9c6db),
-                    c1: Fp(0x1bdfdd822c654067),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3143ed347ee3a0ef),
-                    c1: Fp(0x40404301317e6761),
-                },
+                c0: Fp(0xf7cda9ab5d3495ff),
+                c1: Fp(0x410273aa0d37fd83),
+                c2: Fp(0xbd879e2664539597),
+                c3: Fp(0x4f86167e5ee84e08),
+                c4: Fp(0x6f7be6d99d45a3af),
+                c5: Fp(0xe17b0efe2501e862),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x6c580b97a8450c2),
-                    c1: Fp(0x6c2ba97e8334571),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x352ed748699e4ca8),
-                    c1: Fp(0xfa20743fe3220f5),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x25e5d48127929cbe),
-                    c1: Fp(0x413482b2555455c4),
-                },
+                c0: Fp(0xc1982180fa689a60),
+                c1: Fp(0xef80e21af9e551dd),
+                c2: Fp(0x50f134b31b5a93e6),
+                c3: Fp(0xbc13618a88385f53),
+                c4: Fp(0x742ebc18cff8dcf),
+                c5: Fp(0x9a16db73d115d215),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x15f095df0f732b60),
-                    c1: Fp(0x3a645787102d3b35),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x23a0ba1248d958bb),
-                    c1: Fp(0x19a906dae526d66d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1543f5ee2dad3ac5),
-                    c1: Fp(0x3dc5e80b9d606f72),
-                },
+                c0: Fp(0x657f1470ec2e0936),
+                c1: Fp(0x95a9f68f79ec2ab3),
+                c2: Fp(0x6ad461b458ee0772),
+                c3: Fp(0x5aea41be7b04033c),
+                c4: Fp(0x7d8cafd7dcd4e75a),
+                c5: Fp(0xb11f66be6d3c00ca),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xaf9a0df859d515e),
-                    c1: Fp(0x3889dd1a9df80df2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xbe60105590f619c),
-                    c1: Fp(0x660a30327cced49),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x33303c9eb74db1fe),
-                    c1: Fp(0x271bf62c44e09078),
-                },
+                c0: Fp(0x654fe3b065c63453),
+                c1: Fp(0x6b0c952bea22b65d),
+                c2: Fp(0xbeaac692c0213af6),
+                c3: Fp(0x3574535279805506),
+                c4: Fp(0x12b3ef50407fa177),
+                c5: Fp(0xee3f8b08f1155bc2),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x397bf3427f6a4d1d),
-                    c1: Fp(0x1b61ba447be16d1c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x72cb59a7b8c85ee),
-                    c1: Fp(0xae57135c8ab29a5),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x40b8e323229c01e5),
-                    c1: Fp(0x29ad49fd22d3af0f),
-                },
+                c0: Fp(0xe6232911f647c0f1),
+                c1: Fp(0x799d5c273a848b18),
+                c2: Fp(0xfbb4776b7d2cf975),
+                c3: Fp(0xfac488c734a15c62),
+                c4: Fp(0xba2d657ff199a15a),
+                c5: Fp(0x3a34356c4c651716),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3a30a1ed511eb68e),
-                    c1: Fp(0xdcfe0d53243ac30),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xac8e3c3a44cf165),
-                    c1: Fp(0x2d3b90f6bf5b784e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1029db0d1f27df5a),
-                    c1: Fp(0x2ade47b38af9b788),
-                },
+                c0: Fp(0xc2574285f913cb7f),
+                c1: Fp(0xad1c4715e50b34a),
+                c2: Fp(0x57ae0c52aaca6ec7),
+                c3: Fp(0xf9f129ed4ce11384),
+                c4: Fp(0x582a766f9fdf1fce),
+                c5: Fp(0x924709f23d117446),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x18a589d4a1be3abe),
-                    c1: Fp(0x32017c3618ddb2ef),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x7c86dc61f252c62),
-                    c1: Fp(0x11844b931884a569),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3f8b04896bffd3da),
-                    c1: Fp(0xc1d9992351b7592),
-                },
+                c0: Fp(0xa53438df019c21b),
+                c1: Fp(0xfce93b110a241320),
+                c2: Fp(0x5bd55170e77b81c8),
+                c3: Fp(0xb4f707b8962bc8c7),
+                c4: Fp(0xcc23544ec136843b),
+                c5: Fp(0x505841c3ec220700),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1694dfd3994645e7),
-                    c1: Fp(0x93d33acd196be04),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x24173b73bf1c3cc4),
-                    c1: Fp(0xc6f164adb2b2888),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x152f72a98d334688),
-                    c1: Fp(0x34a48b480bf4df3a),
-                },
+                c0: Fp(0x2c609ee4ab5bd70f),
+                c1: Fp(0x400d2528e285f8eb),
+                c2: Fp(0x50684a35297a88ae),
+                c3: Fp(0x7c30078e4545908a),
+                c4: Fp(0x7fe3eca8abbd1f46),
+                c5: Fp(0x56d587fa66f8ed5f),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2ae5466abb6afb09),
-                    c1: Fp(0x1549261654b700c4),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x185a59055cf6c363),
-                    c1: Fp(0x274a5f496b79e32),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1bf454a0898c0a53),
-                    c1: Fp(0x3820162a17adf7ec),
-                },
+                c0: Fp(0x302a966ae6b06a3e),
+                c1: Fp(0xab008230ee6630de),
+                c2: Fp(0x3cec45d093d618d1),
+                c3: Fp(0x99d86c02aa8c7282),
+                c4: Fp(0x29542c54001cae87),
+                c5: Fp(0x6e2a238f791b63ef),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x4bba632854b23cb),
-                    c1: Fp(0x120d53b7ad0c75e3),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2ddac1001a993ed5),
-                    c1: Fp(0xd9df73e9167f18a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x11b6e366c1429d8b),
-                    c1: Fp(0xcd9e78d02cd8a74),
-                },
+                c0: Fp(0xf9169361a4f25caa),
+                c1: Fp(0xe197216d72ee9cd1),
+                c2: Fp(0xa018466eb714c9c5),
+                c3: Fp(0x94ac7d7eabd9b7ab),
+                c4: Fp(0x4f1041e076c88e5c),
+                c5: Fp(0x997314cff4ac9644),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1a580972bfcea685),
-                    c1: Fp(0x3b7632ca94a18585),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1d1f6e6ca97de9d4),
-                    c1: Fp(0x28c3e56670df3f84),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x325de370c7d7bf77),
-                    c1: Fp(0x375ad5f75eba4027),
-                },
+                c0: Fp(0x4dba925acf5065f5),
+                c1: Fp(0x6fc68f5ef85c6c53),
+                c2: Fp(0x66cd8e5e03beb391),
+                c3: Fp(0x9edd421b01f9e811),
+                c4: Fp(0x8b5dcc4567ec23),
+                c5: Fp(0x940990d5a848b488),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x36b3b7cb5fc90e46),
-                    c1: Fp(0x2e94e81a39295e6c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x35953e77b914c885),
-                    c1: Fp(0x298fdf37abe95279),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x19c619ee1fef72e9),
-                    c1: Fp(0x16413dfb36073ee),
-                },
+                c0: Fp(0x2b48e4e46414f3b7),
+                c1: Fp(0x15fea5b2b3720131),
+                c2: Fp(0xeb3c845ffa60cceb),
+                c3: Fp(0x2ce10a496e5eccb3),
+                c4: Fp(0x604d32244f1f864e),
+                c5: Fp(0xb413d988456e84cd),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x4df2ef1e3f7d288),
-                    c1: Fp(0x358747af9a984e0c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1ef48af0a74ce64d),
-                    c1: Fp(0xda8bc31d9232d6e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1ed307571753bbc2),
-                    c1: Fp(0x2f98aa6812d7543d),
-                },
+                c0: Fp(0x7a6ddd5b94d96459),
+                c1: Fp(0xf001a8b6981cb0d),
+                c2: Fp(0xa04996acf8295509),
+                c3: Fp(0xa54303b39ddd7914),
+                c4: Fp(0xfd1098a4aa09d7c6),
+                c5: Fp(0xa22e5ed03452c4b9),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1644afb018c599aa),
-                    c1: Fp(0x3207cf7c19c274ce),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2314db4152872d19),
-                    c1: Fp(0x21b68cbf3482eb15),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3459e6421f2b6022),
-                    c1: Fp(0x5421a2fce2a125e),
-                },
+                c0: Fp(0xebc0c1fca040c787),
+                c1: Fp(0x3f9d00b4d69dea87),
+                c2: Fp(0x974c11999c26b6de),
+                c3: Fp(0x807e5c549f9795ef),
+                c4: Fp(0xf3a6422c9bb0bc8),
+                c5: Fp(0x4dd0ad993bb03139),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xd938bea5ec8c008),
-                    c1: Fp(0x2ae7f08515164116),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1f6d57842ffc829d),
-                    c1: Fp(0x232b6e20ac1c19b8),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1c484eca596379e1),
-                    c1: Fp(0x5b2060e34b799a3),
-                },
+                c0: Fp(0x16e99f278e9cd2e4),
+                c1: Fp(0x2e98ad88311fc69d),
+                c2: Fp(0xb0d526ca1aaf1e75),
+                c3: Fp(0x964116abbea68289),
+                c4: Fp(0x1c188c961325385b),
+                c5: Fp(0x6fbd097a74e79bf9),
             },
             z: Fp6::one(),
         },
@@ -5516,249 +3404,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xc5270f2d698c3d4),
-                    c1: Fp(0x3fd12d26cc8a78ed),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x230241d7c0a3d990),
-                    c1: Fp(0x1865630304ca1b09),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x23a9a7a68e34f011),
-                    c1: Fp(0x1c691c361005b6a3),
-                },
+                c0: Fp(0x8db30f6a1a6babdc),
+                c1: Fp(0x320590e5a8f1021c),
+                c2: Fp(0x4b61c36ffae495d7),
+                c3: Fp(0xe8ee512a11870d4f),
+                c4: Fp(0x9654fe30936c34a1),
+                c5: Fp(0xc24140990f473686),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xe908a245ebbb4a2),
-                    c1: Fp(0xc08f5543b35125),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1609f1b7e5d29e42),
-                    c1: Fp(0x2ec31802d00c22b0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1e3f563e8f237fe1),
-                    c1: Fp(0x2f69ce8f8a6e2930),
-                },
+                c0: Fp(0x6753e0b438cab3ee),
+                c1: Fp(0x44eb74ce48ccc11d),
+                c2: Fp(0x272f6cb785a4ad58),
+                c3: Fp(0x1c3c6ac4142f00f3),
+                c4: Fp(0x647c8102b69cdbf6),
+                c5: Fp(0xe9b5b7f4b6cb6f9c),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x175d228cc8791861),
-                    c1: Fp(0x3125fdfb7488c7a5),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x36aba630a6e5e882),
-                    c1: Fp(0x40db5b8da5b85cca),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3c12ed5f86e01395),
-                    c1: Fp(0x153672f528e6bfa8),
-                },
+                c0: Fp(0x21b8440cf9fe1d7),
+                c1: Fp(0xf5c102be65719eaf),
+                c2: Fp(0xaf575a7abcb4f32a),
+                c3: Fp(0x4b4753a4817aa7ff),
+                c4: Fp(0x4ddf2d8239ee1224),
+                c5: Fp(0xe2fd9a1050f7512f),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x33804615dc7caac5),
-                    c1: Fp(0x164156b0ddc49d0c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xbc27d458b9ba11),
-                    c1: Fp(0x31117d7ba1c26055),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x338583504a968eba),
-                    c1: Fp(0x5147f52e2b95ea7),
-                },
+                c0: Fp(0x8e9be59a79b22996),
+                c1: Fp(0xc1c074d777042c19),
+                c2: Fp(0x5c49a823278462de),
+                c3: Fp(0x24214d027e0631e8),
+                c4: Fp(0xe4006a5283bd946c),
+                c5: Fp(0x90d07fac64107f69),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2437039c73e9e34),
-                    c1: Fp(0x17486de6f4a6f04c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x791fb1d4d40e127),
-                    c1: Fp(0x13d5cc085e16f534),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2c362376c24a268a),
-                    c1: Fp(0x3cd99a3a83be6fd7),
-                },
+                c0: Fp(0x586bb6c44ab108a5),
+                c1: Fp(0x1972accb9d034d42),
+                c2: Fp(0x2571a2d26f6c9127),
+                c3: Fp(0x3696fd9768ce7e22),
+                c4: Fp(0xa19dc9ccc5960b5a),
+                c5: Fp(0xab3bee342694a8d7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2f846101f7b8f64a),
-                    c1: Fp(0x2eee35f84cf0dee9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3e21b202d697e7b5),
-                    c1: Fp(0x267fbc158e1cec26),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xe3266d36eb8ac13),
-                    c1: Fp(0x3103b57c8e678863),
-                },
+                c0: Fp(0x93679cebc9e406bf),
+                c1: Fp(0x401fd74ca42ca3b5),
+                c2: Fp(0xe2cc52692a3993d5),
+                c3: Fp(0xd3696f7c7f2a3a2f),
+                c4: Fp(0xf02eefdb6ed436b2),
+                c5: Fp(0x4055e4b7aa25c42d),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xbe96d0a9ca488),
-                    c1: Fp(0x26d61a5ae7a5a72e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x26d8868a5a7ef341),
-                    c1: Fp(0xdd50fbf9c83efbe),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1749476f32031f96),
-                    c1: Fp(0x3062c477e5f66b9),
-                },
+                c0: Fp(0xaa985f35a034538b),
+                c1: Fp(0xf4227b12009ee8f6),
+                c2: Fp(0x1aadf4722c15f4dc),
+                c3: Fp(0x4feb5a88c1f981f6),
+                c4: Fp(0x5995084a4530c729),
+                c5: Fp(0x122d6c44283c44d),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x35ad30da5df64b72),
-                    c1: Fp(0x31c2fee900fb2532),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x222ec93742162907),
-                    c1: Fp(0x11edf5385b612a2b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x5b1b72c71f87cda),
-                    c1: Fp(0xd0d4d6130a7a3fc),
-                },
+                c0: Fp(0x6216ea71be922770),
+                c1: Fp(0x3d98ec725eb1172),
+                c2: Fp(0xca984069aeb01955),
+                c3: Fp(0x11a3b97dd0c60ad0),
+                c4: Fp(0x245f6bd898d9fab7),
+                c5: Fp(0xfaa9f221af802cde),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2565bccd962a373e),
-                    c1: Fp(0x34fb394e6b5f3a71),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x5a0b3121824731b),
-                    c1: Fp(0x12db942ad516d8fa),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x22d4361213cab5f5),
-                    c1: Fp(0x3f485b98d79b8cf8),
-                },
+                c0: Fp(0x7d523c22caaadcbf),
+                c1: Fp(0x95927526140c373b),
+                c2: Fp(0xa46c09b60de9cbed),
+                c3: Fp(0x31d40cbccbb9fa37),
+                c4: Fp(0x4abe47dd873389e9),
+                c5: Fp(0x9417d3d786eeada1),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xd7071fcccca1c55),
-                    c1: Fp(0x1ea16094725652ff),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xcaeaa993b624e01),
-                    c1: Fp(0x2ab0faf00bd000df),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x402f7c104abc7dee),
-                    c1: Fp(0x26ea588451a649b7),
-                },
+                c0: Fp(0xb69f3b5ac8ad68ea),
+                c1: Fp(0x627fc08be2be895a),
+                c2: Fp(0xe7c6fed3502e47d0),
+                c3: Fp(0x707670bcd0771c1e),
+                c4: Fp(0xbe78ea2b49a94f69),
+                c5: Fp(0x215697cfd0371b7c),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x25ef206a4fd3b7fc),
-                    c1: Fp(0x8637b9753c1d2c1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x10fd8054cb4633ae),
-                    c1: Fp(0x188af512d13bd44),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x13e7d143b7087b17),
-                    c1: Fp(0x2e061b8a5c8942ac),
-                },
+                c0: Fp(0x7369854d6ebca7e1),
+                c1: Fp(0xe5f03f278a2e9185),
+                c2: Fp(0xe0d2a0c85754fef5),
+                c3: Fp(0xe5314e90f96a4740),
+                c4: Fp(0x3013c8e11bb48825),
+                c5: Fp(0x48ab598daed32b14),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x393f71d1694e1781),
-                    c1: Fp(0x2157f45c96e7ec28),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3d3be5abfe5e1b51),
-                    c1: Fp(0x22d5168f1ff5a381),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2b0249ae2a7fd11c),
-                    c1: Fp(0x54d4c272a29e460),
-                },
+                c0: Fp(0x7a9b39351345344f),
+                c1: Fp(0x132b19b81d8da6e8),
+                c2: Fp(0xfbd936678ac668b8),
+                c3: Fp(0xd3b2796021f4b8ae),
+                c4: Fp(0x8685476c193e45b6),
+                c5: Fp(0x5c5b14ff6354a29c),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2331893951cb9642),
-                    c1: Fp(0x37b4d5f69e72257e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3b5fd835dcb69d00),
-                    c1: Fp(0x415613f33c0ef58b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x277cca4f2fb38003),
-                    c1: Fp(0x4041d965eadcbf3b),
-                },
+                c0: Fp(0x485bacbc27bbe8c0),
+                c1: Fp(0x9f470aff401ef1d9),
+                c2: Fp(0xb79b209305f724e8),
+                c3: Fp(0x4eefc7cad0f12951),
+                c4: Fp(0xa4824a8eed7b6dd),
+                c5: Fp(0x1a15ea729fba620d),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3c9231304e501530),
-                    c1: Fp(0x3295d712df85b9c7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1a795485a175c67e),
-                    c1: Fp(0x23dab52a2b2006f6),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1f1f3fd18bbbd0e9),
-                    c1: Fp(0x2f3bc11e4b8a9380),
-                },
+                c0: Fp(0x41461146dc1659cd),
+                c1: Fp(0x889691cdb447efd3),
+                c2: Fp(0x29f179f5028fed77),
+                c3: Fp(0x9cb647cc257c6bc0),
+                c4: Fp(0x5e4dc4b0107186a5),
+                c5: Fp(0x16a48a47c3eca4b2),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x29296bdcbb66a0b6),
-                    c1: Fp(0x33a94ea9ae783b6e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x35ef178dba68adcd),
-                    c1: Fp(0x3f22aa3cc38dc6b5),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x175f17f3e9e071ed),
-                    c1: Fp(0x31be24737d979804),
-                },
+                c0: Fp(0x791465eda827c19e),
+                c1: Fp(0xed09bce559fa810),
+                c2: Fp(0xc79a91c765c81613),
+                c3: Fp(0x3091a561bb804d07),
+                c4: Fp(0xec2b7afa2ff91844),
+                c5: Fp(0x14ac2b8bd6ee947),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x266819086d7be65e),
-                    c1: Fp(0x16685f5401b386cf),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2a31b2d8a18e2abf),
-                    c1: Fp(0x10dbadfa223d3eba),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x326885393f7fe264),
-                    c1: Fp(0x2de3e729ea069f2a),
-                },
+                c0: Fp(0x2393cf158b1907c8),
+                c1: Fp(0xa10eeba06361121b),
+                c2: Fp(0x6ae5b9f7735124c9),
+                c3: Fp(0x7603c85b79848c0e),
+                c4: Fp(0x487c1b8b3c34e6d2),
+                c5: Fp(0x87dc9dfd83d89da2),
             },
             z: Fp6::one(),
         },
@@ -5766,249 +3558,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x109f504214cb9720),
-                    c1: Fp(0x1ac84f5cda01f39b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x14ef81ad95f81cb3),
-                    c1: Fp(0x6d07e5e1757794a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3b3cc1a62132a4ee),
-                    c1: Fp(0x7bdcd76287820c8),
-                },
+                c0: Fp(0x3f158f180d86d29b),
+                c1: Fp(0x3621e4495a8c8d9f),
+                c2: Fp(0x9b6028bc4acfc9a6),
+                c3: Fp(0xb2ae49cc842d8474),
+                c4: Fp(0xddada0559b738146),
+                c5: Fp(0x998639546eb685ce),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x37488af85a9ea00e),
-                    c1: Fp(0x17c2a2efeb621d6e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2e241487e65e27ea),
-                    c1: Fp(0x14d5527520b656eb),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x368bda2a5c1a66c3),
-                    c1: Fp(0x1ec4275f3306815a),
-                },
+                c0: Fp(0x294a00b0a0edc786),
+                c1: Fp(0xe20c237e4d884fc1),
+                c2: Fp(0x2cff45452db1e23f),
+                c3: Fp(0xa8388013e3df7843),
+                c4: Fp(0xe258e3d8df16ffd6),
+                c5: Fp(0x2ef33ce6ceed0cad),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2d9690b0658388cd),
-                    c1: Fp(0x33fc4d0b5154ac81),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1c1d882f07715ec9),
-                    c1: Fp(0x29bac75a893ce5f0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x341ee936133b0e11),
-                    c1: Fp(0x4d4661575fe9cb4),
-                },
+                c0: Fp(0x69dca858063d68e9),
+                c1: Fp(0xf2f4ff67378456bf),
+                c2: Fp(0x14919e7ac23ad12e),
+                c3: Fp(0x30a44d8a66efbf1f),
+                c4: Fp(0x33a6c1a5b5f5c9fe),
+                c5: Fp(0xf58a15a4388cdc37),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x8ef65afb3496bd6),
-                    c1: Fp(0x289ebc6d9cff5c5e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3d41f02cae7f29ee),
-                    c1: Fp(0x154d06051a8d0b3c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xe75555e33f0c3ef),
-                    c1: Fp(0x613bc5214a765ef),
-                },
+                c0: Fp(0x1751810f9488fa0c),
+                c1: Fp(0xa1c88bde8df21197),
+                c2: Fp(0x56637d34fc8cf46a),
+                c3: Fp(0x9e82798d2562e505),
+                c4: Fp(0x8af6aaabf80dcf56),
+                c5: Fp(0x6d846c3178814b3),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x18e4cb839962a979),
-                    c1: Fp(0x3f575b5a11f83c01),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3bfea95a6be5d150),
-                    c1: Fp(0x18d702458476d07f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x414d63537e9f903f),
-                    c1: Fp(0x7f55773cfabea73),
-                },
+                c0: Fp(0x84839a1ddb4d6ba2),
+                c1: Fp(0x6f3231d40f7ac643),
+                c2: Fp(0x55a0f5588a22d5cb),
+                c3: Fp(0xbd44dcf4d809ea2d),
+                c4: Fp(0x1702aca3bbd990c3),
+                c5: Fp(0x91eb0fd52bce60d5),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x22034ab3b846641a),
-                    c1: Fp(0x3b0f05649af2f0d4),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3ab691df156028d3),
-                    c1: Fp(0x26e19266976cdba9),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3adaf32a324f4ead),
-                    c1: Fp(0x2397fadefcd8cb0c),
-                },
+                c0: Fp(0x9d72c813921dcab4),
+                c1: Fp(0xe6136b0c7cc2d13c),
+                c2: Fp(0xd870078c9558acac),
+                c3: Fp(0x20c09940ea2c67f0),
+                c4: Fp(0x675922999232a21b),
+                c5: Fp(0x762eea9a498ee2ec),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3d04a2108f48a6cc),
-                    c1: Fp(0x1b49d2199144f55c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3d82d59627407483),
-                    c1: Fp(0x9631f621d676ecf),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xf6fe7c87873c084),
-                    c1: Fp(0x3d14bf427604180e),
-                },
+                c0: Fp(0x855e118cb55648de),
+                c1: Fp(0xbb2cfa54400d0851),
+                c2: Fp(0xc1f8754a90aba39),
+                c3: Fp(0x29be226ea01d798f),
+                c4: Fp(0x5eab23dbe151b510),
+                c5: Fp(0x81e4b7253761a34d),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1bee7b17955e6390),
-                    c1: Fp(0x40dae91ffb85c983),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2af3c0b675d1293),
-                    c1: Fp(0x3347d02dd2b4ce6d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x404cb3773637141b),
-                    c1: Fp(0xe846f7e7da3ed97),
-                },
+                c0: Fp(0xf08b4a07af97c27b),
+                c1: Fp(0x974664ae5bee6d95),
+                c2: Fp(0xe804098630135e5b),
+                c3: Fp(0x9a4ff7b9eb37f614),
+                c4: Fp(0x4cdfbb50ef450e9b),
+                c5: Fp(0x5f410a6acf7ef99f),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3db669157e3908f4),
-                    c1: Fp(0x1eea1d29d4539ed6),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xd3a3e88d8635237),
-                    c1: Fp(0x6ecc85502499f77),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2ca1055e587ecc3a),
-                    c1: Fp(0x2265ea1ba7bfb975),
-                },
+                c0: Fp(0x51a8513861a6bae4),
+                c1: Fp(0x7597bcec4ee041e2),
+                c2: Fp(0xd5039253252ee490),
+                c3: Fp(0xabd0a9915ce71953),
+                c4: Fp(0xd376151e7605d202),
+                c5: Fp(0x1fc52d9b4f12e6a8),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xecb971819d38731),
-                    c1: Fp(0x30f7825a7d8b2753),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1cdda9b4c25665a7),
-                    c1: Fp(0x406148d6eccf2d93),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1848b66c8802a14b),
-                    c1: Fp(0x28f6d431b3e0bf7e),
-                },
+                c0: Fp(0x265d1f8647313738),
+                c1: Fp(0xf401f9ef3b01fbf7),
+                c2: Fp(0xa0835dd0fe418708),
+                c3: Fp(0xa8cc2e53afb2d73a),
+                c4: Fp(0x4a507b4477e6ae8),
+                c5: Fp(0x61cfefe1a2c24b52),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1ae9b8c4d92cfaad),
-                    c1: Fp(0x628ed5c0ff9cfb2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x412c6e2acf512412),
-                    c1: Fp(0x1d4218d2d1ef816),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2ae804c03dd0288),
-                    c1: Fp(0xe3e57d6b1c8aa2a),
-                },
+                c0: Fp(0xb4b91352f8defd5f),
+                c1: Fp(0x8a83e6b95126e067),
+                c2: Fp(0x6bf31362a1c8f8af),
+                c3: Fp(0x804236380ddbe92),
+                c4: Fp(0xb62af5cd7e2b9bb3),
+                c5: Fp(0x59ca92ad82728572),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x10754d8f72465d2a),
-                    c1: Fp(0x1e423b55c9780b18),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1bbfd8ab83f03d49),
-                    c1: Fp(0x100613b6b8441431),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x176e7b5587bc1852),
-                    c1: Fp(0x20e18d920d1cb16f),
-                },
+                c0: Fp(0x69fd921e512401b1),
+                c1: Fp(0x5fca900df11af44c),
+                c2: Fp(0x71fa3e2cdea7c527),
+                c3: Fp(0xafbd5a948651ec8d),
+                c4: Fp(0xdf94815dbd4baa63),
+                c5: Fp(0xc78daebe40248935),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x307bd85750329ba1),
-                    c1: Fp(0x25ed06add2e29c69),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x9933b0c9d4ab45d),
-                    c1: Fp(0xbebfd0781defe1c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1fb156db2d386991),
-                    c1: Fp(0x16ec1aa4d3c29de3),
-                },
+                c0: Fp(0x3e8b0df25f626eb7),
+                c1: Fp(0x54c632a201c1243f),
+                c2: Fp(0x8f3ccec48fc882b5),
+                c3: Fp(0xcf9104ad1c8ab4be),
+                c4: Fp(0x44fbacbdad489bd6),
+                c5: Fp(0xcaf78149d5e8eaef),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xe9aef29b9125ff7),
-                    c1: Fp(0x16a1709b90f19cf8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x4153f7c138bdd6d8),
-                    c1: Fp(0x3c460a29bf69bb43),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x413d899acaa9b43a),
-                    c1: Fp(0x1a4b7cc13edc8f1d),
-                },
+                c0: Fp(0x748ca7051d55592c),
+                c1: Fp(0x60b054d3f6ff986f),
+                c2: Fp(0x8b448c38f32b6823),
+                c3: Fp(0xaab8286d67083ea2),
+                c4: Fp(0xa666382077f9d74a),
+                c5: Fp(0x99a7385a3833c2a2),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xdd01917f6f4421b),
-                    c1: Fp(0x24a6c113628017ea),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1517cee72d4cd657),
-                    c1: Fp(0xa3ed9d81a7a878),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x368bd499c0962972),
-                    c1: Fp(0xdfbae5ed1b09a13),
-                },
+                c0: Fp(0xa2a489abd39dbaa9),
+                c1: Fp(0xae13c82ad71cf57c),
+                c2: Fp(0xe889c7b967bc8c4c),
+                c3: Fp(0x4af9519fb07bd88f),
+                c4: Fp(0x237d8c988d0a4e75),
+                c5: Fp(0x93aa0fbeefd2090e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x135a26a7d71cd961),
-                    c1: Fp(0x2b27ea521c7709fd),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x361bd0ee502d2323),
-                    c1: Fp(0x29537e1e6fbc0901),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x17fd532c85ea9de3),
-                    c1: Fp(0x35c69fae21cc5063),
-                },
+                c0: Fp(0x5460fd4e21c8f671),
+                c1: Fp(0x122296140630ba09),
+                c2: Fp(0x3978fdb46f0ce1e4),
+                c3: Fp(0x2970d65e4449eaf6),
+                c4: Fp(0x988c179976db98d4),
+                c5: Fp(0x85531e2a3ca795f3),
             },
             z: Fp6::one(),
         },
@@ -6016,249 +3712,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x19ec2111b40a280f),
-                    c1: Fp(0x8b16136b3f1c67f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1cd1c1472c8c0747),
-                    c1: Fp(0x15a000c4560764ca),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x81a8478778e9ffe),
-                    c1: Fp(0x400801b350e3851f),
-                },
+                c0: Fp(0x4d6882314a26fa8d),
+                c1: Fp(0x24960645e8eadcdb),
+                c2: Fp(0xf2abd8f3057f4b1d),
+                c3: Fp(0x8eb92c322cd16a91),
+                c4: Fp(0x651cd75890a3a0ea),
+                c5: Fp(0xd990f53fc6507ad3),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1ecb094a1b11dbd),
-                    c1: Fp(0x39de3c933272790d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x311fa43910f00d11),
-                    c1: Fp(0x19d63201b05fb0d3),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3b7269b23437529b),
-                    c1: Fp(0x1d19e35741458e48),
-                },
+                c0: Fp(0x39d57edcf1b53d94),
+                c1: Fp(0x9250285d153edf64),
+                c2: Fp(0xcaffbbf15a817d40),
+                c3: Fp(0xa6b0ebea9b4aca21),
+                c4: Fp(0x1ece29bb2bc19bff),
+                c5: Fp(0x1f5be40d01f037fb),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x202dbe228b7823cc),
-                    c1: Fp(0x4369fd0c1c2d62c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x34796afca2c71a66),
-                    c1: Fp(0x7a9de22ce03e42a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x22e56df42b6103a0),
-                    c1: Fp(0xea0bbd9e7816437),
-                },
+                c0: Fp(0x30fac01294c6c9e4),
+                c1: Fp(0x3b7413402ab26071),
+                c2: Fp(0xc2050e673d33d6ee),
+                c3: Fp(0xa4d88f4c4919510c),
+                c4: Fp(0xbc209ecd70191c95),
+                c5: Fp(0x868dc2dac2aef65b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x248e1f152bc4d99),
-                    c1: Fp(0xe8b07ad20e2e9cb),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x33f1162bef8abdc3),
-                    c1: Fp(0x2410ba2ca82eb0fa),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1b1205a4c828e2ef),
-                    c1: Fp(0x10aed5c0532c471c),
-                },
+                c0: Fp(0xc4ff72d4a654bfb8),
+                c1: Fp(0x17bb89ba361f77b4),
+                c2: Fp(0x6c8bcce28f42abec),
+                c3: Fp(0xc7d6e638571e320e),
+                c4: Fp(0x854aed332ab10f58),
+                c5: Fp(0x59ef011ee8c62786),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x7918e65c7b64ce0),
-                    c1: Fp(0x342c5bf573bf88ed),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x16a4177ec2b14233),
-                    c1: Fp(0x326303858345616),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x174f9cd7350cfcdd),
-                    c1: Fp(0x274c936439cafea7),
-                },
+                c0: Fp(0x6642845f720c7d7d),
+                c1: Fp(0x3cc74f59bfa5c72b),
+                c2: Fp(0x77bf104ae40e5f7a),
+                c3: Fp(0x585af0d3ac72c071),
+                c4: Fp(0x210829a5fc29992),
+                c5: Fp(0x1baf721ea599663b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3dc5f4173360f184),
-                    c1: Fp(0xec6f669c97a6a2a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x31f6a044de33a561),
-                    c1: Fp(0x324423b92f5be8df),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x35f847845dce55b5),
-                    c1: Fp(0x2015987e589f25e4),
-                },
+                c0: Fp(0xa7f9203f830f3571),
+                c1: Fp(0x2b4b2851ddd07351),
+                c2: Fp(0x90124227e0fb81f7),
+                c3: Fp(0x370c69cfb6b68c92),
+                c4: Fp(0x9828cd32016061f2),
+                c5: Fp(0xc282975d9c288540),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xcb21756fa2e2435),
-                    c1: Fp(0x1b1463fc3746cb77),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2e1398770097bec),
-                    c1: Fp(0x2cf055dbb4b14282),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x8c8c88acfde56a7),
-                    c1: Fp(0xee7465dec5375d1),
-                },
+                c0: Fp(0x9c82c080b01522de),
+                c1: Fp(0x318b0069cf15bb59),
+                c2: Fp(0x71596adbaf07163c),
+                c3: Fp(0x5acddd1d4e19e3ef),
+                c4: Fp(0x668a9ed812285a46),
+                c5: Fp(0x50e76986645eea),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3975331a4dc4d78),
-                    c1: Fp(0x27198d8b12d562a9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1bff85b9776a045e),
-                    c1: Fp(0x36f15edacaf7bcf1),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x22764663abe6524b),
-                    c1: Fp(0x3f94df971ed424f),
-                },
+                c0: Fp(0xbfdf6116327306c1),
+                c1: Fp(0x1099cc1a496f1f40),
+                c2: Fp(0xc47e505d4967c2a),
+                c3: Fp(0x408e62a0a1cfabdb),
+                c4: Fp(0x5afe684e23147af2),
+                c5: Fp(0x5815d9f1fc6545e8),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3bdfdb74ff10fdec),
-                    c1: Fp(0x31fcfd99ef623c5e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3a624f4afb9e86c1),
-                    c1: Fp(0x20037d53c6b41534),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1f08c2ffc997f876),
-                    c1: Fp(0xbd1489bd44cada3),
-                },
+                c0: Fp(0x32784f329acfb2b0),
+                c1: Fp(0x5d947caf6fe09d2c),
+                c2: Fp(0xc4383e3ee1b09062),
+                c3: Fp(0x13672b9c9c0b574b),
+                c4: Fp(0x30774a0e2bff96c1),
+                c5: Fp(0x1a013ef7119a0a9b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x215cc664fd11ef65),
-                    c1: Fp(0x2e0a4a2cb5aa0e79),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x214204f9659218ef),
-                    c1: Fp(0x96f25fd3ef81896),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x9251c878008fc0a),
-                    c1: Fp(0x3e774da4e79e8a48),
-                },
+                c0: Fp(0x1fdd848e0627ca8e),
+                c1: Fp(0xe276d4bb1f21aa11),
+                c2: Fp(0x5543e98a03e2c1e3),
+                c3: Fp(0x9ff61f8701fbeb),
+                c4: Fp(0x4a575fb0e2a0101f),
+                c5: Fp(0x5c4458395e78228e),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x36832f29a238fb5a),
-                    c1: Fp(0x1cf47a6fbba8b3ec),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1c8953b3c44f6dfe),
-                    c1: Fp(0x3bc825d1a69400e2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1e74c2cf8e10d7c),
-                    c1: Fp(0xc49ef45b1e4117b),
-                },
+                c0: Fp(0x2eae856fe6af1b6e),
+                c1: Fp(0xf5f70fb7993458de),
+                c2: Fp(0x3ed801b669c8684),
+                c3: Fp(0xd098eeaea1034fd5),
+                c4: Fp(0x39eff33fea541762),
+                c5: Fp(0xd48407bd1a8ac26c),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x38daa21a7587681b),
-                    c1: Fp(0x233fd9db55b74389),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x21b317b399d3c6ff),
-                    c1: Fp(0x188bbbf612f5b3bd),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x32d173b2a192cb04),
-                    c1: Fp(0x131ef586933d2d2d),
-                },
+                c0: Fp(0x598bfc13d05d4511),
+                c1: Fp(0xbc3429969f3010c6),
+                c2: Fp(0x37d836120e07fd9b),
+                c3: Fp(0x1db8740ba7eef2e4),
+                c4: Fp(0x47c29ad745a7533c),
+                c5: Fp(0xfc7afc19df81d98b),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3677011692915231),
-                    c1: Fp(0x96916cbf186f19b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x11a4c44efd12cdb1),
-                    c1: Fp(0xb8ce70f2d41fc1e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x33da11397a909fb6),
-                    c1: Fp(0x1957d95f324efdee),
-                },
+                c0: Fp(0xd704a8473a79a498),
+                c1: Fp(0xe33783cfe766b9d),
+                c2: Fp(0xfc9d2bb7904dd975),
+                c3: Fp(0x983da9ac663e0083),
+                c4: Fp(0xb8ab7498a815108a),
+                c5: Fp(0x72836ad089af1e3f),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x339f1b9504a3c096),
-                    c1: Fp(0x25c2a180eed5af82),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x8f628bd2110774b),
-                    c1: Fp(0x31e1d9d4408c4e2b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x167f245850f0e840),
-                    c1: Fp(0x393b227116d1b751),
-                },
+                c0: Fp(0x1a002d0ff9547782),
+                c1: Fp(0xd82cc473399bfed7),
+                c2: Fp(0x3c54d76864d64b71),
+                c3: Fp(0xa663ca4f467fddc8),
+                c4: Fp(0xc95bda202acf3a15),
+                c5: Fp(0x5730095d649eee9e),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xe51033821ceed3c),
-                    c1: Fp(0xf5cb8bb9d9bea5a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3e0abe9f37f2d738),
-                    c1: Fp(0x31a9f52cb21d9ff4),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x38bf29b3557ccf68),
-                    c1: Fp(0x3bfc99414ae3621c),
-                },
+                c0: Fp(0x9e47ca238c231830),
+                c1: Fp(0xa535fe3a749cf5cf),
+                c2: Fp(0xa8f95fdb36d8b98),
+                c3: Fp(0xab5f819eb909be32),
+                c4: Fp(0x5884c23288b3e1fb),
+                c5: Fp(0x56f77675c8fdaa84),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x16c1113ca6e2672c),
-                    c1: Fp(0x203e825672178dc6),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x31296e7499e6cf10),
-                    c1: Fp(0x175ebe14e7be3dc7),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1284d2d193f3df3d),
-                    c1: Fp(0x1f723fe9e74e7d2d),
-                },
+                c0: Fp(0xa3a0a8d0ee0dedd1),
+                c1: Fp(0x6956cff5aa15924a),
+                c2: Fp(0xe3f12bd885905f4f),
+                c3: Fp(0x696c6fc9102369f2),
+                c4: Fp(0x68e791dfe0ad726c),
+                c5: Fp(0x72184172322579b1),
             },
             z: Fp6::one(),
         },
@@ -6266,249 +3866,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x13abfeb019cfc2b8),
-                    c1: Fp(0x13a61667aa7477a8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x33cbd707fd4017a),
-                    c1: Fp(0xd9e7f1c5a1e8874),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x24611e1c9ce84ef7),
-                    c1: Fp(0x1c3356a26dea5aab),
-                },
+                c0: Fp(0x98e5522c6d31e0e4),
+                c1: Fp(0x78cb02f9c0abe9b),
+                c2: Fp(0x21db55b92fa337d1),
+                c3: Fp(0x6a586984d163224c),
+                c4: Fp(0xf09fc753154f0714),
+                c5: Fp(0x80165d2574f4a853),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1c62e6c401683c98),
-                    c1: Fp(0xfa3ab9afbfd10fa),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x257f0fb4679a1cdd),
-                    c1: Fp(0x299a687cd6bed73a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x8fc9135ca174863),
-                    c1: Fp(0x2d9d47196c192df3),
-                },
+                c0: Fp(0x83c50e6caa53f691),
+                c1: Fp(0xe3e306493f0791d8),
+                c2: Fp(0x421544e5b024832f),
+                c3: Fp(0x416707be37cd08a6),
+                c4: Fp(0xdcfe18a2c3b32745),
+                c5: Fp(0x514f5c0708003a7d),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2da229eb1531ffc),
-                    c1: Fp(0x68dea68214ed2c3),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3393aa941503ff05),
-                    c1: Fp(0x3e2a527b21c0cfda),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1d1e56243f39145f),
-                    c1: Fp(0x111f6305f9b57400),
-                },
+                c0: Fp(0xf8b7a4eeb4acff08),
+                c1: Fp(0xbd3d4095563e5b84),
+                c2: Fp(0x4af673e4acac49f9),
+                c3: Fp(0xcef675419c650a8f),
+                c4: Fp(0x41492f59842ffe2b),
+                c5: Fp(0x459e5d765fc2be08),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x51546cb5ef15e40),
-                    c1: Fp(0x32519911bfed8aa),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1764905297fe5db6),
-                    c1: Fp(0x3e8548b1c1c985b3),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x5e287ddc204de8a),
-                    c1: Fp(0x1e59ac469fc82b48),
-                },
+                c0: Fp(0xc3355a54705219b2),
+                c1: Fp(0xe100b228c48782c8),
+                c2: Fp(0xa893816ceb3e1de7),
+                c3: Fp(0x72a98bbff7f80429),
+                c4: Fp(0xd7996353c398364f),
+                c5: Fp(0x6e8fd3a366e603e9),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2e36043e0c8865f3),
-                    c1: Fp(0xb30eb1c5f63f05d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x12b02a52517471de),
-                    c1: Fp(0x41565e3d272992ff),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3034d5101ec47c80),
-                    c1: Fp(0x2046465660e73d63),
-                },
+                c0: Fp(0x2da0d359810c819e),
+                c1: Fp(0xba2b5945a9374f6a),
+                c2: Fp(0xdadc93184dab7ece),
+                c3: Fp(0x5b389c7db52e43e1),
+                c4: Fp(0x271621a7e0ddf624),
+                c5: Fp(0x16fc4e8bbc007ae4),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x8350c8d80c140c4),
-                    c1: Fp(0x386868beecf6dade),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1ad04df2817e1223),
-                    c1: Fp(0xbdb4bf6c54b2481),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x323bdc7580f2b2a2),
-                    c1: Fp(0x55b2ad9d360a4ca),
-                },
+                c0: Fp(0x4cb42307db48c59e),
+                c1: Fp(0xcc92030185330b4),
+                c2: Fp(0x3d9eb04b11ed34bb),
+                c3: Fp(0xf9a3f602ea6c47),
+                c4: Fp(0x8d4ccd05054ab215),
+                c5: Fp(0x815f3ec8f2aec0b2),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x28b9aace73a19876),
-                    c1: Fp(0x1c0e701e46e1fcf),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xd6ed978f528d41c),
-                    c1: Fp(0x1642cdc175b2b8c4),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xdfec68934ecb05b),
-                    c1: Fp(0x14fbaaf990bf872),
-                },
+                c0: Fp(0x5aff20cf62a92199),
+                c1: Fp(0x8b5dfec4734d75ae),
+                c2: Fp(0x65d9b88e18e2c197),
+                c3: Fp(0xdfb2fca5f4d8c4e2),
+                c4: Fp(0x1a0901274f3700c6),
+                c5: Fp(0x9779790c91f72038),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3a7e95413371f6a2),
-                    c1: Fp(0x2e5ad901ed568466),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x80ba2c271182758),
-                    c1: Fp(0x1a69b2e439bd749e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x288ce70a26c7676b),
-                    c1: Fp(0x116d8976a8bf7f13),
-                },
+                c0: Fp(0x2b66a1f93cfcd102),
+                c1: Fp(0xd47057c06419911),
+                c2: Fp(0x68d1de237c166e4a),
+                c3: Fp(0x196dff54ee734c3a),
+                c4: Fp(0xdfbe0605e427d48f),
+                c5: Fp(0xf9debdffae38ba8c),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2b5d421c05b221f9),
-                    c1: Fp(0x4028bbcdcb23b78c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x308b31b2c5c76615),
-                    c1: Fp(0x2f35b9dbaef8a049),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1b49b700251f60ff),
-                    c1: Fp(0x407997dbf7cbfb8d),
-                },
+                c0: Fp(0xd6f32ef4bedafca0),
+                c1: Fp(0xe88a56cf8a7700bf),
+                c2: Fp(0x8405e0c4620a49ba),
+                c3: Fp(0xad1810ddee89e678),
+                c4: Fp(0x4ec4f048693961cb),
+                c5: Fp(0x76d1f91a0ef058c2),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2c166e399a09ed57),
-                    c1: Fp(0x359ef79094c23464),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x34b3c749b11d8e2c),
-                    c1: Fp(0x14e2ffd119b5926d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x203d7327b9d4ef94),
-                    c1: Fp(0x192b22684dd9d7a9),
-                },
+                c0: Fp(0x60e90a6d98a905de),
+                c1: Fp(0x9666f3a518f8af4e),
+                c2: Fp(0x33aa2fa23cac5e04),
+                c3: Fp(0x9198fb02f64de4da),
+                c4: Fp(0xe41ebbe20e3333f8),
+                c5: Fp(0xb2b0883d5ba28992),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x32628ad2520d21e2),
-                    c1: Fp(0xcc340991332aca2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x68c927e1fbd4558),
-                    c1: Fp(0xc91acd44c4c6a5b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3d740c9d1d81386d),
-                    c1: Fp(0x25ad5d3786a44fbd),
-                },
+                c0: Fp(0x4980d6eb694d1fe5),
+                c1: Fp(0x414b1c4e70c8c7e7),
+                c2: Fp(0x791a4036b5497db7),
+                c3: Fp(0xe6a810a6780720d4),
+                c4: Fp(0xd8501a618099cec0),
+                c5: Fp(0x8b8a1129f5c99016),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x36cd1312aba6e9d8),
-                    c1: Fp(0x3940b9f2cffb30d7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x162a7baa6b8201d2),
-                    c1: Fp(0x137a2b4b66b10432),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2d865e1a3883bb8a),
-                    c1: Fp(0x3f743d99e0399de8),
-                },
+                c0: Fp(0x92c4369163922eba),
+                c1: Fp(0xd7c60a0c3a0bf61),
+                c2: Fp(0xd74fa141b795b719),
+                c3: Fp(0x87f0c539ba2a9c74),
+                c4: Fp(0xe2841b256c5b1fa1),
+                c5: Fp(0x3a1741e6a041dcf2),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2489dd206829a7b4),
-                    c1: Fp(0x2c8a14de35c107bd),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1f49670ca4b4c859),
-                    c1: Fp(0x1492838d13316389),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3c650afd98b018f4),
-                    c1: Fp(0x257880f95b28b14b),
-                },
+                c0: Fp(0xffd434020dd2798e),
+                c1: Fp(0x109e4627820977b7),
+                c2: Fp(0xd6c5a4b088f42e46),
+                c3: Fp(0xf6718f0d77193e3c),
+                c4: Fp(0x6e886175fa8d7c24),
+                c5: Fp(0xb48392eac1ef66d0),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x194e8dd5cdf03035),
-                    c1: Fp(0x3bd547921b39ee18),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2d5d2cc1c38d534d),
-                    c1: Fp(0x2e33055381e74066),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3287e13910fb5e1f),
-                    c1: Fp(0x22bbe8d66701185),
-                },
+                c0: Fp(0xdce4476ecd8041c5),
+                c1: Fp(0x9d5f06cfd30b8dc2),
+                c2: Fp(0x4e7cb3294d0b017a),
+                c3: Fp(0xa6b2b4aad4491b3d),
+                c4: Fp(0xe91d63d45d8807d7),
+                c5: Fp(0x1193d72547a934f9),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xe8a92a04f649864),
-                    c1: Fp(0x3387bf4645b7886a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1872dc347bbb6874),
-                    c1: Fp(0x1ba3c9d782dc1597),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x14b6203890c70d99),
-                    c1: Fp(0x40049459be6de44),
-                },
+                c0: Fp(0xad5dae44f68f9f27),
+                c1: Fp(0xd37acfbea0dabfa9),
+                c2: Fp(0xbdadf4a56a0617bd),
+                c3: Fp(0x7d2a91e0b78f8812),
+                c4: Fp(0x382cc06c58b9fa66),
+                c5: Fp(0x4eea1de7515dec70),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3a42fc12410622b4),
-                    c1: Fp(0x2d17d6e1e5dbf9aa),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2bd6aa7bb2dc9e9e),
-                    c1: Fp(0x1ea22fb82d97978),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x11e4571166a7823f),
-                    c1: Fp(0x220b6ff78602785b),
-                },
+                c0: Fp(0xf94443a339135258),
+                c1: Fp(0x50ece5c2e7c6d83c),
+                c2: Fp(0xefc005940aee59cf),
+                c3: Fp(0x55a7c1d949b389dd),
+                c4: Fp(0x3fae562aa3195b6c),
+                c5: Fp(0x19a64142f3ee313e),
             },
             z: Fp6::one(),
         },
@@ -6516,249 +4020,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x23ff99aa62c3039d),
-                    c1: Fp(0x149446580668c6fa),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x313170242799d522),
-                    c1: Fp(0x26839707612e7d78),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1701bb630cb1ba3f),
-                    c1: Fp(0xdf00cf7a0baffce),
-                },
+                c0: Fp(0xdfec38c9173b762b),
+                c1: Fp(0x195ca1b1ee012861),
+                c2: Fp(0xa2d3de6349ce99a8),
+                c3: Fp(0xaedc1887218c8933),
+                c4: Fp(0xea14c18fcc461c09),
+                c5: Fp(0x88f8655f21b039cb),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3a7545ccb71ece79),
-                    c1: Fp(0x388f44d9c9789169),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x30ded7e070e70ead),
-                    c1: Fp(0x122e3299fe80ab2a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x113f437b0bd25a1b),
-                    c1: Fp(0x9906df7d927e27f),
-                },
+                c0: Fp(0xb4d4f2108e630037),
+                c1: Fp(0xe8d8cfbf7e1c1081),
+                c2: Fp(0xf4c538f0f3e32dab),
+                c3: Fp(0x580aa39b472c1dd7),
+                c4: Fp(0x351a5db1b57feac3),
+                c5: Fp(0xb542a09eeb9144a6),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x22484bcedce7b519),
-                    c1: Fp(0x3f479875c38e0a9c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x202c1c941a4da81f),
-                    c1: Fp(0x2c384369de2d42ac),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x8dfb23054a6ad49),
-                    c1: Fp(0x258828e914ca4ef9),
-                },
+                c0: Fp(0x402299bc60c8e9ff),
+                c1: Fp(0xf1d39ad58b36bd6d),
+                c2: Fp(0xcb67119bab767e11),
+                c3: Fp(0xa7f8444ff12a6d99),
+                c4: Fp(0x75c2ecec34986146),
+                c5: Fp(0xa4c821693606ce94),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xc3697e2daf9a0),
-                    c1: Fp(0x98ceff4be15e431),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x190f8591aa09493a),
-                    c1: Fp(0x2efed4f9b89ddd8a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xe6214f225746f79),
-                    c1: Fp(0x398ff060b09e4460),
-                },
+                c0: Fp(0xc3ae047b98f07f5f),
+                c1: Fp(0x33b53247a9fbf22f),
+                c2: Fp(0x1dc24d1807397c6d),
+                c3: Fp(0x63e5724941d1483),
+                c4: Fp(0x8d8552974b9838fc),
+                c5: Fp(0x9a1716c13d163dbe),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x238156baf44da087),
-                    c1: Fp(0x24553aee7973d0a3),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1c8d3ed721d4676f),
-                    c1: Fp(0xcfe9e1d42a2ea61),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x40ee4e109d402286),
-                    c1: Fp(0x3c244b03b3c79519),
-                },
+                c0: Fp(0x6083792f2d1536f0),
+                c1: Fp(0x558057389f05b768),
+                c2: Fp(0x26bdfe5dbe6df8c3),
+                c3: Fp(0x54eef63854b48933),
+                c4: Fp(0x3e2e528ba8e39757),
+                c5: Fp(0xe611c4057a9c293d),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2903d2367bd22404),
-                    c1: Fp(0x39bfcb650ae46484),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1e4b9fbee65444ed),
-                    c1: Fp(0x2f9e3c36b4d863bc),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3669d52c9b89cd9f),
-                    c1: Fp(0x1c9ece4bd0baa142),
-                },
+                c0: Fp(0x93d6f45740319cc5),
+                c1: Fp(0xa751c887044f4e3a),
+                c2: Fp(0xb0df7192580f665d),
+                c3: Fp(0xbeb68ec90b09fc06),
+                c4: Fp(0xfd958a22952e4ae2),
+                c5: Fp(0x687534d8a238dd25),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2e35473be2cb86c4),
-                    c1: Fp(0xd322ebc3cffca6c),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x4cdbddea9ee2f6f),
-                    c1: Fp(0x21e9ea572a61b0e5),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x10737a464ea3497d),
-                    c1: Fp(0x29b0c351f6282511),
-                },
+                c0: Fp(0x3315c2d5592fd960),
+                c1: Fp(0x605d6a6e9b3b6e44),
+                c2: Fp(0x2a5d4867adcc4514),
+                c3: Fp(0x231fc634da88ea1f),
+                c4: Fp(0xddd7bce9504c7648),
+                c5: Fp(0x23fb96f50a7522c1),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2e57e6d746d58229),
-                    c1: Fp(0x33ce12a56497bf72),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x335ec420e1413f82),
-                    c1: Fp(0x14f565f5ccc1bcf7),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2df680893fd5218f),
-                    c1: Fp(0x398799b490e1b44),
-                },
+                c0: Fp(0x89319fcb4a13b18f),
+                c1: Fp(0x1447ded1552d4514),
+                c2: Fp(0x31b2cb123c0748cb),
+                c3: Fp(0xf363913a884066d2),
+                c4: Fp(0x71fbac99f3e265ff),
+                c5: Fp(0x2d9fcfdf6cedb48d),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1a4bf8a78c8ba5a8),
-                    c1: Fp(0x314423c5ada98161),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2237bcdb08b1f2d7),
-                    c1: Fp(0x86e78b6a5c7fb10),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x35fd796c45ed0ace),
-                    c1: Fp(0x34f7fea25070b77e),
-                },
+                c0: Fp(0x907f5f8dc906e5ef),
+                c1: Fp(0x5dfb46d531f5e689),
+                c2: Fp(0x49634318d5f2a7fe),
+                c3: Fp(0x7a0759a1e442d5c6),
+                c4: Fp(0xe31e6f797ffe2294),
+                c5: Fp(0xf393f887717084c4),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x18877d242ae0713d),
-                    c1: Fp(0x1933c72d1eef8478),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3cc6aa12a628a988),
-                    c1: Fp(0x1c4fbf0e28614dce),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x15688dc178ed3951),
-                    c1: Fp(0x1c52695f788675b9),
-                },
+                c0: Fp(0x6d4a9b560f31e0b3),
+                c1: Fp(0xa80b179710e46a47),
+                c2: Fp(0x778de1411a46bc7f),
+                c3: Fp(0xc4b280e7c5299daa),
+                c4: Fp(0x94f2a3c225705a58),
+                c5: Fp(0xab56fa55f9019c01),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x30c80420ed38bd68),
-                    c1: Fp(0x976207365420),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2ada9bcc10a368e),
-                    c1: Fp(0x3aafc304506b0287),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1b9792d80a3e4d81),
-                    c1: Fp(0x1e19592dcf7f6575),
-                },
+                c0: Fp(0xc68eac1c625acef2),
+                c1: Fp(0xad98b95c997e9e4e),
+                c2: Fp(0x958600b66f34e2a0),
+                c3: Fp(0xa331dfbc77cc78f8),
+                c4: Fp(0x1fe105c0812983c0),
+                c5: Fp(0xaff4980d49d8aed7),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1b71e78e243876a5),
-                    c1: Fp(0x34049bed26cf7880),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x395ece3b5acbc5dc),
-                    c1: Fp(0x1d495ea0da793a49),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x40d21f51086ce6d4),
-                    c1: Fp(0x335b82cabf0df267),
-                },
+                c0: Fp(0x2c171334fab88dfd),
+                c1: Fp(0x7d5afa5304ef6f34),
+                c2: Fp(0xd368c48fc4bb4b7c),
+                c3: Fp(0xbb4bcd3f62367a6f),
+                c4: Fp(0x2b7c4d3e98d09bbf),
+                c5: Fp(0x37694b160d1151d8),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x20acf0c4371c65),
-                    c1: Fp(0x30a7c1240853dda2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3162f983d18f6165),
-                    c1: Fp(0x1102d9c223b1742c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x40f4ca21901fe96),
-                    c1: Fp(0x581c18e247077fc),
-                },
+                c0: Fp(0xc800afb795ae5aa9),
+                c1: Fp(0xe612813229d8f6e2),
+                c2: Fp(0x65cf75e8655dbe62),
+                c3: Fp(0x1e6e07c64dcb6f37),
+                c4: Fp(0x837f683b4dde2cfb),
+                c5: Fp(0x881294fe0400a222),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3db2899d0137ad76),
-                    c1: Fp(0x21d7be085780318a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x67890888ee03f69),
-                    c1: Fp(0x13286a35919b1d21),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x12aad59636103292),
-                    c1: Fp(0x1246cd09f9d3763f),
-                },
+                c0: Fp(0x3739456a245b8558),
+                c1: Fp(0xa9669d699b2b718e),
+                c2: Fp(0x49ca80a80222c2f),
+                c3: Fp(0x6bd999a0c902d2ec),
+                c4: Fp(0x2ebac81e402252e),
+                c5: Fp(0xc426dcbf5789605d),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1885fedc7bffef08),
-                    c1: Fp(0x32eaa2240f1a658e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xd16c8d2bf78c53f),
-                    c1: Fp(0x2e76cd0d049c6a1e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1aca92462104a729),
-                    c1: Fp(0x226bffb3d6407f49),
-                },
+                c0: Fp(0x5ebd59da3d0d4518),
+                c1: Fp(0xb3a12c5e4a390f4),
+                c2: Fp(0x936ff4778b7d448f),
+                c3: Fp(0x14b1ef3f87b4e4),
+                c4: Fp(0x9c49f602e56dda7b),
+                c5: Fp(0x636151d556a161d3),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1a49b020f6aec0e9),
-                    c1: Fp(0x3114e551bc70c500),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x75c4fbe4cd84984),
-                    c1: Fp(0x553a4f4a63f8faa),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x129116ef735474a5),
-                    c1: Fp(0x233ae8c47bdbd909),
-                },
+                c0: Fp(0x2c26623b5539e1bf),
+                c1: Fp(0x1f073f2a3dd718ca),
+                c2: Fp(0x4f9e4e7cf0227423),
+                c3: Fp(0x9b5e7ed8fc41e60f),
+                c4: Fp(0x52eaad81d62e6ed0),
+                c5: Fp(0xf3ce7d79facc9fa6),
             },
             z: Fp6::one(),
         },
@@ -6766,249 +4174,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3f105b86bf3eee2),
-                    c1: Fp(0x304253ecc36ebb06),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x122982c8028e29a6),
-                    c1: Fp(0x336d21386fbb2b91),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x83767702d44bee9),
-                    c1: Fp(0x1c435cea64183cf0),
-                },
+                c0: Fp(0x87beb681241bd627),
+                c1: Fp(0x81ac2c8a29b19efc),
+                c2: Fp(0x950912e73df43c4c),
+                c3: Fp(0xd525944220ee3b2),
+                c4: Fp(0x302319244797c300),
+                c5: Fp(0xd801e1350f0aa4a0),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x30831459ef8ba879),
-                    c1: Fp(0x2c4a617a69353a81),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x268d64bd2e712816),
-                    c1: Fp(0x1eb6c31eccd7746a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x109dd7eafd91d44d),
-                    c1: Fp(0x15f4bce44a1e694a),
-                },
+                c0: Fp(0xc09335760fecfdb7),
+                c1: Fp(0xbb680216ef0eb940),
+                c2: Fp(0x6d95dca31fafd571),
+                c3: Fp(0xa03805a28a1ff34a),
+                c4: Fp(0x30e11bb69799df43),
+                c5: Fp(0x763c541fdd48c8ba),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x298c5703ab8a9f87),
-                    c1: Fp(0x16560f6acb8a1c1a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x251cd20583e571fe),
-                    c1: Fp(0x3a3ba81d49f19a09),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2e8f6c73d034188f),
-                    c1: Fp(0x2da0307c1cb2c6e4),
-                },
+                c0: Fp(0xd4022242ea68ef90),
+                c1: Fp(0x9628bcd455320fd4),
+                c2: Fp(0x38a4bf5d3e967cd7),
+                c3: Fp(0xe03994fb2a3d83e3),
+                c4: Fp(0x52cd1cb595145938),
+                c5: Fp(0x9ed2634b6e3e4fb0),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2fbdff6180f842d0),
-                    c1: Fp(0xcfc686dd0933886),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3dc362a29a2ade8e),
-                    c1: Fp(0x1be3864fadad7e43),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2e268afa3d99528),
-                    c1: Fp(0x2af119f67076d49e),
-                },
+                c0: Fp(0xbbc3e0d74f47f3a1),
+                c1: Fp(0xfdbd8120b82857b6),
+                c2: Fp(0x24da2ed86fca4ad0),
+                c3: Fp(0x67aaa4905a0475f9),
+                c4: Fp(0xb93da819213eddaa),
+                c5: Fp(0x56c75c7785317403),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x19e04037cf0b9666),
-                    c1: Fp(0x2cc59fa060da083d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1e2e40505dc0b454),
-                    c1: Fp(0x3aaf7d80416184e8),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1d6acfcc7e10c070),
-                    c1: Fp(0x1dad80c124ea6335),
-                },
+                c0: Fp(0x7d39296ab86d3563),
+                c1: Fp(0xd8bcddee6668c436),
+                c2: Fp(0x2ebbb93f5febb9d4),
+                c3: Fp(0x8ec9646ff3f6ce6a),
+                c4: Fp(0xd8b12626fac34f1c),
+                c5: Fp(0x75247addf741a0d6),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3ff0b89e7e5f09d8),
-                    c1: Fp(0x3ce0a1275b9ef997),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x47c9aac3c1f0b73),
-                    c1: Fp(0x626d9cd3057a5bb),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2999217c5647753b),
-                    c1: Fp(0xd03d54e2fe029c6),
-                },
+                c0: Fp(0x4bdb7abaf5d6bfe),
+                c1: Fp(0xfdafbbdb6c941f68),
+                c2: Fp(0xe4b1686c9c9debc5),
+                c3: Fp(0xd7a4293c9e7268f8),
+                c4: Fp(0x5d1deb032bda3a25),
+                c5: Fp(0x7e1d29ab9bad6255),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x26ee2f42252a861b),
-                    c1: Fp(0x31ff84030460ab4b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1dbc092d8e9b7e78),
-                    c1: Fp(0x243f7b1229aef2b7),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1d9255cecd88dac5),
-                    c1: Fp(0x2d149b327cb94f4e),
-                },
+                c0: Fp(0x63d502f06c2c23a),
+                c1: Fp(0xc001dadf9ea8fa92),
+                c2: Fp(0x965208defd19b5d6),
+                c3: Fp(0xa202dfb3bf5f8882),
+                c4: Fp(0x3d63dba710f07241),
+                c5: Fp(0xcd2a9db60cfc3428),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xbb3ac3d631a967f),
-                    c1: Fp(0x1c1492a3b1cd63b7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xcdb961683e56c29),
-                    c1: Fp(0x108559e255b61ee0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xd49efbb3da11c2f),
-                    c1: Fp(0x32d7bcb442f27ca6),
-                },
+                c0: Fp(0xb048851e062de6b5),
+                c1: Fp(0x782e1acb0fb89462),
+                c2: Fp(0x5091f6a54fedccb1),
+                c3: Fp(0x288bddb605aa6c0),
+                c4: Fp(0x5786d1ad7cc02028),
+                c5: Fp(0xf47823eed7a1ab50),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x13960ae8acb9334a),
-                    c1: Fp(0x333f5e2755a35add),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x27f4a8cf98fb84e8),
-                    c1: Fp(0x3df5e2f32aee5ee8),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x129655ed1e90626),
-                    c1: Fp(0x2feab5f707c5f5e3),
-                },
+                c0: Fp(0xdcccf04ef69e49ab),
+                c1: Fp(0x45bf61365117a8f),
+                c2: Fp(0x7bdba5d6acf773e0),
+                c3: Fp(0x2315955a1864c447),
+                c4: Fp(0x747e523c97afb644),
+                c5: Fp(0xb7671c94f135274f),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xb7168ed23158239),
-                    c1: Fp(0x2b3b7a0e5f825e6b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2ba1f7a58ff55045),
-                    c1: Fp(0x3be18f5eac73140d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x97f946cdad97614),
-                    c1: Fp(0x32ad36e5a11dd0bb),
-                },
+                c0: Fp(0xfb6ffde49b445a9f),
+                c1: Fp(0x133029f18155c471),
+                c2: Fp(0x821283b18c916d60),
+                c3: Fp(0xd99107f900619153),
+                c4: Fp(0x272e18dd1eb0b7b6),
+                c5: Fp(0xec453531c29107ef),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3f228af76de0a513),
-                    c1: Fp(0xbb64060057e42d0),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x25ccfa229b59cab5),
-                    c1: Fp(0x2baa6753584e71f4),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x96b456e97b603ed),
-                    c1: Fp(0x1d3e5f5a37b43e4f),
-                },
+                c0: Fp(0x93882a2c4825f405),
+                c1: Fp(0x9479db538ad8839),
+                c2: Fp(0x4108cd326679b07e),
+                c3: Fp(0x781aa4869ac12923),
+                c4: Fp(0xc96dfb037826cb81),
+                c5: Fp(0x2ca45192d837b077),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x264da821f09f4b98),
-                    c1: Fp(0x379f68d586418635),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x12271df129e85717),
-                    c1: Fp(0x151cef4f5e69976f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xa551999e4546db6),
-                    c1: Fp(0x233a1a5e0317dd9),
-                },
+                c0: Fp(0xaf01c5d807d7cfce),
+                c1: Fp(0x2105e7c11deaaf09),
+                c2: Fp(0x4de04230017e9315),
+                c3: Fp(0x20d68ab12bb1d928),
+                c4: Fp(0xa33db092958ad7c4),
+                c5: Fp(0x56a067ffcc0a42ee),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xba7754bcf844a62),
-                    c1: Fp(0x1e6b0e26ded14bf3),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x27a4ec18d8e76d20),
-                    c1: Fp(0x26bf362b4229e5c3),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2cc7163bb391c34d),
-                    c1: Fp(0x195057115a87bd76),
-                },
+                c0: Fp(0x944605b0221b8e9c),
+                c1: Fp(0x9b8878aeba82f6),
+                c2: Fp(0xf50fb6b1dd55a82),
+                c3: Fp(0xb887cfd384e9d942),
+                c4: Fp(0x81a9a0820412e48),
+                c5: Fp(0x5bcd882a34ced288),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x101bb9abccdcd004),
-                    c1: Fp(0x8c28b1d3b2e3589),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x289ccb308fcc9965),
-                    c1: Fp(0x26c4cb0ff513c4b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1eb057c53454f16d),
-                    c1: Fp(0x24c61468f20d7171),
-                },
+                c0: Fp(0x25561fe4dd53b62f),
+                c1: Fp(0x1fb4ec18d0d5f7c4),
+                c2: Fp(0xe5649e5902f3f75f),
+                c3: Fp(0x887d47eaead51e3d),
+                c4: Fp(0x6d4c8465af0bb79),
+                c5: Fp(0xfe76fd5b543d070a),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x11fc734a99b54d33),
-                    c1: Fp(0x38a02baa75117ed7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x10ee540a68bde3a1),
-                    c1: Fp(0x3059b1d666b44276),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1c0527195bcdebb9),
-                    c1: Fp(0x7d5e74b48984783),
-                },
+                c0: Fp(0x6f39ff45f1c46e02),
+                c1: Fp(0xa5e9416eb15cccb7),
+                c2: Fp(0xa8a978cacbb107ad),
+                c3: Fp(0x5d4cf064105ebc0b),
+                c4: Fp(0x6238579b9fa968e5),
+                c5: Fp(0xdcc7783c0deb508),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1550d8a556659284),
-                    c1: Fp(0x14ea156e332e1eb4),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x278eee2176c8f03f),
-                    c1: Fp(0x3ceb3ba5d7a9370),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2fab99053eaee7b5),
-                    c1: Fp(0x2ad0124462196849),
-                },
+                c0: Fp(0xf9e341b71cd38f3b),
+                c1: Fp(0x5070bfcbbf85b0df),
+                c2: Fp(0xc78718d8e60d6b26),
+                c3: Fp(0xc89b53fb5c60ccb2),
+                c4: Fp(0x1a521775850bdcba),
+                c5: Fp(0xc856f325da32b7a8),
             },
             z: Fp6::one(),
         },
@@ -7016,249 +4328,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3c447161a58948d2),
-                    c1: Fp(0x195c848702a2e961),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2d0fefd8708ef19e),
-                    c1: Fp(0x4def066079d77ff),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1af628601b354e2d),
-                    c1: Fp(0xdea50562bc1b5f8),
-                },
+                c0: Fp(0xa9aa7ca726adf2b1),
+                c1: Fp(0xc5e57c1c537be870),
+                c2: Fp(0x5853e30cd9c1c28),
+                c3: Fp(0x27ddaca2391ada10),
+                c4: Fp(0xb3f7374252c0725e),
+                c5: Fp(0x313fe024ad081bd),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x417437cdaa01a3e7),
-                    c1: Fp(0x25f1a1202aa72f9e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2286737d479c66bb),
-                    c1: Fp(0x3fb837875d69a6e6),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x243dbb3cf90c81c3),
-                    c1: Fp(0x37edad07ce1b6759),
-                },
+                c0: Fp(0xe20b41ac3ef43c16),
+                c1: Fp(0x2bbb5babebf3e792),
+                c2: Fp(0x50fcba15ae2921da),
+                c3: Fp(0xa5f5049bf0f86211),
+                c4: Fp(0xf6563289f9f60b7a),
+                c5: Fp(0x1cc1f0ea0993032d),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x368247298834ca83),
-                    c1: Fp(0x21546606ee7266e1),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1fc5151c3b2d0f83),
-                    c1: Fp(0x6cfccdaec0bc917),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x838efc353227eba),
-                    c1: Fp(0x228ec50ea142351a),
-                },
+                c0: Fp(0x3876a0d205b6b78d),
+                c1: Fp(0x4c75e8910a288106),
+                c2: Fp(0x9eeeb8a436526b4),
+                c3: Fp(0xfd7a598fac57d7de),
+                c4: Fp(0x2ddd1a3c7ee654a3),
+                c5: Fp(0x58c80e6ef07d1d1d),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x18b714117cc02c49),
-                    c1: Fp(0xdd83da97c311eb3),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x19f45df898ca6736),
-                    c1: Fp(0x10fa64f90ff0e50e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x199ea289f13aae1c),
-                    c1: Fp(0x2cbdc46d2dc32ac2),
-                },
+                c0: Fp(0x4188e498f18b0f4f),
+                c1: Fp(0x5c29a0efff71883d),
+                c2: Fp(0x60e2fccaf2c6e4e5),
+                c3: Fp(0x7b3729381783f92e),
+                c4: Fp(0x11016a460a53fc74),
+                c5: Fp(0xb0f2a000e03be55f),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x32740a385325379f),
-                    c1: Fp(0x7d1cee384bdfc8b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x393452c7a162d332),
-                    c1: Fp(0x19197b4e146496b4),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x268ca00f243e9bc8),
-                    c1: Fp(0x1ccccb399b367adf),
-                },
+                c0: Fp(0x1fa61ef60e0b589),
+                c1: Fp(0xdd02ed25871e50af),
+                c2: Fp(0xe4c4791a41aa64fd),
+                c3: Fp(0x4999180fbdabe5a0),
+                c4: Fp(0x99ee26f3869dfb28),
+                c5: Fp(0xa0818b81c26ebdb3),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x333e2c9afcd99afd),
-                    c1: Fp(0x3854cee816d0d589),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3e4ba95cf96cfc00),
-                    c1: Fp(0x2912d5338596f470),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x38b04e44614af18b),
-                    c1: Fp(0x2df7eb0eb7b0eb59),
-                },
+                c0: Fp(0xf695997eecf64bd8),
+                c1: Fp(0x8032a2718adf11b3),
+                c2: Fp(0x27bc10159f5f98a9),
+                c3: Fp(0x9393cfcb50b1d586),
+                c4: Fp(0x4d7fd187ce1e2aa),
+                c5: Fp(0x56bff3c0fe8a6197),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xbed64bf863b057d),
-                    c1: Fp(0x11e5e79cb644f9b9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3cce31203736251c),
-                    c1: Fp(0xe45b0c6a072209),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1027af59a6dffbaa),
-                    c1: Fp(0x109b7ebfa43c8e40),
-                },
+                c0: Fp(0xe0654ab65008a289),
+                c1: Fp(0xa3897a295c2700fb),
+                c2: Fp(0x43c8c407c9a761ea),
+                c3: Fp(0xd9fd7c3baa5d0308),
+                c4: Fp(0x237132da7fff31c7),
+                c5: Fp(0x521f27e701280781),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x5600bf0abdd68d6),
-                    c1: Fp(0x3904d80684cb3844),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x37285a8ebc134c58),
-                    c1: Fp(0x8d33f63e1909f69),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xaf3fcc79ac9ca0),
-                    c1: Fp(0x3553866b01f909c1),
-                },
+                c0: Fp(0xa2f2df739a1be8f3),
+                c1: Fp(0x637b65dd82ef7044),
+                c2: Fp(0xedb22e888db99d9a),
+                c3: Fp(0xcd3c293dbf971f5d),
+                c4: Fp(0x51fb4e3f589a2705),
+                c5: Fp(0x133dff7311ed1a61),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x40fdc8766ed64913),
-                    c1: Fp(0x7e19c374467a05b),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x19a716180b302bbe),
-                    c1: Fp(0xf5ed833f424fe3e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x229cd15c4edbbe34),
-                    c1: Fp(0x69ae61b8621acaf),
-                },
+                c0: Fp(0x8c28b6a5c895f4da),
+                c1: Fp(0xea58d4fac40a4cf6),
+                c2: Fp(0x896b858c5527fd6),
+                c3: Fp(0xe0fbeea17ac3032),
+                c4: Fp(0xdd4726b37659f1ed),
+                c5: Fp(0xf194ebe0ef252019),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1198f150d6c8e115),
-                    c1: Fp(0x8e02758de59fee8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x20e5e224e9bc4707),
-                    c1: Fp(0x2bd749c5c31ec123),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1174b0697cf14600),
-                    c1: Fp(0x3020d10837b80ba4),
-                },
+                c0: Fp(0x5cd4cfc39d2f5f58),
+                c1: Fp(0xc229772f3d91f010),
+                c2: Fp(0x9434b918e9587127),
+                c3: Fp(0xf0845e539ff40fc9),
+                c4: Fp(0x48fbe706816c2166),
+                c5: Fp(0x2df26202723bfe71),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x7b42ebe55dd860d),
-                    c1: Fp(0x397ebba150cde809),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3e053f238fa99e2b),
-                    c1: Fp(0x2b1766a1b5e2f0d3),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x24a4e53dafe77f93),
-                    c1: Fp(0xbd85a8fb9a89b8),
-                },
+                c0: Fp(0x1e05f307d7f6071),
+                c1: Fp(0x9081641e4d68b99d),
+                c2: Fp(0xc47e3238eb77090e),
+                c3: Fp(0x380a2793e01fb2ba),
+                c4: Fp(0x8df6fbebb5f2b389),
+                c5: Fp(0xdf7f9515a7708b7e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xd9e87df488244ee),
-                    c1: Fp(0x1b7182e5f30730a2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x908bb6787dd77aa),
-                    c1: Fp(0x2c7901f8e4e78460),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xbb44f3e12232c16),
-                    c1: Fp(0x3f00784338663bca),
-                },
+                c0: Fp(0x6f6679b17c2697e1),
+                c1: Fp(0x3173892413a29b55),
+                c2: Fp(0xe3c8cceae1fc8c48),
+                c3: Fp(0x1d968c001612444c),
+                c4: Fp(0xb758994241458975),
+                c5: Fp(0x333b4cd85abdf2e2),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xc209cc5eacd9c40),
-                    c1: Fp(0x1640247af81184fa),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3271de38fd39f48e),
-                    c1: Fp(0x150b67ea6f95af3),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x37ee53e144eb7bae),
-                    c1: Fp(0x3c91ab96a52bcbc2),
-                },
+                c0: Fp(0x5cc174054536eefe),
+                c1: Fp(0xb2e95483f8c430fe),
+                c2: Fp(0x5e87a785d4d6acf),
+                c3: Fp(0xa1c475ff0e110d01),
+                c4: Fp(0x42066ea90f76d7ac),
+                c5: Fp(0xaea027177a4da27b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x249ea74c6ae0ee49),
-                    c1: Fp(0x39670d73804c4792),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x128fb1fff24e4fd0),
-                    c1: Fp(0x13ba7de25858b847),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3ac019d112cb2661),
-                    c1: Fp(0x18f19c9cc9f696b7),
-                },
+                c0: Fp(0x84c49cd98901fe1d),
+                c1: Fp(0xc70ea2cbdce46e8e),
+                c2: Fp(0x8a26bf85e3a83919),
+                c3: Fp(0xc9e8321970ad522c),
+                c4: Fp(0x69cb3f0b439b6be6),
+                c5: Fp(0x663d9ee3c0c208fd),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x9550b78148d2b7d),
-                    c1: Fp(0x9b436691e34c365),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x78a5e9736bdd4a6),
-                    c1: Fp(0x1fb7e105edf4767e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xb805f859e959b99),
-                    c1: Fp(0x49d5c1da4cdbd0e),
-                },
+                c0: Fp(0x13280bf5ee7806c0),
+                c1: Fp(0x2cf92d8d5d684222),
+                c2: Fp(0x63965cd036f3ffb7),
+                c3: Fp(0x155a48d8dd2b407d),
+                c4: Fp(0x13e67c416ccce48f),
+                c5: Fp(0x92d885b32e124709),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x156b68542c3308b8),
-                    c1: Fp(0x1936aa3864ab27eb),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2c3ee06eca4a3d36),
-                    c1: Fp(0x298fee87ffbe0625),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x18e566ad52ea8ef7),
-                    c1: Fp(0x8f60380304e721b),
-                },
+                c0: Fp(0xf1c81ce44a94429),
+                c1: Fp(0x207ee8b4c901f39e),
+                c2: Fp(0xe2d38ed24f966602),
+                c3: Fp(0x18ed9c6f854a5334),
+                c4: Fp(0x4ba05711418ba05e),
+                c5: Fp(0xab5377e3ae0b982),
             },
             z: Fp6::one(),
         },
@@ -7266,249 +4482,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x606aaff14dfafe7),
-                    c1: Fp(0x3304f76beabfb246),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xed1356ec8e8e23e),
-                    c1: Fp(0x3f4c39996be798b4),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x12499b566700d6f7),
-                    c1: Fp(0x1db3e00e06a91e87),
-                },
+                c0: Fp(0x6ee55d6c82804196),
+                c1: Fp(0xe460d69add1e2ec4),
+                c2: Fp(0x6ef3446c71478beb),
+                c3: Fp(0xf184f35194f3cb1e),
+                c4: Fp(0x743516d23249b74c),
+                c5: Fp(0x1426dbbc46f61efa),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xd1816fa651d0c2c),
-                    c1: Fp(0x16569073397501b2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x189da861c4865826),
-                    c1: Fp(0x1edd5205f7e79721),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1291e27fc8504618),
-                    c1: Fp(0x238c88a4c37fffe1),
-                },
+                c0: Fp(0x9188778c33ef64ec),
+                c1: Fp(0xe79f5f184160d3a8),
+                c2: Fp(0xbc301dac24ebd130),
+                c3: Fp(0xdb81dd69903fceb5),
+                c4: Fp(0x271169bbbf3e411f),
+                c5: Fp(0xee12c30262750b96),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2dd45a26a71cee3f),
-                    c1: Fp(0x304bd46c8e186fe3),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x29716a237a697bdc),
-                    c1: Fp(0x1152947da76d982f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x11caabfc5fa441d5),
-                    c1: Fp(0x28a06860c76d0eef),
-                },
+                c0: Fp(0xd4df9e70e603d0fd),
+                c1: Fp(0xb0bf1f260476a845),
+                c2: Fp(0x6ff47842b9e7c8cc),
+                c3: Fp(0x9283671b3c04b160),
+                c4: Fp(0x4274aed37b267af9),
+                c5: Fp(0x42107fb2c5f33403),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x22abe82d24c0adf5),
-                    c1: Fp(0x2ad1f5d2b9d48688),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x57463dec89b80ac),
-                    c1: Fp(0x1f544da5ac99e574),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x24fe87b9c7cfd9f5),
-                    c1: Fp(0x56ce7e9b57c7325),
-                },
+                c0: Fp(0xbe3d9c93b3596484),
+                c1: Fp(0x3629f6749dd831df),
+                c2: Fp(0x70f294e83566fe94),
+                c3: Fp(0xddc18df275900c0f),
+                c4: Fp(0xde52b2151c704dfa),
+                c5: Fp(0xa36d8f19722b5b1b),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x35bdaca272a06f63),
-                    c1: Fp(0x2c96f8a83ce27341),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x4068d74b6b0d4030),
-                    c1: Fp(0x81b50081d0a3d8d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x33c99a1c38e164d9),
-                    c1: Fp(0x212d97c56b708169),
-                },
+                c0: Fp(0xf18eb4c30fb99fc5),
+                c1: Fp(0x301ba95bc0356b94),
+                c2: Fp(0xbbdf4954a7cae745),
+                c3: Fp(0xbe178b83dbd0d47f),
+                c4: Fp(0x349b88dc1b5104c0),
+                c5: Fp(0x69653fdf1e2794f8),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x388c22c66751e36),
-                    c1: Fp(0x3182f9dc566b8f3f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1540b2744d0010b6),
-                    c1: Fp(0x39948fc48192ddd2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3d01da1b46578cd9),
-                    c1: Fp(0x109e51fe4b202011),
-                },
+                c0: Fp(0x931627321d731b16),
+                c1: Fp(0x9361231b49e833f9),
+                c2: Fp(0x822cabbe1bde2ea3),
+                c3: Fp(0x6f9cdcbca2ed6fac),
+                c4: Fp(0x51a38f58986fa0c0),
+                c5: Fp(0x31f9742007f61f18),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1f3ab21d02c977da),
-                    c1: Fp(0x17d82e718af69b56),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x6a0414382a56d48),
-                    c1: Fp(0x14319ff9cb9df5da),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x391bee81814f379c),
-                    c1: Fp(0x353c5e2c3ed417c6),
-                },
+                c0: Fp(0xb6593d86cb224a22),
+                c1: Fp(0xd21f189991ba9fd9),
+                c2: Fp(0x7330a2b1f94bc4c4),
+                c3: Fp(0x20c6d5d40081ddb5),
+                c4: Fp(0xed3804693f0719c2),
+                c5: Fp(0xd9c4065e472f945e),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xc2cb6a95a0b872e),
-                    c1: Fp(0x2ecfaef49f929f9f),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x190b0210f7e12ce5),
-                    c1: Fp(0x228765b8e943dd17),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1d04b8ff3380d597),
-                    c1: Fp(0x31f40a92e96a6d76),
-                },
+                c0: Fp(0x709bb865477f0f02),
+                c1: Fp(0x45bedbd5dded0c39),
+                c2: Fp(0xa330de0b9a9da935),
+                c3: Fp(0x18c0ebae3f02799e),
+                c4: Fp(0xe9a5dde276d12f7c),
+                c5: Fp(0x9ac78729968bbded),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3720cb8299a79b5),
-                    c1: Fp(0x639492b858cf7ae),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x33a1700ac24d5a49),
-                    c1: Fp(0xf67387320869d27),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x9cad2ea76506087),
-                    c1: Fp(0xb6852801cf6b080),
-                },
+                c0: Fp(0x3511d4381c1c1b26),
+                c1: Fp(0x8057fac7c71ef54d),
+                c2: Fp(0x6df3e64ff7a37aeb),
+                c3: Fp(0xb76b345cfe6d2a07),
+                c4: Fp(0x9ee94ccb89eea67a),
+                c5: Fp(0xbb0b2ca724face3b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x37ccfbb02c9de3ce),
-                    c1: Fp(0x2d7309d52edd1e3a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x185ce204ca1274f),
-                    c1: Fp(0x34c480ef8fc3bc11),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1fcaac945ae7f48b),
-                    c1: Fp(0x30f9a8d0831b7001),
-                },
+                c0: Fp(0x89aa98c04ef66829),
+                c1: Fp(0x3707f940a34fff64),
+                c2: Fp(0x1746348fe3c2a894),
+                c3: Fp(0xcbc4c434d1b43201),
+                c4: Fp(0xdfe1324a0bc0806),
+                c5: Fp(0xf571c2b1ee570a89),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x15c97af294a63a4c),
-                    c1: Fp(0x3557146e3338686e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2f0e4fe69a74df10),
-                    c1: Fp(0x27b4053f6da06ad2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2af457cf671225dd),
-                    c1: Fp(0x38a86ffb5160a49b),
-                },
+                c0: Fp(0xb96851c0a2f666ed),
+                c1: Fp(0x5beb35cf39dec488),
+                c2: Fp(0x5a29222475d3a22),
+                c3: Fp(0xdd5b70639fd9e3f0),
+                c4: Fp(0x660745bb1d3177d1),
+                c5: Fp(0x632c333ddad02eb),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3d41524849967b0d),
-                    c1: Fp(0x16481c2e703832c4),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x9e60ca74b8b009e),
-                    c1: Fp(0x379b5097c9b65bfb),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3a3e16b9504918ac),
-                    c1: Fp(0x1dd02216791e89be),
-                },
+                c0: Fp(0xc7df3b647950b2e5),
+                c1: Fp(0xece655c99ad50a73),
+                c2: Fp(0xc79b6ed57db1e627),
+                c3: Fp(0xfeed7b85f130bd89),
+                c4: Fp(0xc60d7429e461bff2),
+                c5: Fp(0xd5fac60621636899),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x32a71847c6b4c6dd),
-                    c1: Fp(0x2502f23d90e6d2a2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x130ce246def8a737),
-                    c1: Fp(0x27bf3f65ffdb86b8),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2f4b2fcd5d76310b),
-                    c1: Fp(0x3e0b2f2863a7a7a7),
-                },
+                c0: Fp(0x8ad606c02b40f3dd),
+                c1: Fp(0x7f02f1b2261448bb),
+                c2: Fp(0x5587c4e801f2a53a),
+                c3: Fp(0xd79a86750f0bb14b),
+                c4: Fp(0xb6f6267ea2d5f489),
+                c5: Fp(0x44b5f39f66ad2de6),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x18183394906c0555),
-                    c1: Fp(0x301cf2371684be20),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1ddcb56db48c02f1),
-                    c1: Fp(0x124a5d08648a4adf),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3a78e347c57f6778),
-                    c1: Fp(0x3fa2b6fa657ca851),
-                },
+                c0: Fp(0xa129e272d7ed9e69),
+                c1: Fp(0xa9b5b3d6da94d913),
+                c2: Fp(0xeac90bf9e69d31ed),
+                c3: Fp(0xfa02a274193a92ef),
+                c4: Fp(0xb63ebcfe038a52a2),
+                c5: Fp(0xdceb68d63a82a8d4),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xbd9c8769b189592),
-                    c1: Fp(0x25beddeada70688d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x382ed22dfbeec09),
-                    c1: Fp(0x6b5d46122f5046d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x25e5365279ffda62),
-                    c1: Fp(0x2fcfa71ce00a5832),
-                },
+                c0: Fp(0xfceec7138238f8c1),
+                c1: Fp(0xd407d711aa199032),
+                c2: Fp(0xba974d2d10074920),
+                c3: Fp(0x64c7cf071a7fc7dd),
+                c4: Fp(0x825e3aad4fb0b97d),
+                c5: Fp(0xa83e941944a04ce6),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3d3484e87a21f086),
-                    c1: Fp(0x5b398bd4ee2d101),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1ffc2f1d5d25667d),
-                    c1: Fp(0x1b0f959b16a4f00f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x100455b6a1c45899),
-                    c1: Fp(0x40fdad565a93bb33),
-                },
+                c0: Fp(0x6a62953663890920),
+                c1: Fp(0xc6ef69a3d049cdf0),
+                c2: Fp(0x4b355bffbf0baa3e),
+                c3: Fp(0x707fc4408de50e41),
+                c4: Fp(0x9d3ed95874d0b788),
+                c5: Fp(0xab2584ea2529e760),
             },
             z: Fp6::one(),
         },
@@ -7516,249 +4636,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x170cbec0c05f954),
-                    c1: Fp(0x3c16ce90b0288209),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2d35882016640f3e),
-                    c1: Fp(0x3f51e54630147e45),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xdd1b181d8510de7),
-                    c1: Fp(0x281c64e73a8c061d),
-                },
+                c0: Fp(0x9f6277e5db3cc91),
+                c1: Fp(0x418bbba9e531af97),
+                c2: Fp(0x8d4f13b93f398102),
+                c3: Fp(0x1ea998dd3517b0c1),
+                c4: Fp(0x82f4afbac2d1ca36),
+                c5: Fp(0xbd1ce45d990c87e6),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x34f42fc4ff7633ab),
-                    c1: Fp(0x7d68ebfb74584f7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x37179a996d4fbbb3),
-                    c1: Fp(0x1f109ab586a9835b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x189ebb626a8de525),
-                    c1: Fp(0x54296c588e3ebc3),
-                },
+                c0: Fp(0xf63a53daef29522c),
+                c1: Fp(0x9000059a68e19d6a),
+                c2: Fp(0x9736aa6b1d607e27),
+                c3: Fp(0xb1e1fc3738cc0a1a),
+                c4: Fp(0x3097382ab1770f68),
+                c5: Fp(0x859fd44d2fc01cae),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3c9a0b705aac3b32),
-                    c1: Fp(0x26ea3c153077a8a0),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2d22eeb5f273f6e5),
-                    c1: Fp(0x4090dad5bd16170d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3683a1bdaa5ae28c),
-                    c1: Fp(0x3e59bdb568181c21),
-                },
+                c0: Fp(0xf332c237760dc014),
+                c1: Fp(0x68f5d1bd85831816),
+                c2: Fp(0x2ca129a34a0b716e),
+                c3: Fp(0x57682c5225f1a348),
+                c4: Fp(0x55bb430a28554349),
+                c5: Fp(0x43c29fa77a883339),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x16aff1d9427245c9),
-                    c1: Fp(0x16f861748365a0d4),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2e3b639650a7c6d1),
-                    c1: Fp(0x3aa1fdba83344ebd),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x5eb1a44a67cbf69),
-                    c1: Fp(0x35255a18043aa4d8),
-                },
+                c0: Fp(0xfb717420de0aec53),
+                c1: Fp(0x64060ab1a837d3fc),
+                c2: Fp(0x75c7605bcd0d92d3),
+                c3: Fp(0x34e0b809c2dd2fac),
+                c4: Fp(0xb051d851d7740364),
+                c5: Fp(0x61712cf560c1fc8a),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2473a881dd3e715e),
-                    c1: Fp(0x112d2b4b3b1ed218),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x147439d42be1f4b5),
-                    c1: Fp(0x6017aed531f074b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xcd0f770105ea5db),
-                    c1: Fp(0x1dda85869bc23cd),
-                },
+                c0: Fp(0xa2ae5f9f4522823b),
+                c1: Fp(0x7ce3ff1e3decf641),
+                c2: Fp(0xbbfe0d29fe9736fd),
+                c3: Fp(0xc3b08b3ad73b995f),
+                c4: Fp(0xa285e574e5058ee3),
+                c5: Fp(0xe6c26c3d94ff3720),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x5ee1cb206275af),
-                    c1: Fp(0x3dcbe9ecd89cb8af),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1ce71ec2bcffd461),
-                    c1: Fp(0x1e9a61a6c1bca270),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xd91c18829d5b773),
-                    c1: Fp(0x272931f47055a987),
-                },
+                c0: Fp(0xae38efd413896ceb),
+                c1: Fp(0x9cee29a6af4fc72c),
+                c2: Fp(0x6af6f045d8c87f20),
+                c3: Fp(0x474a2f388d76b350),
+                c4: Fp(0x733e540b11c6ea7f),
+                c5: Fp(0xbfc919524dc5413e),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x148b2a297dd2f779),
-                    c1: Fp(0x3ca9bc8bd49a1f4a),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x15046e258374ba96),
-                    c1: Fp(0x1737275f277166da),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x357e1ba19c000cdc),
-                    c1: Fp(0x31cca3c6a48ecdca),
-                },
+                c0: Fp(0x68de34cc0cc7ff65),
+                c1: Fp(0xe52672c156b748d9),
+                c2: Fp(0x45864d688b2a23ab),
+                c3: Fp(0xff12b2c9014dc115),
+                c4: Fp(0xe5cc6d767349fb16),
+                c5: Fp(0x456c6eca30eab3b3),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3e698eceb147d48e),
-                    c1: Fp(0x2c9527b8e57b0e61),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x5bf40328c3521b9),
-                    c1: Fp(0x400181cca60ebc6e),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x8638365706f5d2e),
-                    c1: Fp(0x11fea0366f823b12),
-                },
+                c0: Fp(0x9f4ab3295f312c4e),
+                c1: Fp(0x8105155f0f436081),
+                c2: Fp(0x4b8a9ff3a342af73),
+                c3: Fp(0x354f59a9e3739084),
+                c4: Fp(0x130226187d8076ef),
+                c5: Fp(0x26d4227518db65fd),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x33f094b83b6b02d4),
-                    c1: Fp(0x3c9f2dd77fa633d2),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x4b531e468207d8a),
-                    c1: Fp(0x693d07b374dc77b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xbe4c71ed6556b1e),
-                    c1: Fp(0x31f152dc203f47ca),
-                },
+                c0: Fp(0xdbcdc8b0649bbcbd),
+                c1: Fp(0xe4a0f1db3052d0d3),
+                c2: Fp(0x9b427d051c3ba3e0),
+                c3: Fp(0x30fe224c27ece3ff),
+                c4: Fp(0x3101d1694ce3319e),
+                c5: Fp(0x7f920fe9dd2a6af8),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x11833253b0586e71),
-                    c1: Fp(0x3e9aaa1c9de47408),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3892bfba198d5085),
-                    c1: Fp(0x8b47b2ecfcac2d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xdfb1881ba3e89bf),
-                    c1: Fp(0x14a0bec3d241f9b7),
-                },
+                c0: Fp(0x2878be658f9430b1),
+                c1: Fp(0x6528fe2a535123a9),
+                c2: Fp(0x256a7ae48f80f0d7),
+                c3: Fp(0x8bad246682964ab1),
+                c4: Fp(0xb8d474a261e64708),
+                c5: Fp(0xf875753389461a31),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1ca4d1600a681008),
-                    c1: Fp(0x2aef230f21569475),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3d26a87408034867),
-                    c1: Fp(0x75a36c9c4091883),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x18b9257c578fd8cf),
-                    c1: Fp(0x7d170bde2075661),
-                },
+                c0: Fp(0x939df9149c1a7e7b),
+                c1: Fp(0x75851fef5765c54d),
+                c2: Fp(0xdaacdd7458c5f105),
+                c3: Fp(0x2891b55e7006aa66),
+                c4: Fp(0xe3d66e72a260225),
+                c5: Fp(0x99b08a1a1a654a05),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3487dc71c88f817e),
-                    c1: Fp(0x21be840964ed8c47),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1cde76fbb1fbfff0),
-                    c1: Fp(0x26144a8ce4d83aa0),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x98c4b81a3d67d63),
-                    c1: Fp(0x286b1f67624bb3d0),
-                },
+                c0: Fp(0x2723da0f6bbb9248),
+                c1: Fp(0xfadd1e0ff54c42ec),
+                c2: Fp(0x76cd99594f749812),
+                c3: Fp(0x774c034cc2438fd2),
+                c4: Fp(0x81f6e2c1347197b1),
+                c5: Fp(0x8dfa2fecf487f941),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3c4233d12ad4b862),
-                    c1: Fp(0xa86709d8d4c20b9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x3b9b1c03962800d2),
-                    c1: Fp(0xcad60d69703e4e2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2cd7275e2643eb1b),
-                    c1: Fp(0x14696d0aa96b7a22),
-                },
+                c0: Fp(0xfb461fb8fb4ca96),
+                c1: Fp(0x69249938b05fedad),
+                c2: Fp(0x6b0bb32e066a2470),
+                c3: Fp(0xbebff3dd9bb126fc),
+                c4: Fp(0x5ae7dbe722d4367e),
+                c5: Fp(0xff0a917435d58fc9),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xa3dd1b66f41712f),
-                    c1: Fp(0x2129cb67a352a831),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xa98b41d7dc1cfcd),
-                    c1: Fp(0x1bbc5323c95fae0d),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1f3bb04564144aa1),
-                    c1: Fp(0x12fe5be0f5545696),
-                },
+                c0: Fp(0xcb5c5db557076f7e),
+                c1: Fp(0xaf9ca3908dc23b31),
+                c2: Fp(0xdb8596e19a7229b3),
+                c3: Fp(0x919480c6895309b3),
+                c4: Fp(0xbd182b011c616021),
+                c5: Fp(0xf712461dbe64e6a4),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x25fe20099c4d64e4),
-                    c1: Fp(0x16ecc72be08a3fbf),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x6316a71c7ea7280),
-                    c1: Fp(0x2fdff316bb40ad25),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3cf8e2a9829a045c),
-                    c1: Fp(0x34f6328e629cbca),
-                },
+                c0: Fp(0x17a0df1779852c3c),
+                c1: Fp(0x76d45de60a6eed07),
+                c2: Fp(0x6bcf34489d351dbe),
+                c3: Fp(0x8cc3e1e04937c416),
+                c4: Fp(0xd0f2a06d585f0191),
+                c5: Fp(0x83b1e4ab5181a055),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x9d48aabf1d295df),
-                    c1: Fp(0x13a32bf78bc0cee9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1ec4dd011fe78dba),
-                    c1: Fp(0x28b5d5009b8a9e18),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x32822e686bbffc04),
-                    c1: Fp(0x329c266a04e50fb8),
-                },
+                c0: Fp(0x852dc52559583623),
+                c1: Fp(0xf14008af734e3ab9),
+                c2: Fp(0x5f6391f2c6eca618),
+                c3: Fp(0xad73b55c36158b23),
+                c4: Fp(0xce6156b98ce78d4c),
+                c5: Fp(0xf9245a20738a7ea1),
             },
             z: Fp6::one(),
         },
@@ -7766,249 +4790,153 @@ pub const BASEPOINT_TABLE: BasePointTable = BasePointTable([
     LookupTable([
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3d1bc5730340dc08),
-                    c1: Fp(0x345cdb13a36e8c19),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1a9a90fd64e072e2),
-                    c1: Fp(0x6e1800d697504f2),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x24149077434d9ffc),
-                    c1: Fp(0x8975955a5d4d2e3),
-                },
+                c0: Fp(0xa8cd973dfa63b257),
+                c1: Fp(0x322a5268e1140e3e),
+                c2: Fp(0xac5cf18aa196ea71),
+                c3: Fp(0xa6ea902756703310),
+                c4: Fp(0xff1c1590d807f7b),
+                c5: Fp(0xf7d7be9c852044bd),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3aec8ccf9bcf9a8),
-                    c1: Fp(0x2f243c7d873356b4),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x22839f94d18944c8),
-                    c1: Fp(0x231913fa6f1473d4),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x36e8e1899de06f9e),
-                    c1: Fp(0x3402c57fd4ed9af5),
-                },
+                c0: Fp(0xd0fb5534a645770b),
+                c1: Fp(0x933404cb98327700),
+                c2: Fp(0x1892a0ce9f69133d),
+                c3: Fp(0x51950bdb50b4ede2),
+                c4: Fp(0xd0e86dd8d510ace2),
+                c5: Fp(0x7f5ce3cf03ccea87),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1ff517172dc57903),
-                    c1: Fp(0x1bd760ddeca99e8d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1eae008f236245d2),
-                    c1: Fp(0x30b8e16a6616e511),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x20ac1e67446fff14),
-                    c1: Fp(0x3609dd2c9971a447),
-                },
+                c0: Fp(0x8705ec441b87d9b6),
+                c1: Fp(0x2fd757e8a04a4f18),
+                c2: Fp(0x36d7760feecd0b7c),
+                c3: Fp(0x5ba32658b06f81b),
+                c4: Fp(0xaa4955caf01ee403),
+                c5: Fp(0x25d142cf10f22446),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2580097296229300),
-                    c1: Fp(0x4014e8674e82a0d8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1d19b14fca37a5e7),
-                    c1: Fp(0x1b6155ed64028aa1),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x49a31a16a7fb1aa),
-                    c1: Fp(0x3f1e5793258b467c),
-                },
+                c0: Fp(0xb218840b2ddc7747),
+                c1: Fp(0xf3bdfc7e7ab12e17),
+                c2: Fp(0x455bfc3cf7670b8),
+                c3: Fp(0xa43583ea9580ab87),
+                c4: Fp(0xb4646416b4f0ce48),
+                c5: Fp(0xc3af6f300f2569a1),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x348f66c17fab6a77),
-                    c1: Fp(0x32d67db2cf1ec556),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x220776a831140eeb),
-                    c1: Fp(0x10425ed8f70a948a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x22dc198d70245820),
-                    c1: Fp(0x19725851db8b013f),
-                },
+                c0: Fp(0x70352e3b55050a5f),
+                c1: Fp(0x153442c8142c1ade),
+                c2: Fp(0x5256f0ed2b7cc65c),
+                c3: Fp(0xb56c3c6341fa3c26),
+                c4: Fp(0x293778d12f44b756),
+                c5: Fp(0xa0c05fc0156a5bcd),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x331af0b2bc655bd3),
-                    c1: Fp(0x4324be4b1f25c5d),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x351dfcc064a76797),
-                    c1: Fp(0x1a1030e098321178),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3c073c980d401646),
-                    c1: Fp(0x3bb7eb6da577358e),
-                },
+                c0: Fp(0x596f3e4cf86d8bd4),
+                c1: Fp(0x167a4a854e195d87),
+                c2: Fp(0x92df4624ebee414c),
+                c3: Fp(0xab6cf61ec00e7d36),
+                c4: Fp(0xb048f2dd0b9c4a4e),
+                c5: Fp(0xeb1a41bdfc147124),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x35a3edd56105636e),
-                    c1: Fp(0x6267cb69c5fbfa9),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x396d494b87c3082f),
-                    c1: Fp(0x1f3942194d0a9c38),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x101f0b2f6e7905e2),
-                    c1: Fp(0x2c65702605ce7fe1),
-                },
+                c0: Fp(0x361ea135bf69d111),
+                c1: Fp(0x84b835354297ded7),
+                c2: Fp(0x4ebc0549e415df53),
+                c3: Fp(0x8db885ceece89f27),
+                c4: Fp(0x75433170dc7dc851),
+                c5: Fp(0xc3ec0adb5e29fe8b),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x27dca52de9d41a41),
-                    c1: Fp(0xdd770664a374f6e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x193049d9f0936070),
-                    c1: Fp(0x2d19dce54698eaf7),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1c71f982651e59ae),
-                    c1: Fp(0x2b4d37cb11f134e8),
-                },
+                c0: Fp(0x81e755101eb96a52),
+                c1: Fp(0x8c698ffa27febe37),
+                c2: Fp(0x78eae9d8d8ad29c7),
+                c3: Fp(0xdb48a054baf790d4),
+                c4: Fp(0x38af342330591381),
+                c5: Fp(0x77236af8847fce80),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x1e1f6d981de69c37),
-                    c1: Fp(0x1446aa79634f99e8),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1bb3e27460017785),
-                    c1: Fp(0x2a043ae60a32e00b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xd04fdbf60e75c4f),
-                    c1: Fp(0x17b6ad9c501b4f3f),
-                },
+                c0: Fp(0x9a23ad5f602cfbef),
+                c1: Fp(0x6330451129bb012d),
+                c2: Fp(0xe3a51e86c6a938d7),
+                c3: Fp(0x8717982ae58db323),
+                c4: Fp(0x3eac286307135afa),
+                c5: Fp(0x20623b2be0923a5a),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xd83f1fcdcb18271),
-                    c1: Fp(0x1317d762dd2f9ad7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1aba4a7167b7c8ed),
-                    c1: Fp(0x2fa14821e0285b83),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x22e8380a4fa6cc60),
-                    c1: Fp(0x229ad2dda454962b),
-                },
+                c0: Fp(0xfcd302e6a5ea5219),
+                c1: Fp(0xedcc0d4c42c4e097),
+                c2: Fp(0x9bbe828d152d14b),
+                c3: Fp(0x145d2b51ba2a9050),
+                c4: Fp(0x324c8b5ed6fdab8a),
+                c5: Fp(0xf01a7430105f48b3),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x138cf297ed68230f),
-                    c1: Fp(0x1c7f0ba9ac7e4934),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x2c5582edac3c0f16),
-                    c1: Fp(0xf0e8107881b6a38),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x9755169e28e6e5d),
-                    c1: Fp(0xc1a82cca2b6eafe),
-                },
+                c0: Fp(0x7e58f0871e53a983),
+                c1: Fp(0x9e3ba8c6be13144),
+                c2: Fp(0x739744b72ad622bb),
+                c3: Fp(0xf84186705a841cfe),
+                c4: Fp(0x20f99bfd8ac73ea7),
+                c5: Fp(0xaff0f8bc14d63336),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x3b406e5eeb3279),
-                    c1: Fp(0x150091280aad7885),
-                },
-                c1: Fp2 {
-                    c0: Fp(0xfa31fb2b23b3b96),
-                    c1: Fp(0x24870dee3b8eee8c),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x220e2f63516ea26a),
-                    c1: Fp(0x1ed289c2421692ca),
-                },
+                c0: Fp(0xc756c65291ef3d17),
+                c1: Fp(0x2f6a09b38acf2d6c),
+                c2: Fp(0x8571ad1e5daf3ad7),
+                c3: Fp(0xd236885c8d103011),
+                c4: Fp(0x363c9d66aa8e44d8),
+                c5: Fp(0x2ce6c26a5861d88f),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x9af8a3b28b97cd),
-                    c1: Fp(0xa56d57961d72f7),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x23890112c1547343),
-                    c1: Fp(0xbddfd15855b965b),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xe9dc6a17b1a7c2c),
-                    c1: Fp(0x212fe840d3f61a7),
-                },
+                c0: Fp(0x68b0d65cbfbc3ea9),
+                c1: Fp(0x3a686db4a2999c89),
+                c2: Fp(0x590f6d00c29babe8),
+                c3: Fp(0xd2eff7d09df98925),
+                c4: Fp(0x15fa9a976c3b86be),
+                c5: Fp(0xe08500f9a9db9cad),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x2076f2ece91659f),
-                    c1: Fp(0x24cb99d3acd38df4),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x14b49e0bf3d0ad20),
-                    c1: Fp(0x37978fb25be2da7a),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x2ceb2d89f863904a),
-                    c1: Fp(0xed8ff05ccd99da9),
-                },
+                c0: Fp(0xa2fe5b642f600bde),
+                c1: Fp(0xb229f788d8983866),
+                c2: Fp(0x5a09abd75da54d9),
+                c3: Fp(0xef9594e5ed82ede9),
+                c4: Fp(0xb6ecc1d3362d245f),
+                c5: Fp(0xd802f0bdccbfa27f),
             },
             z: Fp6::one(),
         },
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x31b620af57a5ebc8),
-                    c1: Fp(0x3a7d3e886d2f9f59),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x340598d9017125),
-                    c1: Fp(0x71afcaf8c6796cc),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xafbdcfde0edc5ac),
-                    c1: Fp(0x263f8a4fc0cf0c98),
-                },
+                c0: Fp(0xccc1b3d478da92e6),
+                c1: Fp(0x424e00c106c405b5),
+                c2: Fp(0x4661ca25710c8815),
+                c3: Fp(0xc07ce2ede7df41d5),
+                c4: Fp(0xe84872c1ce85594e),
+                c5: Fp(0x5fa905e14a3d1282),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xae49a25c76c3535),
-                    c1: Fp(0x352c8e59105f129e),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1fb8ddda1167cc07),
-                    c1: Fp(0xd76d44911e0763f),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x1d8ffb4fc31f2153),
-                    c1: Fp(0x3672b55ffcbdbaf9),
-                },
+                c0: Fp(0xaad572c93e45b2bc),
+                c1: Fp(0x890ce8edef6a3d54),
+                c2: Fp(0x199db422f40b3b64),
+                c3: Fp(0xb4ff81c84a7d612e),
+                c4: Fp(0xbfae0eb54bff2563),
+                c5: Fp(0xe44b59ed7bea06c0),
             },
             z: Fp6::one(),
         },

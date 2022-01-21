@@ -8,7 +8,7 @@
 
 //! This module provides an implementation of the STARK-friendly
 //! cheetah curve over the sextic extension of the prime field Fp
-//! of characteristic p = 2^62 + 2^56 + 2^55 + 1.
+//! of characteristic p = 2^64 - 2^32 + 1.
 
 use core::{
     borrow::Borrow,
@@ -17,7 +17,7 @@ use core::{
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
-use crate::{Fp, Fp2, Fp6, Scalar};
+use crate::{Fp, Fp6, Scalar};
 
 use crate::LookupTable;
 
@@ -35,30 +35,22 @@ impl_binops_additive!(ProjectivePoint, AffinePoint);
 impl_binops_additive_specify_output!(AffinePoint, ProjectivePoint, ProjectivePoint);
 
 //  A = 1
-/// B = (1200866201009650596 * u + 1935817186716799185) * v^2
-///         + (3999205700308519553 * u + 3518137720867787056) * v
-///         + 2508413708960025374 * u + 1526905369741321712
+/// B = 8751648879042009540*u^5 + 9152663345541292493*u^4 + 11461655964319546493*u^3 + 18139339604299112321*u^2 + 11484739320139982777*u + 13239264519837388909
 pub const B: Fp6 = Fp6 {
-    c0: Fp2 {
-        c0: Fp(0x15ae48ea5d89311b),
-        c1: Fp(0x17f1a248aadda1c0),
-    },
-    c1: Fp2 {
-        c0: Fp(0x292d3259d8078df0),
-        c1: Fp(0x32955e35847805dd),
-    },
-    c2: Fp2 {
-        c0: Fp(0x40805fda8f3d4cf1),
-        c1: Fp(0x30dd795db5ec864c),
-    },
+    c0: Fp(0xb7bb50efa857106d),
+    c1: Fp(0x9f61fd901ae7a7b9),
+    c2: Fp(0xfbbbe143866c5f81),
+    c3: Fp(0x9f0ffb5f8300fc7d),
+    c4: Fp(0x7f04cad1e3ba21cd),
+    c5: Fp(0x79741a498a3e99c4),
 };
 
 const B3: Fp6 = (&B).mul(&Fp6::new([3, 0, 0, 0, 0, 0]));
 
-// cofactor = 639750783962362599710832166084722337
-//          = 0x7b36261eef444af4e22bbe55a2bea1
-const COFACTOR_BYTES: [u8; 15] = [
-    161, 190, 162, 85, 190, 43, 226, 244, 74, 68, 239, 30, 38, 54, 123,
+// cofactor = 3851540252901356796008861125671805917718
+//          = 0xb5193aba6620370de1401b0494f961a16
+const COFACTOR_BYTES: [u8; 17] = [
+    22, 26, 150, 79, 73, 176, 1, 20, 222, 112, 3, 98, 166, 171, 147, 81, 11,
 ];
 
 /// An affine point
@@ -240,32 +232,20 @@ impl AffinePoint {
     pub fn generator() -> AffinePoint {
         AffinePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0xf6798582c92ece1),
-                    c1: Fp(0x2b7c30a4c7d886c0),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x1269cdae98dc2fd0),
-                    c1: Fp(0x11b78ef6c71c6132),
-                },
-                c2: Fp2 {
-                    c0: Fp(0x3ac2244dfc47537),
-                    c1: Fp(0x36dfeea4b9051daf),
-                },
+                c0: Fp(0x648eeb1134772af2),
+                c1: Fp(0x615c8ceb5de71c1f),
+                c2: Fp(0x14a489b1f34ab92b),
+                c3: Fp(0xd541aa1e607aaa66),
+                c4: Fp(0x814ff01215217248),
+                c5: Fp(0xc995a8d192442791),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp(0x334807e450d55e2f),
-                    c1: Fp(0x200a54d42b84bd17),
-                },
-                c1: Fp2 {
-                    c0: Fp(0x271af7bb20ab32e1),
-                    c1: Fp(0x3df7b90927efc7ec),
-                },
-                c2: Fp2 {
-                    c0: Fp(0xab8bbf4a53af6a0),
-                    c1: Fp(0xe13dca26b2ac6ab),
-                },
+                c0: Fp(0x512330e187a232d7),
+                c1: Fp(0xc51d530fbdfbe188),
+                c2: Fp(0x46f1c144a28b3894),
+                c3: Fp(0xf634b28a1537990f),
+                c4: Fp(0x4783e4f886f87554),
+                c5: Fp(0xdb2c4e2e0198890b),
             },
             infinity: Choice::from(0u8),
         }
@@ -526,8 +506,8 @@ impl AffinePoint {
     /// This should always return true unless an "unchecked" API was used.
     pub fn is_torsion_free(&self) -> Choice {
         const FQ_MODULUS_BYTES: [u8; 32] = [
-            165, 106, 149, 48, 225, 174, 19, 30, 39, 43, 36, 53, 240, 100, 242, 242, 201, 236, 143,
-            161, 185, 235, 182, 182, 124, 247, 149, 39, 117, 127, 51, 38,
+            235, 53, 27, 116, 157, 111, 119, 145, 6, 113, 119, 78, 70, 123, 168, 160, 216, 40, 77,
+            224, 63, 134, 119, 150, 57, 149, 20, 213, 189, 21, 158, 22,
         ];
 
         // Clear the r-torsion from the point and check if it is the identity
@@ -677,7 +657,7 @@ const fn mul_by_3b(a: &Fp6) -> Fp6 {
 
 impl ProjectivePoint {
     /// Returns the identity of the group: the point at infinity.
-    pub fn identity() -> ProjectivePoint {
+    pub const fn identity() -> ProjectivePoint {
         ProjectivePoint {
             x: Fp6::zero(),
             y: Fp6::one(),
@@ -686,23 +666,41 @@ impl ProjectivePoint {
     }
 
     /// Returns the x coordinate of this ProjectivePoint
-    pub fn get_x(&self) -> Fp6 {
+    pub const fn get_x(&self) -> Fp6 {
         self.x
     }
 
     /// Returns the y coordinate of this ProjectivePoint
-    pub fn get_y(&self) -> Fp6 {
+    pub const fn get_y(&self) -> Fp6 {
         self.y
     }
 
     /// Returns the z coordinate of this ProjectivePoint
-    pub fn get_z(&self) -> Fp6 {
+    pub const fn get_z(&self) -> Fp6 {
         self.z
     }
 
     /// Returns a fixed generator of the curve in projective coordinates
-    pub fn generator() -> ProjectivePoint {
-        ProjectivePoint::from(AffinePoint::generator())
+    pub const fn generator() -> ProjectivePoint {
+        ProjectivePoint {
+            x: Fp6 {
+                c0: Fp(0x648eeb1134772af2),
+                c1: Fp(0x615c8ceb5de71c1f),
+                c2: Fp(0x14a489b1f34ab92b),
+                c3: Fp(0xd541aa1e607aaa66),
+                c4: Fp(0x814ff01215217248),
+                c5: Fp(0xc995a8d192442791),
+            },
+            y: Fp6 {
+                c0: Fp(0x512330e187a232d7),
+                c1: Fp(0xc51d530fbdfbe188),
+                c2: Fp(0x46f1c144a28b3894),
+                c3: Fp(0xf634b28a1537990f),
+                c4: Fp(0x4783e4f886f87554),
+                c5: Fp(0xdb2c4e2e0198890b),
+            },
+            z: Fp6::one(),
+        }
     }
 
     /// Outputs a compress byte representation of this `ProjectivePoint` element
@@ -1059,10 +1057,13 @@ impl ProjectivePoint {
         // This is a simple double-and-add implementation of point
         // multiplication, moving from most significant to least
         // significant bit of the scalar.
+        //
+        // We skip the first four unset bits
         for bit in COFACTOR_BYTES
             .iter()
             .rev()
             .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
+            .skip(4)
         {
             acc = acc.double();
             acc = if bit { acc + self } else { acc };
@@ -1309,18 +1310,12 @@ mod tests {
         assert!(bool::from(ProjectivePoint::generator().is_on_curve()));
 
         let z = Fp6 {
-            c0: Fp2 {
-                c0: Fp::new(1780366954230337028),
-                c1: Fp::new(1657393229643603266),
-            },
-            c1: Fp2 {
-                c0: Fp::new(266397157796383323),
-                c1: Fp::new(1882752790847015855),
-            },
-            c2: Fp2 {
-                c0: Fp::new(3490694662347740613),
-                c1: Fp::new(1934749607384548809),
-            },
+            c0: Fp(0x79b230ab69fdb493),
+            c1: Fp(0xfe0bff52056ea77b),
+            c2: Fp(0x68ae55ee9963bb1d),
+            c3: Fp(0xaed3160aa9927b96),
+            c4: Fp(0x57f9b8ca1372d78e),
+            c5: Fp(0xcfb89c494391a555),
         };
 
         let gen = AffinePoint::generator();
@@ -1370,18 +1365,12 @@ mod tests {
         assert!(!bool::from(a.ct_eq(&b)));
 
         let z = Fp6 {
-            c0: Fp2 {
-                c0: Fp::new(1780366954230337028),
-                c1: Fp::new(1657393229643603266),
-            },
-            c1: Fp2 {
-                c0: Fp::new(266397157796383323),
-                c1: Fp::new(1882752790847015855),
-            },
-            c2: Fp2 {
-                c0: Fp::new(3490694662347740613),
-                c1: Fp::new(1934749607384548809),
-            },
+            c0: Fp(0x79b230ab69fdb493),
+            c1: Fp(0xfe0bff52056ea77b),
+            c2: Fp(0x68ae55ee9963bb1d),
+            c3: Fp(0xaed3160aa9927b96),
+            c4: Fp(0x57f9b8ca1372d78e),
+            c5: Fp(0xcfb89c494391a555),
         };
 
         let mut c = ProjectivePoint {
@@ -1423,18 +1412,12 @@ mod tests {
         assert!(bool::from(AffinePoint::from(b).is_identity()));
 
         let z = Fp6 {
-            c0: Fp2 {
-                c0: Fp::new(1780366954230337028),
-                c1: Fp::new(1657393229643603266),
-            },
-            c1: Fp2 {
-                c0: Fp::new(266397157796383323),
-                c1: Fp::new(1882752790847015855),
-            },
-            c2: Fp2 {
-                c0: Fp::new(3490694662347740613),
-                c1: Fp::new(1934749607384548809),
-            },
+            c0: Fp(0x79b230ab69fdb493),
+            c1: Fp(0xfe0bff52056ea77b),
+            c2: Fp(0x68ae55ee9963bb1d),
+            c3: Fp(0xaed3160aa9927b96),
+            c4: Fp(0x57f9b8ca1372d78e),
+            c5: Fp(0xcfb89c494391a555),
         };
 
         let c = ProjectivePoint {
@@ -1473,32 +1456,20 @@ mod tests {
                 AffinePoint::from(tmp),
                 AffinePoint {
                     x: Fp6 {
-                        c0: Fp2 {
-                            c0: Fp(0x1ba2d52806f212a),
-                            c1: Fp(0x5e9353a4e8225c8),
-                        },
-                        c1: Fp2 {
-                            c0: Fp(0x13e92423fef3bc2d),
-                            c1: Fp(0x241081e7ae1db310),
-                        },
-                        c2: Fp2 {
-                            c0: Fp(0x29f0073c3351026b),
-                            c1: Fp(0x11233fe9eb7285c0),
-                        },
+                        c0: Fp(0xba493934267abd25),
+                        c1: Fp(0xe67708b141b00f98),
+                        c2: Fp(0x281a941118867b07),
+                        c3: Fp(0xef05e46bf54aee0),
+                        c4: Fp(0x26fba4541e43ebfa),
+                        c5: Fp(0xc188a470c53c1f2d),
                     },
                     y: Fp6 {
-                        c0: Fp2 {
-                            c0: Fp(0x3a19dfba18e15ed5),
-                            c1: Fp(0x3691eb6949fca20b),
-                        },
-                        c1: Fp2 {
-                            c0: Fp(0x3ea42cb9ad7430ab),
-                            c1: Fp(0x1b840f91119a2eb3),
-                        },
-                        c2: Fp2 {
-                            c0: Fp(0x1b94f8ccdafc47ba),
-                            c1: Fp(0x19e92e12c3a9cfa),
-                        },
+                        c0: Fp(0xd33b8d0cfe41fbaa),
+                        c1: Fp(0xb4072471688071f7),
+                        c2: Fp(0x3b528825265ba3f3),
+                        c3: Fp(0xfd892261eaf47fe6),
+                        c4: Fp(0xce63e291673184d1),
+                        c5: Fp(0x37eb7b2fa4ea4db0),
                     },
                     infinity: Choice::from(0u8),
                 }
@@ -1520,18 +1491,12 @@ mod tests {
             let mut b = ProjectivePoint::generator();
             {
                 let z = Fp6 {
-                    c0: Fp2 {
-                        c0: Fp::new(1780366954230337028),
-                        c1: Fp::new(1657393229643603266),
-                    },
-                    c1: Fp2 {
-                        c0: Fp::new(266397157796383323),
-                        c1: Fp::new(1882752790847015855),
-                    },
-                    c2: Fp2 {
-                        c0: Fp::new(3490694662347740613),
-                        c1: Fp::new(1934749607384548809),
-                    },
+                    c0: Fp(0xa3c62f9770336022),
+                    c1: Fp(0x69a1531152c92fc1),
+                    c2: Fp(0x1636d9b90656a08a),
+                    c3: Fp(0x635289066593aaf6),
+                    c4: Fp(0x1e2178e3c54f6682),
+                    c5: Fp(0xe15458e6d847f393),
                 };
 
                 b = ProjectivePoint {
@@ -1576,18 +1541,12 @@ mod tests {
             let mut b = ProjectivePoint::generator();
             {
                 let z = Fp6 {
-                    c0: Fp2 {
-                        c0: Fp::new(1780366954230337028),
-                        c1: Fp::new(1657393229643603266),
-                    },
-                    c1: Fp2 {
-                        c0: Fp::new(266397157796383323),
-                        c1: Fp::new(1882752790847015855),
-                    },
-                    c2: Fp2 {
-                        c0: Fp::new(3490694662347740613),
-                        c1: Fp::new(1934749607384548809),
-                    },
+                    c0: Fp(0xa3c62f9770336022),
+                    c1: Fp(0x69a1531152c92fc1),
+                    c2: Fp(0x1636d9b90656a08a),
+                    c3: Fp(0x635289066593aaf6),
+                    c4: Fp(0x1e2178e3c54f6682),
+                    c5: Fp(0xe15458e6d847f393),
                 };
 
                 b = ProjectivePoint {
@@ -1606,18 +1565,12 @@ mod tests {
             let mut b = ProjectivePoint::generator();
             {
                 let z = Fp6 {
-                    c0: Fp2 {
-                        c0: Fp::new(1780366954230337028),
-                        c1: Fp::new(1657393229643603266),
-                    },
-                    c1: Fp2 {
-                        c0: Fp::new(266397157796383323),
-                        c1: Fp::new(1882752790847015855),
-                    },
-                    c2: Fp2 {
-                        c0: Fp::new(3490694662347740613),
-                        c1: Fp::new(1934749607384548809),
-                    },
+                    c0: Fp(0xa3c62f9770336022),
+                    c1: Fp(0x69a1531152c92fc1),
+                    c2: Fp(0x1636d9b90656a08a),
+                    c3: Fp(0x635289066593aaf6),
+                    c4: Fp(0x1e2178e3c54f6682),
+                    c5: Fp(0xe15458e6d847f393),
                 };
 
                 b = ProjectivePoint {
@@ -1760,32 +1713,20 @@ mod tests {
 
         let point = ProjectivePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp::new(4088869953255777905),
-                    c1: Fp::new(858439445101292708),
-                },
-                c1: Fp2 {
-                    c0: Fp::new(3310975763830793951),
-                    c1: Fp::new(2790117791195240420),
-                },
-                c2: Fp2 {
-                    c0: Fp::new(3006738578199540275),
-                    c1: Fp::new(2480895684612942729),
-                },
+                c0: Fp(0x51349a136f8df3cc),
+                c1: Fp(0x56847e0952d17023),
+                c2: Fp(0x6aa05e3ebc24046c),
+                c3: Fp(0x9bf954117fc4fd72),
+                c4: Fp(0x355d57cbaa0bbe31),
+                c5: Fp(0xea9c4c2c477af2be),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp::new(1351667951327929939),
-                    c1: Fp::new(2705247942932011006),
-                },
-                c1: Fp2 {
-                    c0: Fp::new(1639335439078005502),
-                    c1: Fp::new(2264581412139512278),
-                },
-                c2: Fp2 {
-                    c0: Fp::new(825746373732604926),
-                    c1: Fp::new(3738666180738357964),
-                },
+                c0: Fp(0xbd0ceea15fd14043),
+                c1: Fp(0xdd90da6e33f566f3),
+                c2: Fp(0x1730b8dc2a2f5451),
+                c3: Fp(0xc538cadc37044fa),
+                c4: Fp(0x2eed6f3ea7a40850),
+                c5: Fp(0xf44ef95a39983d62),
             },
             z: Fp6::one(),
         };
@@ -1803,32 +1744,20 @@ mod tests {
     fn test_is_torsion_free() {
         let a = AffinePoint {
             x: Fp6 {
-                c0: Fp2 {
-                    c0: Fp::new(4088869953255777905),
-                    c1: Fp::new(858439445101292708),
-                },
-                c1: Fp2 {
-                    c0: Fp::new(3310975763830793951),
-                    c1: Fp::new(2790117791195240420),
-                },
-                c2: Fp2 {
-                    c0: Fp::new(3006738578199540275),
-                    c1: Fp::new(2480895684612942729),
-                },
+                c0: Fp(0x359bbc1370f55428),
+                c1: Fp(0x53136cdc2c38ad1f),
+                c2: Fp(0x66865ec3e04e8b76),
+                c3: Fp(0xcb9fe2bf4e20b878),
+                c4: Fp(0xb00ad4b433620846),
+                c5: Fp(0x52a7e31320676b4c),
             },
             y: Fp6 {
-                c0: Fp2 {
-                    c0: Fp::new(1351667951327929939),
-                    c1: Fp::new(2705247942932011006),
-                },
-                c1: Fp2 {
-                    c0: Fp::new(1639335439078005502),
-                    c1: Fp::new(2264581412139512278),
-                },
-                c2: Fp2 {
-                    c0: Fp::new(825746373732604926),
-                    c1: Fp::new(3738666180738357964),
-                },
+                c0: Fp(0x62e566162af678d4),
+                c1: Fp(0x6b2e4d40d30a799),
+                c2: Fp(0x1b29322940366158),
+                c3: Fp(0xf3c95bf64d7e7e43),
+                c4: Fp(0xf62db1b2de8ab6ef),
+                c5: Fp(0xf568044afff38c67),
             },
             infinity: Choice::from(0u8),
         };
