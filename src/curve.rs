@@ -215,12 +215,12 @@ impl AffinePoint {
     }
 
     /// Returns the x coordinate of this AffinePoint
-    pub fn get_x(&self) -> Fp6 {
+    pub const fn get_x(&self) -> Fp6 {
         self.x
     }
 
     /// Returns the y coordinate of this AffinePoint
-    pub fn get_y(&self) -> Fp6 {
+    pub const fn get_y(&self) -> Fp6 {
         self.y
     }
 
@@ -307,7 +307,7 @@ impl AffinePoint {
 
     /// Returns true if this element is the identity (the point at infinity).
     #[inline]
-    pub fn is_identity(&self) -> Choice {
+    pub const fn is_identity(&self) -> Choice {
         self.infinity
     }
 
@@ -634,34 +634,34 @@ impl ProjectivePoint {
         let z2 = self.z.square();
 
         let a = x2.double();
-        let a = a + x2;
-        let a = a + z2;
+        let a = (&a).add(&x2);
+        let a = (&a).add(&z2);
 
-        let b = self.y * self.z;
-        let t3 = self.y * b;
-        let c = t3 * self.x;
+        let b = (&self.y).mul(&self.z);
+        let t3 = (&self.y).mul(&b);
+        let c = (&t3).mul(&self.x);
 
         let d = c.double();
         let c4 = d.double();
         let d = c4.double();
 
         let t = a.square();
-        let d = t - d;
+        let d = (&t).sub(&d);
 
-        let x3 = b * d;
+        let x3 = (&b).mul(&d);
         let x3 = x3.double();
 
-        let y3 = c4 - d;
-        let y3 = a * y3;
+        let y3 = (&c4).sub(&d);
+        let y3 = (&a).mul(&y3);
         let t3 = t3.square();
 
         let t3 = t3.double();
         let t3 = t3.double();
         let t3 = t3.double();
 
-        let y3 = y3 - t3;
+        let y3 = (&y3).sub(&t3);
         let z3 = b.square();
-        let z3 = z3 * b;
+        let z3 = (&z3).mul(&b);
 
         let z3 = z3.double();
         let z3 = z3.double();
@@ -679,59 +679,59 @@ impl ProjectivePoint {
     }
 
     /// Adds this point to another point.
-    pub fn add(&self, rhs: &ProjectivePoint) -> ProjectivePoint {
+    pub const fn add(&self, rhs: &ProjectivePoint) -> ProjectivePoint {
         // Algorithm 1, https://eprint.iacr.org/2015/1060.pdf
 
-        let t0 = self.x * rhs.x;
-        let t1 = self.y * rhs.y;
-        let t2 = self.z * rhs.z;
+        let t0 = (&self.x).mul(&rhs.x);
+        let t1 = (&self.y).mul(&rhs.y);
+        let t2 = (&self.z).mul(&rhs.z);
 
-        let t3 = self.x + self.y;
-        let t4 = rhs.x + rhs.y;
-        let t3 = t3 * t4;
+        let t3 = (&self.x).add(&self.y);
+        let t4 = (&rhs.x).add(&rhs.y);
+        let t3 = (&t3).mul(&t4);
 
-        let t4 = t0 + t1;
-        let t3 = t3 - t4;
-        let t4 = self.x + self.z;
+        let t4 = (&t0).add(&t1);
+        let t3 = (&t3).sub(&t4);
+        let t4 = (&self.x).add(&self.z);
 
-        let t5 = rhs.x + rhs.z;
-        let t4 = t4 * t5;
-        let t5 = t0 + t2;
+        let t5 = (&rhs.x).add(&rhs.z);
+        let t4 = (&t4).mul(&t5);
+        let t5 = (&t0).add(&t2);
 
-        let t4 = t4 - t5;
-        let t5 = self.y + self.z;
-        let x3 = rhs.y + rhs.z;
+        let t4 = (&t4).sub(&t5);
+        let t5 = (&self.y).add(&self.z);
+        let x3 = (&rhs.y).add(&rhs.z);
 
-        let t5 = t5 * x3;
-        let x3 = t1 + t2;
-        let t5 = t5 - x3;
+        let t5 = (&t5).mul(&x3);
+        let x3 = (&t1).add(&t2);
+        let t5 = (&t5).sub(&x3);
 
         let x3 = mul_by_3b(&t2);
-        let z3 = x3 + t4;
+        let z3 = (&x3).add(&t4);
 
-        let x3 = t1 - z3;
-        let z3 = t1 + z3;
-        let y3 = x3 * z3;
+        let x3 = (&t1).sub(&z3);
+        let z3 = (&t1).add(&z3);
+        let y3 = (&x3).mul(&z3);
 
         let t1 = t0.double();
-        let t1 = t1 + t0;
+        let t1 = (&t1).add(&t0);
 
         let t4 = mul_by_3b(&t4);
-        let t1 = t1 + t2;
-        let t2 = t0 - t2;
+        let t1 = (&t1).add(&t2);
+        let t2 = (&t0).sub(&t2);
 
-        let t4 = t4 + t2;
-        let t0 = t1 * t4;
+        let t4 = (&t4).add(&t2);
+        let t0 = (&t1).mul(&t4);
 
-        let y3 = y3 + t0;
-        let t0 = t5 * t4;
-        let x3 = t3 * x3;
+        let y3 = (&y3).add(&t0);
+        let t0 = (&t5).mul(&t4);
+        let x3 = (&t3).mul(&x3);
 
-        let x3 = x3 - t0;
-        let t0 = t3 * t1;
-        let z3 = t5 * z3;
+        let x3 = (&x3).sub(&t0);
+        let t0 = (&t3).mul(&t1);
+        let z3 = (&t5).mul(&z3);
 
-        let z3 = z3 + t0;
+        let z3 = (&z3).add(&t0);
 
         ProjectivePoint {
             x: x3,
@@ -744,46 +744,46 @@ impl ProjectivePoint {
     pub fn add_mixed(&self, rhs: &AffinePoint) -> ProjectivePoint {
         // Algorithm 2, https://eprint.iacr.org/2015/1060.pdf
 
-        let t0 = self.x * rhs.x;
-        let t1 = self.y * rhs.y;
-        let t3 = rhs.x + rhs.y;
+        let t0 = (&self.x).mul(&rhs.x);
+        let t1 = (&self.y).mul(&rhs.y);
+        let t3 = (&rhs.x).add(&rhs.y);
 
-        let t4 = self.x + self.y;
-        let t3 = t3 * t4;
-        let t4 = t0 + t1;
+        let t4 = (&self.x).add(&self.y);
+        let t3 = (&t3).mul(&t4);
+        let t4 = (&t0).add(&t1);
 
-        let t3 = t3 - t4;
-        let t4 = rhs.x * self.z;
-        let t4 = t4 + self.x;
+        let t3 = (&t3).sub(&t4);
+        let t4 = (&rhs.x).mul(&self.z);
+        let t4 = (&t4).add(&self.x);
 
-        let t5 = rhs.y * self.z;
-        let t5 = t5 + self.y;
+        let t5 = (&rhs.y).mul(&self.z);
+        let t5 = (&t5).add(&self.y);
 
         let x3 = mul_by_3b(&self.z);
-        let z3 = x3 + t4;
-        let x3 = t1 - z3;
+        let z3 = (&x3).add(&t4);
+        let x3 = (&t1).sub(&z3);
 
-        let z3 = t1 + z3;
-        let y3 = x3 * z3;
+        let z3 = (&t1).add(&z3);
+        let y3 = (&x3).mul(&z3);
         let t1 = t0.double();
 
-        let t1 = t1 + t0;
+        let t1 = (&t1).add(&t0);
         let t4 = mul_by_3b(&t4);
 
-        let t1 = t1 + self.z;
-        let t2 = t0 - self.z;
+        let t1 = (&t1).add(&self.z);
+        let t2 = (&t0).sub(&self.z);
 
-        let t4 = t4 + t2;
-        let t0 = t1 * t4;
-        let y3 = y3 + t0;
+        let t4 = (&t4).add(&t2);
+        let t0 = (&t1).mul(&t4);
+        let y3 = (&y3).add(&t0);
 
-        let t0 = t5 * t4;
-        let x3 = t3 * x3;
-        let x3 = x3 - t0;
+        let t0 = (&t5).mul(&t4);
+        let x3 = (&t3).mul(&x3);
+        let x3 = (&x3).sub(&t0);
 
-        let t0 = t3 * t1;
-        let z3 = t5 * z3;
-        let z3 = z3 + t0;
+        let t0 = (&t3).mul(&t1);
+        let z3 = (&t5).mul(&z3);
+        let z3 = (&z3).add(&t0);
 
         let tmp = ProjectivePoint {
             x: x3,

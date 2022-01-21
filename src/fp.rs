@@ -237,7 +237,7 @@ impl Fp {
 
     /// Converts an `Fp` element into a byte representation in
     /// little-endian byte order.
-    pub fn to_bytes(&self) -> [u8; 8] {
+    pub const fn to_bytes(&self) -> [u8; 8] {
         // Turn into canonical form by removing modulus
         // if self is greater.
         let tmp = self.make_canonical();
@@ -265,7 +265,7 @@ impl Fp {
     }
 
     /// Converts a 128-bit little endian integer into
-    /// a `Fp` by reducing by the modulus.
+    /// a `Fp` element by reducing by the modulus.
     ///
     /// The result is always returned in canonical form,
     /// reduced by p if necessary.
