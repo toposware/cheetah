@@ -74,7 +74,7 @@ impl fmt::Debug for Fp6 {
 
 impl Default for Fp6 {
     fn default() -> Self {
-        Fp6::zero()
+        Self::zero()
     }
 }
 
@@ -82,7 +82,7 @@ impl zeroize::DefaultIsZeroes for Fp6 {}
 
 impl From<Fp> for Fp6 {
     fn from(f: Fp) -> Self {
-        Fp6 {
+        Self {
             c0: f,
             c1: Fp::zero(),
             c2: Fp::zero(),
@@ -95,7 +95,7 @@ impl From<Fp> for Fp6 {
 
 impl From<[Fp; 6]> for Fp6 {
     fn from(f: [Fp; 6]) -> Self {
-        Fp6 {
+        Self {
             c0: f[0],
             c1: f[1],
             c2: f[2],
@@ -116,28 +116,28 @@ impl From<u64> for Fp6 {
     /// Converts a 64-bit value into a field element. If the value is greater than or equal to
     /// the field modulus, modular reduction is silently performed.
     fn from(value: u64) -> Self {
-        Fp6::from(Fp::new(value))
+        Self::from(Fp::new(value))
     }
 }
 
 impl From<u32> for Fp6 {
     /// Converts a 32-bit value into a field element.
     fn from(value: u32) -> Self {
-        Fp6::from(Fp::new(value as u64))
+        Self::from(Fp::new(value as u64))
     }
 }
 
 impl From<u16> for Fp6 {
     /// Converts a 16-bit value into a field element.
     fn from(value: u16) -> Self {
-        Fp6::from(Fp::new(value as u64))
+        Self::from(Fp::new(value as u64))
     }
 }
 
 impl From<u8> for Fp6 {
     /// Converts an 8-bit value into a field element.
     fn from(value: u8) -> Self {
-        Fp6::from(Fp::new(value as u64))
+        Self::from(Fp::new(value as u64))
     }
 }
 
@@ -162,7 +162,7 @@ impl PartialEq for Fp6 {
 
 impl ConditionallySelectable for Fp6 {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        Fp6 {
+        Self {
             c0: Fp::conditional_select(&a.c0, &b.c0, choice),
             c1: Fp::conditional_select(&a.c1, &b.c1, choice),
             c2: Fp::conditional_select(&a.c2, &b.c2, choice),
@@ -226,7 +226,7 @@ impl Fp6 {
     /// The value is converted to canonical form by reducing
     /// each coordinate if necessary.
     pub const fn new(value: [u64; 6]) -> Self {
-        Fp6 {
+        Self {
             c0: Fp::new(value[0]),
             c1: Fp::new(value[1]),
             c2: Fp::new(value[2]),
@@ -239,7 +239,7 @@ impl Fp6 {
     #[inline]
     /// The additive identity
     pub const fn zero() -> Self {
-        Fp6 {
+        Self {
             c0: Fp::zero(),
             c1: Fp::zero(),
             c2: Fp::zero(),
@@ -252,7 +252,7 @@ impl Fp6 {
     #[inline]
     /// The multiplicative identity
     pub const fn one() -> Self {
-        Fp6 {
+        Self {
             c0: Fp::one(),
             c1: Fp::zero(),
             c2: Fp::zero(),
@@ -378,7 +378,7 @@ impl Fp6 {
         let c5 = (&c5).add(&cd);
         let c5 = (&c5).add(&dc);
 
-        Fp6 {
+        Self {
             c0,
             c1,
             c2,
@@ -451,7 +451,7 @@ impl Fp6 {
         let c5 = (&c5).add(&cd);
         let c5 = (&c5).double();
 
-        Fp6 {
+        Self {
             c0,
             c1,
             c2,
@@ -494,10 +494,10 @@ impl Fp6 {
             square_assign_multi(&mut b, (k - 2) as usize);
 
             let new_s = s * z;
-            s = Fp6::conditional_select(&new_s, &s, b.ct_eq(&Fp6::one()));
+            s = Self::conditional_select(&new_s, &s, b.ct_eq(&Self::one()));
             z = z.square();
             let new_t = t * z;
-            t = Fp6::conditional_select(&new_t, &t, b.ct_eq(&Fp6::one()));
+            t = Self::conditional_select(&new_t, &t, b.ct_eq(&Self::one()));
         }
 
         CtOption::new(s, (s * s).ct_eq(self))
@@ -506,7 +506,7 @@ impl Fp6 {
     /// Computes the double of a field element
     #[inline]
     pub const fn double(&self) -> Self {
-        Fp6 {
+        Self {
             c0: (&self.c0).double(),
             c1: (&self.c1).double(),
             c2: (&self.c2).double(),
@@ -519,7 +519,7 @@ impl Fp6 {
     /// Computes the summation of two field elements
     #[inline]
     pub const fn add(&self, rhs: &Self) -> Self {
-        Fp6 {
+        Self {
             c0: (&self.c0).add(&rhs.c0),
             c1: (&self.c1).add(&rhs.c1),
             c2: (&self.c2).add(&rhs.c2),
@@ -532,7 +532,7 @@ impl Fp6 {
     /// Computes the difference of two field elements
     #[inline]
     pub const fn sub(&self, rhs: &Self) -> Self {
-        Fp6 {
+        Self {
             c0: (&self.c0).sub(&rhs.c0),
             c1: (&self.c1).sub(&rhs.c1),
             c2: (&self.c2).sub(&rhs.c2),
@@ -545,7 +545,7 @@ impl Fp6 {
     /// Computes the negation of a field element
     #[inline]
     pub const fn neg(&self) -> Self {
-        Fp6 {
+        Self {
             c0: (&self.c0).neg(),
             c1: (&self.c1).neg(),
             c2: (&self.c2).neg(),
@@ -633,7 +633,7 @@ impl Fp6 {
 
         let inv = (self * t0).c0;
 
-        inv.invert().map(|t| t0 * Fp6::from(t))
+        inv.invert().map(|t| t0 * Self::from(t))
     }
 
     /// Exponentiates `self` by `power`, where `power` is a
@@ -721,7 +721,7 @@ impl Fp6 {
             c0.is_some() & c1.is_some() & c2.is_some() & c3.is_some() & c4.is_some() & c5.is_some();
 
         CtOption::new(
-            Fp6 {
+            Self {
                 c0: c0.unwrap_or(Fp::zero()),
                 c1: c1.unwrap_or(Fp::zero()),
                 c2: c2.unwrap_or(Fp::zero()),
@@ -736,7 +736,7 @@ impl Fp6 {
     /// Constructs an element of `Fp6` without checking that it is
     /// canonical.
     pub const fn from_raw_unchecked(value: [u64; 6]) -> Self {
-        Fp6 {
+        Self {
             c0: Fp::from_raw_unchecked(value[0]),
             c1: Fp::from_raw_unchecked(value[1]),
             c2: Fp::from_raw_unchecked(value[2]),
@@ -752,7 +752,7 @@ impl Fp6 {
 
 impl Field for Fp6 {
     fn random(mut rng: impl RngCore) -> Self {
-        Fp6 {
+        Self {
             c0: Fp::random(&mut rng),
             c1: Fp::random(&mut rng),
             c2: Fp::random(&mut rng),

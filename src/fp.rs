@@ -83,7 +83,7 @@ impl PartialEq for Fp {
 
 impl ConditionallySelectable for Fp {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        Fp(u64::conditional_select(&a.0, &b.0, choice))
+        Self(u64::conditional_select(&a.0, &b.0, choice))
     }
 }
 
@@ -101,13 +101,13 @@ impl Fp {
     /// Returns zero, the additive identity.
     #[inline]
     pub const fn zero() -> Self {
-        Fp(0)
+        Self(0)
     }
 
     /// Returns one, the multiplicative identity.
     #[inline]
     pub const fn one() -> Self {
-        Fp(1)
+        Self(1)
     }
 
     /// Checks whether `self` is zero or not
@@ -174,7 +174,7 @@ impl Fp {
         // zero if `self` was zero, and `u64::max_value()` if self was nonzero.
         let mask = ((self.0 == 0) as u64).wrapping_sub(1);
 
-        Fp(d0 & mask)
+        Self(d0 & mask)
     }
 
     /// Computes the multiplication of two field elements
@@ -248,7 +248,7 @@ impl Fp {
     /// Attempts to convert a little-endian byte representation of
     /// a scalar into a `Fp` element, failing if the input is not canonical.
     pub fn from_bytes(bytes: &[u8; 8]) -> CtOption<Self> {
-        let mut tmp = Fp(u64::from_le_bytes(*bytes));
+        let mut tmp = Self(u64::from_le_bytes(*bytes));
 
         // Try to subtract the modulus M
         let (_, borrow) = sub64_with_carry(tmp.0, M.0, 0);
@@ -358,7 +358,7 @@ impl Fp {
     /// Constructs an element of `Fp` without checking that it is
     /// canonical.
     pub const fn from_raw_unchecked(v: u64) -> Self {
-        Fp(v)
+        Self(v)
     }
 
     /// Outputs a `Fp` element of multiplicative order equals to 2^n
