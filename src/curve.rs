@@ -253,13 +253,13 @@ impl AffinePoint {
 
     /// Outputs a compress byte representation of this `AffinePoint` element
     pub fn to_compressed(&self) -> CompressedPoint {
-        CompressedPoint::from_affine(&self)
+        CompressedPoint::from_affine(self)
     }
 
     /// Outputs an uncompressed byte representation of this `AffinePoint` element
     /// It is twice larger than when calling `AffinePoint::to_compressed()`
     pub fn to_uncompressed(&self) -> UncompressedPoint {
-        UncompressedPoint::from_affine(&self)
+        UncompressedPoint::from_affine(self)
     }
 
     /// Attempts to deserialize an uncompressed element.
@@ -600,7 +600,7 @@ impl ProjectivePoint {
 
     /// Attempts to deserialize a compressed element.
     pub fn from_compressed(compressed_point: &CompressedPoint) -> CtOption<Self> {
-        AffinePoint::from_compressed(&compressed_point).map(ProjectivePoint::from)
+        AffinePoint::from_compressed(compressed_point).map(ProjectivePoint::from)
     }
 
     #[allow(unused)]
@@ -1030,7 +1030,7 @@ impl CompressedPoint {
     /// Attempts to convert a `CompressedPoint` to an `AffinePoint`
     /// The resulting point is ensured to be on the curve, but is
     /// not necessarily on the prime order subgroup.
-    fn to_affine(&self) -> CtOption<AffinePoint> {
+    fn to_affine(self) -> CtOption<AffinePoint> {
         // Obtain the two flags stored in the last byte of `self`
         let infinity_flag_set = Choice::from((self.0[48] >> 7) & 1);
         let sort_flag_set = Choice::from((self.0[48] >> 6) & 1);
@@ -1107,7 +1107,7 @@ impl UncompressedPoint {
     /// Attempts to convert an `UncompressedPoint` to an `AffinePoint`
     /// The resulting point is ensured to be on the curve, but is
     /// not necessarily on the prime order subgroup.
-    fn to_affine(&self) -> CtOption<AffinePoint> {
+    fn to_affine(self) -> CtOption<AffinePoint> {
         // Obtain the two flags
         let infinity_flag_set = Choice::from((self.0[96] >> 7) & 1);
 
