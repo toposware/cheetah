@@ -88,11 +88,7 @@ impl<'a> From<&'a ProjectivePoint> for AffinePoint {
             infinity: Choice::from(0u8),
         };
 
-        if zinv == Fp6::zero() {
-            AffinePoint::identity()
-        } else {
-            tmp
-        }
+        AffinePoint::conditional_select(&tmp, &AffinePoint::identity(), zinv.ct_eq(&Fp6::zero()))
     }
 }
 
