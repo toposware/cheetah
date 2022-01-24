@@ -467,10 +467,6 @@ impl Fp6 {
         // See https://eprint.iacr.org/2020/1497.pdf, page 3 for a
         // constant time specification of the algorithm.
 
-        // We construct t and z from Fp6 seen as a direct extension
-        // of Fp, and then use the isomorphism in `util.sage` to go
-        // back to the tower extension.
-
         // Compute the progenitor y of self
         // y = self^((t - 1) // 2)
         //   = self^0x3ffffffe800000053ffffff3800000167fffffe0800000233fffffe0800000167ffffff3800000053ffffffe
