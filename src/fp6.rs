@@ -24,7 +24,6 @@ use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 use crate::fp::Fp;
 use crate::utils::square_assign_multi;
 
-use crate::fp::GENERATOR;
 use crate::fp::TWO_ADICITY;
 
 // 2^33 root of unity = 10277652121819048352*u^5 + 9084844568934916810*u^4 + 6141246800624588228*u^3
@@ -341,31 +340,31 @@ impl Fp6 {
         let c0 = (&c0).add(&ce);
         let c0 = (&c0).add(&ec);
         let c0 = (&c0).add(&dd);
-        let c0 = (&c0).mul(&GENERATOR);
+        let c0 = (&c0).mul_by_beta();
         let c0 = (&c0).add(&aa);
 
         let c1 = (&cf).add(&fc);
         let c1 = (&c1).add(&de);
         let c1 = (&c1).add(&ed);
-        let c1 = (&c1).mul(&GENERATOR);
+        let c1 = (&c1).mul_by_beta();
         let c1 = (&c1).add(&ab);
         let c1 = (&c1).add(&ba);
 
         let c2 = (&df).add(&fd);
         let c2 = (&c2).add(&ee);
-        let c2 = (&c2).mul(&GENERATOR);
+        let c2 = (&c2).mul_by_beta();
         let c2 = (&c2).add(&ac);
         let c2 = (&c2).add(&ca);
         let c2 = (&c2).add(&bb);
 
         let c3 = (&ef).add(&fe);
-        let c3 = (&c3).mul(&GENERATOR);
+        let c3 = (&c3).mul_by_beta();
         let c3 = (&c3).add(&ad);
         let c3 = (&c3).add(&da);
         let c3 = (&c3).add(&bc);
         let c3 = (&c3).add(&cb);
 
-        let c4 = (&ff).mul(&GENERATOR);
+        let c4 = (&ff).mul_by_beta();
         let c4 = (&c4).add(&ae);
         let c4 = (&c4).add(&ea);
         let c4 = (&c4).add(&bd);
@@ -421,27 +420,27 @@ impl Fp6 {
         let c0 = (&bf).add(&ce);
         let c0 = (&c0).double();
         let c0 = (&c0).add(&dd);
-        let c0 = (&c0).mul(&GENERATOR);
+        let c0 = (&c0).mul_by_beta();
         let c0 = (&c0).add(&aa);
 
         let c1 = (&cf).add(&de);
-        let c1 = (&c1).mul(&GENERATOR);
+        let c1 = (&c1).mul_by_beta();
         let c1 = (&c1).add(&ab);
         let c1 = (&c1).double();
 
         let c2 = (&df).double();
         let c2 = (&c2).add(&ee);
-        let c2 = (&c2).mul(&GENERATOR);
+        let c2 = (&c2).mul_by_beta();
         let c2 = (&c2).add(&bb);
         let t2 = (&ac).double();
         let c2 = (&c2).add(&t2);
 
-        let c3 = (&ef).mul(&GENERATOR);
+        let c3 = (&ef).mul_by_beta();
         let c3 = (&c3).add(&ad);
         let c3 = (&c3).add(&bc);
         let c3 = (&c3).double();
 
-        let t4 = (&ff).mul(&GENERATOR);
+        let t4 = (&ff).mul_by_beta();
         let c4 = (&ae).add(&bd);
         let c4 = (&c4).double();
         let c4 = (&c4).add(&cc);
