@@ -226,23 +226,30 @@ impl AffinePoint {
     }
 
     /// Returns a fixed generator of the curve in affine coordinates
+    /// The point has been generated from the Simplified Shallue-van
+    /// de Woestijne-Ulas method for hashing to elliptic curves in
+    /// Short Weierstrass form, applied on the integer value of the
+    /// binary encoding of the string "Cheetah".
+    ///
+    /// See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve
+    /// for more.
     pub fn generator() -> AffinePoint {
         AffinePoint {
             x: Fp6 {
-                c0: Fp(0x648eeb1134772af2),
-                c1: Fp(0x615c8ceb5de71c1f),
-                c2: Fp(0x14a489b1f34ab92b),
-                c3: Fp(0xd541aa1e607aaa66),
-                c4: Fp(0x814ff01215217248),
-                c5: Fp(0xc995a8d192442791),
+                c0: Fp(0x78aaf51e45bc1301),
+                c1: Fp(0x24749f47db187b7b),
+                c2: Fp(0x1fa2a3ccec4bcbe5),
+                c3: Fp(0x709c150209bf0a63),
+                c4: Fp(0x3a9398ec1c79f0c6),
+                c5: Fp(0x2f87c75b244ea300),
             },
             y: Fp6 {
-                c0: Fp(0x512330e187a232d7),
-                c1: Fp(0xc51d530fbdfbe188),
-                c2: Fp(0x46f1c144a28b3894),
-                c3: Fp(0xf634b28a1537990f),
-                c4: Fp(0x4783e4f886f87554),
-                c5: Fp(0xdb2c4e2e0198890b),
+                c0: Fp(0x84c15f1674c65039),
+                c1: Fp(0x70fd69cd4b47568b),
+                c2: Fp(0xc4536a66d7198b9f),
+                c3: Fp(0xa55e1382a6262c5),
+                c4: Fp(0xc684381412e80e2a),
+                c5: Fp(0xcfb0c981bf8634df),
             },
             infinity: Choice::from(0u8),
         }
@@ -547,23 +554,30 @@ impl ProjectivePoint {
     }
 
     /// Returns a fixed generator of the curve in projective coordinates
+    /// The point has been generated from the Simplified Shallue-van
+    /// de Woestijne-Ulas method for hashing to elliptic curves in
+    /// Short Weierstrass form, applied on the integer value of the
+    /// binary encoding of the string "Cheetah".
+    ///
+    /// See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve
+    /// for more.
     pub const fn generator() -> ProjectivePoint {
         ProjectivePoint {
             x: Fp6 {
-                c0: Fp(0x648eeb1134772af2),
-                c1: Fp(0x615c8ceb5de71c1f),
-                c2: Fp(0x14a489b1f34ab92b),
-                c3: Fp(0xd541aa1e607aaa66),
-                c4: Fp(0x814ff01215217248),
-                c5: Fp(0xc995a8d192442791),
+                c0: Fp(0x78aaf51e45bc1301),
+                c1: Fp(0x24749f47db187b7b),
+                c2: Fp(0x1fa2a3ccec4bcbe5),
+                c3: Fp(0x709c150209bf0a63),
+                c4: Fp(0x3a9398ec1c79f0c6),
+                c5: Fp(0x2f87c75b244ea300),
             },
             y: Fp6 {
-                c0: Fp(0x512330e187a232d7),
-                c1: Fp(0xc51d530fbdfbe188),
-                c2: Fp(0x46f1c144a28b3894),
-                c3: Fp(0xf634b28a1537990f),
-                c4: Fp(0x4783e4f886f87554),
-                c5: Fp(0xdb2c4e2e0198890b),
+                c0: Fp(0x84c15f1674c65039),
+                c1: Fp(0x70fd69cd4b47568b),
+                c2: Fp(0xc4536a66d7198b9f),
+                c3: Fp(0xa55e1382a6262c5),
+                c4: Fp(0xc684381412e80e2a),
+                c5: Fp(0xcfb0c981bf8634df),
             },
             z: Fp6::one(),
         }
@@ -1518,20 +1532,20 @@ mod tests {
                 AffinePoint::from(tmp),
                 AffinePoint {
                     x: Fp6 {
-                        c0: Fp(0xba493934267abd25),
-                        c1: Fp(0xe67708b141b00f98),
-                        c2: Fp(0x281a941118867b07),
-                        c3: Fp(0xef05e46bf54aee0),
-                        c4: Fp(0x26fba4541e43ebfa),
-                        c5: Fp(0xc188a470c53c1f2d),
+                        c0: Fp(0xa22aa8a709fe713f),
+                        c1: Fp(0x18d2b08b37bfad3f),
+                        c2: Fp(0x41c47d21d319e0c7),
+                        c3: Fp(0xcda40b22162b180a),
+                        c4: Fp(0x622555114c4ee110),
+                        c5: Fp(0x1773a9071ff3167b),
                     },
                     y: Fp6 {
-                        c0: Fp(0xd33b8d0cfe41fbaa),
-                        c1: Fp(0xb4072471688071f7),
-                        c2: Fp(0x3b528825265ba3f3),
-                        c3: Fp(0xfd892261eaf47fe6),
-                        c4: Fp(0xce63e291673184d1),
-                        c5: Fp(0x37eb7b2fa4ea4db0),
+                        c0: Fp(0x12deca26cd1389a0),
+                        c1: Fp(0xfa07854b399c72b6),
+                        c2: Fp(0x6a1f3dbb730291b9),
+                        c3: Fp(0xec23886b43cb46ad),
+                        c4: Fp(0x489ec6c2be5fd7b3),
+                        c5: Fp(0x2e1341c748fc8ec5),
                     },
                     infinity: Choice::from(0u8),
                 }
