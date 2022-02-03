@@ -645,8 +645,7 @@ pub(crate) const fn reduce_u128(x: u128) -> u64 {
 #[inline(always)]
 pub(crate) const fn reduce_u96(x: u128) -> u64 {
     // Decompose x = r0 + c.2^64 with r0 a u64 value and c a u32 value
-    let cd = (x >> 64) as u64;
-    let c = (cd as u32) as u64;
+    let c = ((x >> 64) as u32) as u64;
 
     let r0 = x as u64;
 
