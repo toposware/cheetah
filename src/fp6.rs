@@ -21,10 +21,13 @@ use serde::de::Visitor;
 #[cfg(feature = "serialize")]
 use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 
+use crate::fp::reduce_u96;
 use crate::fp::Fp;
 use crate::utils::square_assign_multi;
 
 use crate::fp::TWO_ADICITY;
+
+const BETA: u128 = crate::fp::GENERATOR.0 as u128;
 
 // 2^33 root of unity = 10277652121819048352*u^5 + 9084844568934916810*u^4 + 6141246800624588228*u^3
 //                          + 13627025161062455919*u^2 + 2361889345279789581*u + 3733119278093849254
@@ -294,88 +297,101 @@ impl Fp6 {
     #[inline]
     /// Computes the multiplication of two Fp6 elements
     pub const fn mul(&self, other: &Fp6) -> Fp6 {
-        let aa = (&self.c0).mul(&other.c0);
-        let ab = (&self.c0).mul(&other.c1);
-        let ac = (&self.c0).mul(&other.c2);
-        let ad = (&self.c0).mul(&other.c3);
-        let ae = (&self.c0).mul(&other.c4);
-        let af = (&self.c0).mul(&other.c5);
+        // All helper values computed below are seen as u128 after modular reduction.
+        // This allows for a faster computation of the result coordinates,
+        // by computing all operations in /ZZ, and then finally converting the
+        // values back to Fp through a modular reduction.
+        //
+        // The reduction uses `reduce_u96()` as all final values are less than 96 bits.
 
-        let ba = (&self.c1).mul(&other.c0);
-        let bb = (&self.c1).mul(&other.c1);
-        let bc = (&self.c1).mul(&other.c2);
-        let bd = (&self.c1).mul(&other.c3);
-        let be = (&self.c1).mul(&other.c4);
-        let bf = (&self.c1).mul(&other.c5);
+        let aa = (&self.c0).mul(&other.c0).0 as u128;
+        let ab = (&self.c0).mul(&other.c1).0 as u128;
+        let ac = (&self.c0).mul(&other.c2).0 as u128;
+        let ad = (&self.c0).mul(&other.c3).0 as u128;
+        let ae = (&self.c0).mul(&other.c4).0 as u128;
+        let af = (&self.c0).mul(&other.c5).0 as u128;
 
-        let ca = (&self.c2).mul(&other.c0);
-        let cb = (&self.c2).mul(&other.c1);
-        let cc = (&self.c2).mul(&other.c2);
-        let cd = (&self.c2).mul(&other.c3);
-        let ce = (&self.c2).mul(&other.c4);
-        let cf = (&self.c2).mul(&other.c5);
+        let ba = (&self.c1).mul(&other.c0).0 as u128;
+        let bb = (&self.c1).mul(&other.c1).0 as u128;
+        let bc = (&self.c1).mul(&other.c2).0 as u128;
+        let bd = (&self.c1).mul(&other.c3).0 as u128;
+        let be = (&self.c1).mul(&other.c4).0 as u128;
+        let bf = (&self.c1).mul(&other.c5).0 as u128;
 
-        let da = (&self.c3).mul(&other.c0);
-        let db = (&self.c3).mul(&other.c1);
-        let dc = (&self.c3).mul(&other.c2);
-        let dd = (&self.c3).mul(&other.c3);
-        let de = (&self.c3).mul(&other.c4);
-        let df = (&self.c3).mul(&other.c5);
+        let ca = (&self.c2).mul(&other.c0).0 as u128;
+        let cb = (&self.c2).mul(&other.c1).0 as u128;
+        let cc = (&self.c2).mul(&other.c2).0 as u128;
+        let cd = (&self.c2).mul(&other.c3).0 as u128;
+        let ce = (&self.c2).mul(&other.c4).0 as u128;
+        let cf = (&self.c2).mul(&other.c5).0 as u128;
 
-        let ea = (&self.c4).mul(&other.c0);
-        let eb = (&self.c4).mul(&other.c1);
-        let ec = (&self.c4).mul(&other.c2);
-        let ed = (&self.c4).mul(&other.c3);
-        let ee = (&self.c4).mul(&other.c4);
-        let ef = (&self.c4).mul(&other.c5);
+        let da = (&self.c3).mul(&other.c0).0 as u128;
+        let db = (&self.c3).mul(&other.c1).0 as u128;
+        let dc = (&self.c3).mul(&other.c2).0 as u128;
+        let dd = (&self.c3).mul(&other.c3).0 as u128;
+        let de = (&self.c3).mul(&other.c4).0 as u128;
+        let df = (&self.c3).mul(&other.c5).0 as u128;
 
-        let fa = (&self.c5).mul(&other.c0);
-        let fb = (&self.c5).mul(&other.c1);
-        let fc = (&self.c5).mul(&other.c2);
-        let fd = (&self.c5).mul(&other.c3);
-        let fe = (&self.c5).mul(&other.c4);
-        let ff = (&self.c5).mul(&other.c5);
+        let ea = (&self.c4).mul(&other.c0).0 as u128;
+        let eb = (&self.c4).mul(&other.c1).0 as u128;
+        let ec = (&self.c4).mul(&other.c2).0 as u128;
+        let ed = (&self.c4).mul(&other.c3).0 as u128;
+        let ee = (&self.c4).mul(&other.c4).0 as u128;
+        let ef = (&self.c4).mul(&other.c5).0 as u128;
 
-        let c0 = (&bf).add(&fb);
-        let c0 = (&c0).add(&ce);
-        let c0 = (&c0).add(&ec);
-        let c0 = (&c0).add(&dd);
-        let c0 = (&c0).mul_by_beta();
-        let c0 = (&c0).add(&aa);
+        let fa = (&self.c5).mul(&other.c0).0 as u128;
+        let fb = (&self.c5).mul(&other.c1).0 as u128;
+        let fc = (&self.c5).mul(&other.c2).0 as u128;
+        let fd = (&self.c5).mul(&other.c3).0 as u128;
+        let fe = (&self.c5).mul(&other.c4).0 as u128;
+        let ff = (&self.c5).mul(&other.c5).0 as u128;
 
-        let c1 = (&cf).add(&fc);
-        let c1 = (&c1).add(&de);
-        let c1 = (&c1).add(&ed);
-        let c1 = (&c1).mul_by_beta();
-        let c1 = (&c1).add(&ab);
-        let c1 = (&c1).add(&ba);
+        let c0 = bf + fb;
+        let c0 = c0 + ce;
+        let c0 = c0 + ec;
+        let c0 = c0 + dd;
+        let c0 = c0 * BETA;
+        let c0 = c0 + aa;
+        let c0 = Fp(reduce_u96(c0));
 
-        let c2 = (&df).add(&fd);
-        let c2 = (&c2).add(&ee);
-        let c2 = (&c2).mul_by_beta();
-        let c2 = (&c2).add(&ac);
-        let c2 = (&c2).add(&ca);
-        let c2 = (&c2).add(&bb);
+        let c1 = cf + fc;
+        let c1 = c1 + de;
+        let c1 = c1 + ed;
+        let c1 = c1 * BETA;
+        let c1 = c1 + ab;
+        let c1 = c1 + ba;
+        let c1 = Fp(reduce_u96(c1));
 
-        let c3 = (&ef).add(&fe);
-        let c3 = (&c3).mul_by_beta();
-        let c3 = (&c3).add(&ad);
-        let c3 = (&c3).add(&da);
-        let c3 = (&c3).add(&bc);
-        let c3 = (&c3).add(&cb);
+        let c2 = df + fd;
+        let c2 = c2 + ee;
+        let c2 = c2 * BETA;
+        let c2 = c2 + ac;
+        let c2 = c2 + ca;
+        let c2 = c2 + bb;
+        let c2 = Fp(reduce_u96(c2));
 
-        let c4 = (&ff).mul_by_beta();
-        let c4 = (&c4).add(&ae);
-        let c4 = (&c4).add(&ea);
-        let c4 = (&c4).add(&bd);
-        let c4 = (&c4).add(&db);
-        let c4 = (&c4).add(&cc);
+        let c3 = ef + fe;
+        let c3 = c3 * BETA;
+        let c3 = c3 + ad;
+        let c3 = c3 + da;
+        let c3 = c3 + bc;
+        let c3 = c3 + cb;
+        let c3 = Fp(reduce_u96(c3));
 
-        let c5 = (&af).add(&fa);
-        let c5 = (&c5).add(&be);
-        let c5 = (&c5).add(&eb);
-        let c5 = (&c5).add(&cd);
-        let c5 = (&c5).add(&dc);
+        let c4 = ff * BETA;
+        let c4 = c4 + ae;
+        let c4 = c4 + ea;
+        let c4 = c4 + bd;
+        let c4 = c4 + db;
+        let c4 = c4 + cc;
+        let c4 = Fp(reduce_u96(c4));
+
+        let c5 = af + fa;
+        let c5 = c5 + be;
+        let c5 = c5 + eb;
+        let c5 = c5 + cd;
+        let c5 = c5 + dc;
+        let c5 = Fp(reduce_u96(c5));
 
         Self {
             c0,
@@ -387,68 +403,81 @@ impl Fp6 {
         }
     }
 
-    /// Computes the square of a field element
+    /// Computes the square of an Fp6 element
     #[inline]
     pub const fn square(&self) -> Self {
-        let aa = (&self.c0).square();
-        let ab = (&self.c0).mul(&self.c1);
-        let ac = (&self.c0).mul(&self.c2);
-        let ad = (&self.c0).mul(&self.c3);
-        let ae = (&self.c0).mul(&self.c4);
-        let af = (&self.c0).mul(&self.c5);
+        // All helper values computed below are seen as u128 after modular reduction.
+        // This allows for a faster computation of the result coordinates,
+        // by computing all operations in /ZZ, and then finally converting the
+        // values back to Fp through a modular reduction.
+        //
+        // The reduction uses `reduce_u96()` as all final values are less than 96 bits.
 
-        let bb = (&self.c1).square();
-        let bc = (&self.c1).mul(&self.c2);
-        let bd = (&self.c1).mul(&self.c3);
-        let be = (&self.c1).mul(&self.c4);
-        let bf = (&self.c1).mul(&self.c5);
+        let aa = (&self.c0).square().0 as u128;
+        let ab = (&self.c0).mul(&self.c1).0 as u128;
+        let ac = (&self.c0).mul(&self.c2).0 as u128;
+        let ad = (&self.c0).mul(&self.c3).0 as u128;
+        let ae = (&self.c0).mul(&self.c4).0 as u128;
+        let af = (&self.c0).mul(&self.c5).0 as u128;
 
-        let cc = (&self.c2).square();
-        let cd = (&self.c2).mul(&self.c3);
-        let ce = (&self.c2).mul(&self.c4);
-        let cf = (&self.c2).mul(&self.c5);
+        let bb = (&self.c1).square().0 as u128;
+        let bc = (&self.c1).mul(&self.c2).0 as u128;
+        let bd = (&self.c1).mul(&self.c3).0 as u128;
+        let be = (&self.c1).mul(&self.c4).0 as u128;
+        let bf = (&self.c1).mul(&self.c5).0 as u128;
 
-        let dd = (&self.c3).square();
-        let de = (&self.c3).mul(&self.c4);
-        let df = (&self.c3).mul(&self.c5);
+        let cc = (&self.c2).square().0 as u128;
+        let cd = (&self.c2).mul(&self.c3).0 as u128;
+        let ce = (&self.c2).mul(&self.c4).0 as u128;
+        let cf = (&self.c2).mul(&self.c5).0 as u128;
 
-        let ee = (&self.c4).square();
-        let ef = (&self.c4).mul(&self.c5);
+        let dd = (&self.c3).square().0 as u128;
+        let de = (&self.c3).mul(&self.c4).0 as u128;
+        let df = (&self.c3).mul(&self.c5).0 as u128;
 
-        let ff = (&self.c5).square();
+        let ee = (&self.c4).square().0 as u128;
+        let ef = (&self.c4).mul(&self.c5).0 as u128;
 
-        let c0 = (&bf).add(&ce);
-        let c0 = (&c0).double();
-        let c0 = (&c0).add(&dd);
-        let c0 = (&c0).mul_by_beta();
-        let c0 = (&c0).add(&aa);
+        let ff = (&self.c5).square().0 as u128;
 
-        let c1 = (&cf).add(&de);
-        let c1 = (&c1).mul_by_beta();
-        let c1 = (&c1).add(&ab);
-        let c1 = (&c1).double();
+        let c0 = bf + ce;
+        let c0 = c0 << 1;
+        let c0 = c0 + dd;
+        let c0 = c0 * BETA;
+        let c0 = c0 + aa;
+        let c0 = Fp(reduce_u96(c0));
 
-        let c2 = (&df).double();
-        let c2 = (&c2).add(&ee);
-        let c2 = (&c2).mul_by_beta();
-        let c2 = (&c2).add(&bb);
-        let t2 = (&ac).double();
-        let c2 = (&c2).add(&t2);
+        let c1 = cf + de;
+        let c1 = c1 * BETA;
+        let c1 = c1 + ab;
+        let c1 = c1 << 1;
+        let c1 = Fp(reduce_u96(c1));
 
-        let c3 = (&ef).mul_by_beta();
-        let c3 = (&c3).add(&ad);
-        let c3 = (&c3).add(&bc);
-        let c3 = (&c3).double();
+        let c2 = df << 1;
+        let c2 = c2 + ee;
+        let c2 = c2 * BETA;
+        let t2 = ac << 1;
+        let c2 = c2 + t2;
+        let c2 = c2 + bb;
+        let c2 = Fp(reduce_u96(c2));
 
-        let t4 = (&ff).mul_by_beta();
-        let c4 = (&ae).add(&bd);
-        let c4 = (&c4).double();
-        let c4 = (&c4).add(&cc);
-        let c4 = (&c4).add(&t4);
+        let c3 = ef * BETA;
+        let c3 = c3 + ad;
+        let c3 = c3 + bc;
+        let c3 = c3 << 1;
+        let c3 = Fp(reduce_u96(c3));
 
-        let c5 = (&af).add(&be);
-        let c5 = (&c5).add(&cd);
-        let c5 = (&c5).double();
+        let t4 = ff * BETA;
+        let c4 = ae + bd;
+        let c4 = c4 << 1;
+        let c4 = c4 + cc;
+        let c4 = c4 + t4;
+        let c4 = Fp(reduce_u96(c4));
+
+        let c5 = af + be;
+        let c5 = c5 + cd;
+        let c5 = c5 << 1;
+        let c5 = Fp(reduce_u96(c5));
 
         Self {
             c0,

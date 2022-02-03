@@ -192,15 +192,6 @@ impl Fp {
         Self(reduce_u128(r0))
     }
 
-    /// Computes the multiplication of a field element
-    /// with the sextic non-residue beta.
-    #[inline]
-    pub const fn mul_by_beta(&self) -> Self {
-        let r0 = (self.0 as u128) * (GENERATOR.0 as u128);
-
-        Self(reduce_u96(r0))
-    }
-
     /// Computes the square of a field element
     #[inline]
     pub const fn square(&self) -> Self {
@@ -621,7 +612,7 @@ impl<'de> Deserialize<'de> for Fp {
 /// requires to call `Fp::make_canonical` to ensure that the result is in proper
 /// canonical form.
 #[inline(always)]
-const fn reduce_u128(x: u128) -> u64 {
+pub(crate) const fn reduce_u128(x: u128) -> u64 {
     // See https://github.com/mir-protocol/plonky2/blob/main/plonky2.pdf
     // for a more complete description of the reduction.
 
@@ -652,7 +643,7 @@ const fn reduce_u128(x: u128) -> u64 {
 /// the value to be reduced is fitting in 96 bits. This is always the case when
 /// multiplying canonical elements (in [0, M) range) with values at most 2^32 + 1.
 #[inline(always)]
-const fn reduce_u96(x: u128) -> u64 {
+pub(crate) const fn reduce_u96(x: u128) -> u64 {
     // Decompose x = r0 + c.2^64 with r0 a u64 value and c a u32 value
     let cd = (x >> 64) as u64;
     let c = (cd as u32) as u64;
@@ -808,16 +799,6 @@ mod tests {
             assert_eq!(tmp, tmp2);
 
             cur.add_assign(&LARGEST);
-        }
-    }
-
-    #[test]
-    fn test_multiplication_by_beta() {
-        let mut rng = OsRng;
-
-        for _ in 0..100 {
-            let tmp = Fp::random(&mut rng);
-            assert_eq!(tmp.mul(GENERATOR), tmp.mul_by_beta());
         }
     }
 
