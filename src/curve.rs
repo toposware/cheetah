@@ -1061,7 +1061,7 @@ impl ProjectivePoint {
 /// a point, along an extra byte storing metadata
 /// to be used for decompression.
 #[derive(Copy, Clone, Debug)]
-pub struct CompressedPoint([u8; 49]);
+pub struct CompressedPoint(pub [u8; 49]);
 
 impl CompressedPoint {
     /// Converts an `AffinePoint` to a `CompressedPoint`
@@ -1195,7 +1195,7 @@ impl<'de> Deserialize<'de> for CompressedPoint {
 /// of a point, along an extra byte storing metadata to be
 /// used for decompression.
 #[derive(Copy, Clone, Debug)]
-pub struct UncompressedPoint([u8; 97]);
+pub struct UncompressedPoint(pub [u8; 97]);
 
 impl UncompressedPoint {
     /// Converts an `AffinePoint` to an `UncompressedPoint`

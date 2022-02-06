@@ -51,4 +51,4 @@ pub use fp6::Fp6;
 pub use constants::BASEPOINT_TABLE;
 pub use lookup::{BasePointTable, LookupTable};
 
-pub use curve::{AffinePoint, ProjectivePoint, B};
+pub use curve::{AffinePoint, CompressedPoint, ProjectivePoint, UncompressedPoint, B};
