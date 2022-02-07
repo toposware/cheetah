@@ -295,6 +295,38 @@ impl Fp6 {
     }
 
     #[inline]
+    /// Computes the multiplication of an Fp6 element with an Fp element
+    pub const fn mul_by_fp(&self, other: &Fp) -> Fp6 {
+        // All helper values computed below are seen as u128 after modular reduction.
+        // This allows for a faster computation of the result coordinates,
+        // by computing all operations in /ZZ, and then finally converting the
+        // values back to Fp through a modular reduction.
+        //
+        // The reduction uses `reduce_u96()` as all final values are less than 96 bits.
+
+        let c0 = (&self.c0).mul(other);
+
+        let c1 = (&self.c1).mul(other);
+
+        let c2 = (&self.c2).mul(other);
+
+        let c3 = (&self.c3).mul(other);
+
+        let c4 = (&self.c4).mul(other);
+
+        let c5 = (&self.c5).mul(other);
+
+        Self {
+            c0,
+            c1,
+            c2,
+            c3,
+            c4,
+            c5,
+        }
+    }
+
+    #[inline]
     /// Computes the multiplication of two Fp6 elements
     pub const fn mul(&self, other: &Fp6) -> Fp6 {
         // All helper values computed below are seen as u128 after modular reduction.
@@ -582,82 +614,249 @@ impl Fp6 {
     /// Computes the multiplicative inverse of this field
     /// element, returning None in the case that this element
     /// is zero.
-    // TODO: Super inefficient as relying on exponentiation in Fp6
-    // Should be redone to use sextic non-residue instead.
+    // TODO: Could be factored here and there to save some multiplications.
     #[inline]
     pub fn invert(&self) -> CtOption<Self> {
-        let mut t0 = self.square(); //         1: 2
-        let t12 = t0 * self; //                2: 3
-        let t2 = t0.square(); //               3: 4
-        let t1 = t12 * t0; //                  4: 5
-        let t7 = t2.square(); //               5: 8
-        let t2 = t7 * t2; //                   6: 12
-        let t3 = t2 * t0; //                   7: 14
-        let t11 = t2 * t12; //                 8: 15
-        let t5 = t7.square(); //               9: 16
-        let t2 = t2 * t7; //                  10: 20
-        let t4 = t5.square(); //              11: 32
-        let t5 = t4 * t5; //                  12: 48
-        let t6 = t5 * t1; //                  13: 53
-        let t4 = t6 * t2; //                  14: 73
-        let t8 = t4 * t6; //                  15: 126
-        t0 *= t8; //                          16: 128
-        let t6 = t8 * t12; //                 17: 129
-        let t9 = t6 * t8; //                  18: 255
-        let t4 = t9 * t4; //                  19: 328
-        let t6 = t4 * t6; //                  20: 457
-        let t8 = t6 * t2; //                  21: 477
-        let t2 = t8 * t2; //                  22: 497
-        let t3 = t2 * t3; //                  23: 511
-        let t5 = t3 * t5; //                  24: 559
-        let t7 = t5 * t7; //                  25: 567
-        let t10 = t7 * t4; //                 26: 895
-        let t4 = t10 * t0; //                 27: 1023
-        t0 = t4.square(); //                  28: 2046
-        square_assign_multi(&mut t0, 9); //   37: 1047552
-        t0 *= t4; //                          38: 1048575
-        square_assign_multi(&mut t0, 9); //   47: 536870400
-        t0 *= t3; //                          48: 536870911
-        square_assign_multi(&mut t0, 3); //   51: 4294967288
-        t0 *= t12; //                         52: 4294967291
-        square_assign_multi(&mut t0, 38); //  90: 1180591619343021768704
-        t0 *= t4; //                          91: 1180591619343021769727
-        square_assign_multi(&mut t0, 10); // 101: 1208925818207254292200448
-        t0 *= t4; //                         102: 1208925818207254292201471
-        square_assign_multi(&mut t0, 10); // 112: 1237940037844228395214306304
-        t0 *= t4; //                         113: 1237940037844228395214307327
-        square_assign_multi(&mut t0, 5); //  118: 39614081211015308646857834464
-        t0 *= t11; //                        119: 39614081211015308646857834479
-        square_assign_multi(&mut t0, 37); // 156: 5444517864396762418995213191957958361088
-        t0 *= t10; //                        157: 5444517864396762418995213191957958361983
-        square_assign_multi(&mut t0, 10); // 167: 5575186293142284717051098308564949362670592
-        t0 *= t4; //                         168: 5575186293142284717051098308564949362671615
-        square_assign_multi(&mut t0, 8); //  176: 1427247691044424887565081166992627036843933440
-        t0 *= t9; //                         177: 1427247691044424887565081166992627036843933695
-        square_assign_multi(&mut t0, 9); //  186: 730750817814745542433321557500225042864094051840
-        t0 *= t8; //                         187: 730750817814745542433321557500225042864094052317
-        square_assign_multi(&mut t0, 36); // 223: 50216813824633380661006341601844001147863714037914048397312
-        t0 *= t7; //                         224: 50216813824633380661006341601844001147863714037914048397879
-        square_assign_multi(&mut t0, 10); // 234: 51422017356424581796870493800288257175412443174823985559428096
-        t0 *= t4; //                         235: 51422017356424581796870493800288257175412443174823985559429119
-        square_assign_multi(&mut t0, 10); // 245: 52656145772978771759995385651495175347622341811019761212855417856
-        t0 *= t4; //                         246: 52656145772978771759995385651495175347622341811019761212855418879
-        square_assign_multi(&mut t0, 9); //  255: 26959946635765131141117637453565529777982639007242117740981974466048
-        t0 *= t6; //                         256: 26959946635765131141117637453565529777982639007242117740981974466505
-        square_assign_multi(&mut t0, 36); // 292: 1852673425640263395012022620029578703829593206270060845620783668146336358727680
-        t0 *= t5; //                         293: 1852673425640263395012022620029578703829593206270060845620783668146336358728239
-        square_assign_multi(&mut t0, 10); // 303: 1897137587855629716492311162910288592721503443220542305915682476181848431337716736
-        t0 *= t4; //                         304: 1897137587855629716492311162910288592721503443220542305915682476181848431337717759
-        square_assign_multi(&mut t0, 9); //  313: 971334444982082414844063315410067759473409762928917660628829427805106396844911492608
-        t0 *= t3; //                         314: 971334444982082414844063315410067759473409762928917660628829427805106396844911493119
-        square_assign_multi(&mut t0, 9); //  323: 497323235830826196400160417489954692850385798619605842241960667036214475184594684476928
-        t0 *= t2; //                         324: 497323235830826196400160417489954692850385798619605842241960667036214475184594684477425
-        square_assign_multi(&mut t0, 32); // 356: 2135987033434293902198761922273061814314132026054049036839756383838886418559637732845979225292800
-        t0 *= t1; //                         357: 2135987033434293902198761922273061814314132026054049036839756383838886418559637732845979225292805
+        // Adapted from "A Fast Algorithm for Computing Multiplicative
+        // Inverses in GF(2m) Using Normal Bases" from Itoh and Tsujii.
 
-        let inv = (self * t0).c0;
+        let a2 = self.c0.square();
+        let a3 = self.c0 * a2;
+        let b2 = self.c1.square();
+        let b3 = self.c1 * b2;
+        let c2 = self.c2.square();
+        let c3 = self.c2 * c2;
+        let d2 = self.c3.square();
+        let d3 = self.c3 * d2;
+        let e2 = self.c4.square();
+        let e3 = self.c4 * e2;
+        let f2 = self.c5.square();
+        let f3 = self.c5 * f2;
 
-        inv.invert().map(|t| t0 * Self::from(t))
+        let ab = self.c0 * self.c1;
+        let ac = self.c0 * self.c2;
+        let ad = self.c0 * self.c3;
+        let ae = self.c0 * self.c4;
+        let af = self.c0 * self.c5;
+        let bc = self.c1 * self.c2;
+        let bd = self.c1 * self.c3;
+        let be = self.c1 * self.c4;
+        let bf = self.c1 * self.c5;
+        let cd = self.c2 * self.c3;
+        let ce = self.c2 * self.c4;
+        let cf = self.c2 * self.c5;
+        let de = self.c3 * self.c4;
+        let df = self.c3 * self.c5;
+        let ef = self.c4 * self.c5;
+
+        let ab2 = self.c0 * b2;
+        let ac2 = self.c0 * c2;
+        let ad2 = self.c0 * d2;
+        let ae2 = self.c0 * e2;
+        let af2 = self.c0 * f2;
+        let a2b = a2 * self.c1;
+        let a2d = a2 * self.c3;
+        let a2f = a2 * self.c5;
+
+        let bc2 = self.c1 * c2;
+        let bd2 = self.c1 * d2;
+        let be2 = self.c1 * e2;
+        let bf2 = self.c1 * f2;
+        let b2c = b2 * self.c2;
+        let b2d = b2 * self.c3;
+        let b2e = b2 * self.c4;
+        let b2f = b2 * self.c5;
+
+        let cd2 = self.c2 * d2;
+        let ce2 = self.c2 * e2;
+        let cf2 = self.c2 * f2;
+        let c2d = c2 * self.c3;
+        let c2e = c2 * self.c4;
+        let c2f = c2 * self.c5;
+
+        let de2 = self.c3 * e2;
+        let df2 = self.c3 * f2;
+        let d2e = d2 * self.c4;
+        let d2f = d2 * self.c5;
+
+        let ef2 = self.c4 * f2;
+        let e2f = e2 * self.c5;
+
+        let abc = ab * self.c2;
+        let abd = ab * self.c3;
+        let abe = ab * self.c4;
+        let abf = ab * self.c5;
+        let acd = ac * self.c3;
+        let acf = ac * self.c5;
+        let ade = ad * self.c4;
+        let adf = ad * self.c5;
+        let aef = ae * self.c5;
+
+        const TEN: u32 = 10;
+        const ALPHA: u32 = crate::fp::GENERATOR.0 as u32;
+        const ALPHA_2: u32 = ALPHA << 1;
+        const ALPHA_3: u32 = ALPHA_2 + ALPHA;
+        const ALPHA_6: u32 = ALPHA_3 << 1;
+        const ALPHA_SQUARED: u32 = ALPHA * ALPHA;
+        const ALPHA_SQUARED_2: u32 = ALPHA_SQUARED << 1;
+        const ALPHA_CUBE: u32 = ALPHA_SQUARED * ALPHA;
+
+        let t5 = (a2
+            * (Fp(5534023220824375296) * (bc2 + b2d)
+                + Fp(1844674406941458430) * (de2 - bf2)
+                + Fp(14757395255531667457) * self.c0 * (cd + be)
+                + Fp(1844674406941458432) * a2f)
+            + b2 * ((Fp(6456360424295104512) * d3
+                + Fp(922337203470729215) * (self.c4 * (cd + af).double() + c2f)
+                + Fp(8301034831236562942) * f3)
+                .double()
+                + self.c1
+                    * (Fp(11068046441648750593) * ac - Fp(7378697627765833727) * e2
+                        + Fp(3689348813882916867) * df)
+                + Fp(1844674406941458432) * b3)
+            - c2 * (Fp(1844674406941458430) * bd2
+                + Fp(5534023220824375311) * e2f
+                + Fp(7378697627765833727) * self.c2 * (be + af)
+                + Fp(5534023220824375297) * c2d)
+            + d2 * (-Fp(3689348813882916860) * abe - Fp(5534023220824375311) * bf2
+                + self.c3 * (Fp(7378697627765833727) * ac - Fp(1844674406941458437) * e2)
+                + Fp(1844674406941458437) * d2f)
+            + e2 * (Fp(5534023220824375262) * f3
+                + Fp(1844674406941458437) * (self.c4 * (cd + af).double() - be2))
+            + f2 * (-Fp(7378697627765833699) * bc * self.c4
+                - Fp(3689348813882916874) * acf
+                - Fp(5534023220824375262) * df2))
+            .mul_by_u32(TEN);
+
+        let t4 = a2
+            * (((ce2 - cd * self.c5.double()).mul_by_u32(ALPHA) - b2c).triple()
+                + self.c0 * (c2 + bd.double() + f2.mul_by_u32(ALPHA) - ae))
+            + b2 * (((cd2 + c2e + ef2.mul_by_u32(ALPHA)).triple() - self.c1 * (de + cf).double())
+                .mul_by_u32(ALPHA)
+                + ab2)
+            + c2 * (((ad2 + abf.double()).triple()
+                + (e3 + de * self.c5.double().triple()).mul_by_u32(ALPHA)
+                - self.c2 * ((bd + ae).double().double() + f2.mul_by_u32(ALPHA_2))
+                + c3)
+                .mul_by_u32(ALPHA))
+            + d2 * (((d2e + (af2 - ce2).triple()).mul_by_u32(ALPHA)
+                - self.c3 * (ab + cf.mul_by_u32(ALPHA)).double())
+            .mul_by_u32(ALPHA))
+            + e2 * ((self.c4 * (bd.double() + f2.mul_by_u32(ALPHA))
+                - ae2
+                - bc * self.c5.double().triple())
+            .mul_by_u32(ALPHA_SQUARED))
+            + f2 * (((cf2 - de * self.c5.double()).mul_by_u32(ALPHA) - abf.double())
+                .mul_by_u32(ALPHA_SQUARED));
+
+        let t3 = (a2
+            * ((Fp(922337203470729215) * (b3 + be2 + c2f)
+                + b3
+                + Fp(5534023220824375297) * d3
+                + Fp(8301034831236562942) * f3)
+                .double()
+                + self.c0 * (Fp(14757395255531667457) * bc - Fp(7378697627765833727) * ef)
+                + Fp(1844674406941458432) * a2d)
+            + b2 * (-Fp(1844674406941458430) * c2d + -Fp(3689348813882916860) * ade
+                - Fp(5534023220824375311) * df2
+                + self.c1 * (-Fp(5534023220824375297) * d2 + Fp(7378697627765833727) * ce)
+                + Fp(5534023220824375297) * b2f)
+            + c2 * (-Fp(5534023220824375311) * (de2 + d2f)
+                + self.c2
+                    * (Fp(5534023220824375297) * ad + Fp(1844674406941458437) * ef).double()
+                - Fp(5534023220824375297) * bc2)
+            + d2 * (Fp(3689348813882916860) * abc - Fp(5534023220824375311) * be2
+                + Fp(7378697627765833699) * aef
+                + Fp(5534023220824375262) * f3
+                + Fp(1844674406941458437) * (self.c3 * (ce + bf).double().double() - d3))
+            + e2 * (Fp(3689348813882916874) * self.c4 * (bc + ad) + Fp(5534023220824375262) * e2f)
+            + f2 * (-Fp(7378697627765833699) * acd - Fp(16602069662473125786) * de2
+                + Fp(11068046441648750524) * ce * self.c5
+                - Fp(5534023220824375262) * bf2))
+            .mul_by_u32(TEN);
+
+        let t2 = a2
+            * ((c2e - bd * self.c4.double() - ef2.mul_by_u32(ALPHA)).mul_by_u32(ALPHA_3)
+                + self.c0 * (b2 + (e2 + df.double()).mul_by_u32(ALPHA) - ac))
+            + b2 * ((c3 + b2e + (ad2 + cf2.mul_by_u32(ALPHA)).triple()
+                - (e3.mul_by_u32(ALPHA) + self.c1 * (cd + af)).double())
+            .mul_by_u32(ALPHA))
+            - c2 * ((d2e.mul_by_u32(ALPHA_3) + be * self.c5.mul_by_u32(ALPHA_6)
+                - self.c2 * (e2 + df.double()).mul_by_u32(ALPHA)
+                + ac2)
+                .mul_by_u32(ALPHA))
+            + d2 * ((cd2 + (ae2 + ef2.mul_by_u32(ALPHA)).triple()).mul_by_u32(ALPHA_SQUARED)
+                - self.c3 * (be + af).mul_by_u32(ALPHA_SQUARED_2))
+            + e2 * (((bc * self.c3.double() + abf.double() + cf2.mul_by_u32(ALPHA)).triple()
+                - self.c4 * (ac + df.mul_by_u32(ALPHA)).double().double()
+                + e3.mul_by_u32(ALPHA))
+            .mul_by_u32(ALPHA_SQUARED))
+            + f2 * ((af2 - self.c5 * (cd + be).double()).mul_by_u32(ALPHA_CUBE));
+
+        let t1 = (a2
+            * (Fp(1844674406941458430) * c2d
+                - Fp(1844674406941458430) * b2f
+                - Fp(5534023220824375311) * (e2f + df2)
+                - Fp(7378697627765833727) * self.c0 * (de + cf)
+                + Fp(1844674406941458432) * a2b)
+            + b2 * ((Fp(6456360424295104505) * d2f + Fp(5534023220824375311) * ce * self.c5)
+                .double()
+                + self.c1
+                    * (-Fp(5534023220824375297) * c2 + Fp(7378697627765833727) * ae
+                        - Fp(1844674406941458437) * f2)
+                + Fp(5534023220824375297) * b2d)
+            + c2 * (-Fp(1844674406941458437) * d3 - Fp(5534023220824375311) * be2
+                + Fp(7378697627765833797) * f3
+                + self.c2
+                    * (Fp(5534023220824375297) * ab + Fp(1844674406941458437) * de).double()
+                - Fp(1844674406941458437) * c2f)
+            + d2 * (-Fp(7378697627765833699) * acf - Fp(16602069662473125786) * e2f
+                + self.c3 * (-Fp(3689348813882916874) * ae + Fp(5534023220824375262) * f2)
+                + Fp(1844674406941458437) * bd2)
+            + e2 * (Fp(16602069662473125786) * bf2
+                + self.c4 * (Fp(3689348813882916874) * ab + Fp(7378697627765833797) * cf)
+                + Fp(5534023220824375262) * de2)
+            + f2 * (Fp(7378697627765833699) * abc
+                - Fp(3689348813882917070) * cd * self.c4
+                - Fp(3689348813882916727) * self.c5 * (bd + ae)
+                + Fp(1844674406941458192) * f3))
+            .mul_by_u32(TEN);
+
+        let t0 = a2
+            * ((c3
+                + e3.mul_by_u32(ALPHA)
+                + (b2e + bc * self.c3.double() + (cf2 + de * self.c5.double()).mul_by_u32(ALPHA))
+                    .triple())
+            .mul_by_u32(ALPHA)
+                - self.c0 * (d2 + (ce + bf).double()).mul_by_u32(ALPHA_2)
+                + a3)
+            + b2 * ((b2c - ac2.triple() + (d2e + af2).mul_by_u32(ALPHA_3)
+                - self.c1 * (ad + ef.mul_by_u32(ALPHA)).double())
+            .mul_by_u32(ALPHA))
+            + c2 * ((self.c2 * (d2 + bf.double()) - c2e - (adf.double() - ae2).triple())
+                .mul_by_u32(ALPHA_SQUARED))
+            + d2 * ((ad2 + (e3 + cf2.triple()).mul_by_u32(ALPHA)
+                - self.c3 * (bc + ef.mul_by_u32(ALPHA)).double())
+            .mul_by_u32(ALPHA_SQUARED))
+            + e2 * (((be * self.c5.double() - ce2 - af2.triple()).mul_by_u32(ALPHA)
+                - abd.double().triple())
+            .mul_by_u32(ALPHA_SQUARED))
+            + f2 * ((ef2.mul_by_u32(ALPHA) - self.c5 * (bc + ad).double()).mul_by_u32(ALPHA_CUBE));
+        let inv = self.c0 * t0
+            + (self.c1 * t5 + self.c2 * t4 + self.c3 * t3 + self.c4 * t2 + self.c5 * t1)
+                .mul_by_u32(ALPHA);
+
+        inv.invert().map(|t| {
+            Self {
+                c0: t0,
+                c1: t1,
+                c2: t2,
+                c3: t3,
+                c4: t4,
+                c5: t5,
+            }
+            .mul_by_fp(&t)
+        })
     }
 
     /// Exponentiates `self` by `power`, where `power` is a

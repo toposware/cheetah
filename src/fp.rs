@@ -150,6 +150,15 @@ impl Fp {
         Self(d0)
     }
 
+    /// Computes the triple of a field element
+    #[inline]
+    pub const fn triple(&self) -> Self {
+        let t = self.0 as u128;
+        let t = t + (t << 1);
+
+        Self(reduce_u96(t))
+    }
+
     /// Computes the difference of two field elements
     ///
     /// Granted that `self` and `rhs` are in canonical form, i.e. at most
@@ -190,6 +199,14 @@ impl Fp {
         let r0 = (self.0 as u128) * (rhs.0 as u128);
 
         Self(reduce_u128(r0))
+    }
+
+    /// Computes the multiplication of a field element with a u32 value
+    #[inline]
+    pub const fn mul_by_u32(&self, rhs: u32) -> Self {
+        let r0 = (self.0 as u128) * (rhs as u128);
+
+        Self(reduce_u96(r0))
     }
 
     /// Computes the square of a field element
@@ -733,6 +750,17 @@ mod tests {
         tmp += &Fp(1);
 
         assert_eq!(tmp, Fp::zero());
+    }
+
+    #[test]
+    fn test_double_and_triple() {
+        let mut rng = OsRng;
+
+        for _ in 0..100 {
+            let e = Fp::random(&mut rng);
+            assert_eq!(e + e, e.double());
+            assert_eq!(e.triple(), e.double() + e);
+        }
     }
 
     #[test]
