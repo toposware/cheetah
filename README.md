@@ -15,11 +15,11 @@ This crates provide an implementation of the Cheetah curve over the field extens
 
 Cheetah is a STARK-friendly elliptic curve defined over a sextic extension of $\mathbb{F}_p$, p = 2<sup>64</sup> - 2<sup>32</sup> + 1 defined by
 `E: y^2 = x^3 + x + B` with 
-`B = 8751648879042009540*u^5 + 9152663345541292493*u^4 + 11461655964319546493*u^3 + 18139339604299112321*u^2 + 11484739320139982777*u + 13239264519837388909`
+`B = u + 395`
 where
 - `u^6 - 7 = 0` is the polynomial defining $\mathbb{F}_{p^6} / \mathbb{F}_p$
 
-Cheetah defines a subgroup G of prime order `q = 0x169e15bdd51495399677863fe04d28d8a0a87b464e77710691776f9d741b35eb` of 253-bits.
+Cheetah defines a subgroup G of prime order `q = 0x7af2599b3b3f22d0563fbf0f990a37b5327aa72330157722d443623eaed4accf` of 255-bits.
 
 The extension $\mathbb{F}_{p^6}$ has been specifically constructed with a sparse polynomial of the form `X^6 - A`, where `A` is a small quadratic and cubic non-residue. The current implementation may however not be fully optimal with respect to the number of multiplications in the base field.
 

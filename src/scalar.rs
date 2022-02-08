@@ -861,7 +861,7 @@ impl PrimeField for Scalar {
         (self.to_bytes()[0] & 1).ct_eq(&1)
     }
 
-    const NUM_BITS: u32 = 254;
+    const NUM_BITS: u32 = 255;
     const CAPACITY: u32 = Self::NUM_BITS - 1;
 
     fn multiplicative_generator() -> Self {
