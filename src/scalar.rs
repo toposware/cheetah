@@ -408,6 +408,25 @@ impl Scalar {
         result
     }
 
+    /// Converts a little-endian bit sequence into a Scalar element
+    ///
+    /// **This operation is variable time with respect
+    /// to the binary slice.** If the slice is fixed,
+    /// this operation is effectively constant time.
+    pub fn from_bits_vartime(bit_slice: &BitSlice<Lsb0, u8>) -> Scalar {
+        assert_eq!(bit_slice.len(), 256);
+
+        let mut result = Scalar::zero();
+        for i in (0..256).rev() {
+            result = result.double();
+            if bit_slice[i] {
+                result += Scalar::one();
+            }
+        }
+
+        result
+    }
+
     /// Outputs the internal representation as 4 64-bit limbs after Montgomery reduction
     pub const fn output_reduced_limbs(&self) -> [u64; 4] {
         Scalar::montgomery_reduce(self.0[0], self.0[1], self.0[2], self.0[3], 0, 0, 0, 0).0
@@ -1488,16 +1507,29 @@ mod tests {
     fn test_from_bits() {
         let bytes = Scalar::zero().to_bytes();
         assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), Scalar::zero());
+        assert_eq!(
+            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
+            Scalar::zero()
+        );
 
         let bytes = Scalar::one().to_bytes();
         assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), Scalar::one());
+        assert_eq!(
+            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
+            Scalar::one()
+        );
 
         let bytes = R2.to_bytes();
         assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), R2);
+        assert_eq!(Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()), R2);
 
         // -1 should work
         let bytes = (-Scalar::one()).to_bytes();
         assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), -Scalar::one());
+        assert_eq!(
+            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
+            -Scalar::one()
+        );
 
         // Modulus results in Scalar::zero()
         let bytes = [
@@ -1505,6 +1537,10 @@ mod tests {
             153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122,
         ];
         assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), Scalar::zero());
+        assert_eq!(
+            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
+            Scalar::zero()
+        );
     }
 
     #[test]
