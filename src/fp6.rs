@@ -274,6 +274,19 @@ impl Fp6 {
             & self.c5.is_zero()
     }
 
+    #[inline(always)]
+    /// Makes the element canonical by reducing each coordinate by the modulus if needed
+    pub const fn make_canonical(&self) -> Self {
+        Self {
+            c0: self.c0.make_canonical(),
+            c1: self.c1.make_canonical(),
+            c2: self.c2.make_canonical(),
+            c3: self.c3.make_canonical(),
+            c4: self.c4.make_canonical(),
+            c5: self.c5.make_canonical(),
+        }
+    }
+
     /// Returns whether or not this element is strictly lexicographically
     /// larger than its negation.
     #[inline]

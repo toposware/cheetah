@@ -116,9 +116,8 @@ impl Fp {
     }
 
     #[inline(always)]
-    /// Attempts to subtract the modulus to make the element canonical
+    /// Makes the element canonical by reducing by the modulus if needed
     pub const fn make_canonical(&self) -> Self {
-        // Substracting the modulus
         Self(self.0 % M.0)
     }
 
@@ -131,9 +130,8 @@ impl Fp {
     #[inline]
     pub const fn add(&self, rhs: &Self) -> Self {
         let (d0, is_overflow) = self.0.overflowing_add(rhs.0);
-        let (d0, _) = d0.overflowing_add((is_overflow as u64) * E);
 
-        Self(d0)
+        Self(d0 + E * (is_overflow as u64))
     }
 
     /// Computes the double of a field element
@@ -145,9 +143,8 @@ impl Fp {
     #[inline]
     pub const fn double(&self) -> Self {
         let (d0, is_overflow) = shl64_by_u32_with_carry(self.0, 1, 0);
-        let (d0, _) = d0.overflowing_add(is_overflow * E);
 
-        Self(d0)
+        Self(d0 + E * (is_overflow as u64))
     }
 
     /// Computes the triple of a field element
@@ -174,16 +171,7 @@ impl Fp {
     /// Computes the negation of a field element
     #[inline]
     pub const fn neg(&self) -> Self {
-        // Subtract `self` from `M` to negate. Ignore the borrow
-        // because it cannot underflow; self is guaranteed to
-        // be in the field.
-        let (d0, _) = sub64_with_carry(M.0, self.0, 0);
-
-        // `d0` could be `M` if `self` was zero. Create a mask that is
-        // zero if `self` was zero, and `u64::max_value()` if self was nonzero.
-        let mask = ((self.0 == 0) as u64).wrapping_sub(1);
-
-        Self(d0 & mask)
+        (&Self::zero()).sub(self)
     }
 
     /// Computes the multiplication of two field elements
