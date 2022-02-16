@@ -179,6 +179,13 @@ impl Scalar {
         self.ct_eq(&Scalar::zero())
     }
 
+    /// Generates a random element
+    pub fn random(mut rng: impl RngCore) -> Self {
+        let mut buf = [0; 64];
+        rng.fill_bytes(&mut buf);
+        Self::from_bytes_wide(&buf)
+    }
+
     #[inline(always)]
     #[allow(clippy::too_many_arguments)]
     const fn montgomery_reduce(
@@ -810,9 +817,7 @@ impl From<u8> for Scalar {
 
 impl Field for Scalar {
     fn random(mut rng: impl RngCore) -> Self {
-        let mut buf = [0; 64];
-        rng.fill_bytes(&mut buf);
-        Self::from_bytes_wide(&buf)
+        Self::random(&mut rng)
     }
 
     fn zero() -> Self {

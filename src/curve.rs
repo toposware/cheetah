@@ -23,7 +23,6 @@ use crate::{Fp, Fp6, Scalar};
 
 use crate::LookupTable;
 
-use group::ff::Field;
 use group::{Curve, Group};
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
@@ -602,6 +601,29 @@ impl ProjectivePoint {
     /// Returns the z coordinate of this ProjectivePoint
     pub const fn get_z(&self) -> Fp6 {
         self.z
+    }
+
+    /// Computes a random `ProjectivePoint` element
+    pub fn random(mut rng: impl RngCore) -> Self {
+        loop {
+            let x = Fp6::random(&mut rng);
+            let flip_sign = rng.next_u32() % 2 != 0;
+
+            // Obtain the corresponding y-coordinate given x as y = sqrt(x^3 + x + B)
+            let p = ((x.square() * x) + x + B).sqrt().map(|y| AffinePoint {
+                x,
+                y: if flip_sign { -y } else { y },
+                infinity: 0.into(),
+            });
+
+            if p.is_some().into() {
+                let p = ProjectivePoint::from(p.unwrap()).clear_cofactor();
+
+                if bool::from(!p.is_identity()) {
+                    return p;
+                }
+            }
+        }
     }
 
     /// Returns a fixed generator of the curve in projective coordinates
@@ -1316,25 +1338,7 @@ impl Group for ProjectivePoint {
     type Scalar = Scalar;
 
     fn random(mut rng: impl RngCore) -> Self {
-        loop {
-            let x = Fp6::random(&mut rng);
-            let flip_sign = rng.next_u32() % 2 != 0;
-
-            // Obtain the corresponding y-coordinate given x as y = sqrt(x^3 + x + B)
-            let p = ((x.square() * x) + x + B).sqrt().map(|y| AffinePoint {
-                x,
-                y: if flip_sign { -y } else { y },
-                infinity: 0.into(),
-            });
-
-            if p.is_some().into() {
-                let p = p.unwrap().clear_cofactor();
-
-                if bool::from(!p.is_identity()) {
-                    return p.into();
-                }
-            }
-        }
+        Self::random(&mut rng)
     }
 
     fn identity() -> Self {

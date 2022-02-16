@@ -17,7 +17,6 @@ use criterion::Criterion;
 extern crate cheetah;
 
 use cheetah::Fp6;
-use group::ff::Field;
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = OsRng;

@@ -287,6 +287,18 @@ impl Fp6 {
         }
     }
 
+    /// Generates a random canonical element
+    pub fn random(mut rng: impl RngCore) -> Self {
+        Self {
+            c0: Fp::random(&mut rng),
+            c1: Fp::random(&mut rng),
+            c2: Fp::random(&mut rng),
+            c3: Fp::random(&mut rng),
+            c4: Fp::random(&mut rng),
+            c5: Fp::random(&mut rng),
+        }
+    }
+
     /// Returns whether or not this element is strictly lexicographically
     /// larger than its negation.
     #[inline]
@@ -988,14 +1000,7 @@ impl Fp6 {
 
 impl Field for Fp6 {
     fn random(mut rng: impl RngCore) -> Self {
-        Self {
-            c0: Fp::random(&mut rng),
-            c1: Fp::random(&mut rng),
-            c2: Fp::random(&mut rng),
-            c3: Fp::random(&mut rng),
-            c4: Fp::random(&mut rng),
-            c5: Fp::random(&mut rng),
-        }
+        Self::random(&mut rng)
     }
 
     fn zero() -> Self {

@@ -18,8 +18,6 @@ extern crate cheetah;
 
 use cheetah::Scalar;
 use cheetah::{AffinePoint, ProjectivePoint};
-use group::ff::Field;
-use group::Group;
 
 use cheetah::{BasePointTable, BASEPOINT_TABLE};
 

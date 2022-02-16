@@ -325,7 +325,6 @@ mod tests {
     fn test_square_assign_multi() {
         use crate::fp::Fp;
         use crate::utils::square_assign_multi;
-        use group::ff::Field;
         use rand_core::OsRng;
 
         let mut rng = OsRng;

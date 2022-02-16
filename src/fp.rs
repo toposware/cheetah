@@ -121,6 +121,11 @@ impl Fp {
         Self(self.0 % M.0)
     }
 
+    /// Generates a random canonical element
+    pub fn random(mut rng: impl RngCore) -> Self {
+        Self::new(rng.next_u64())
+    }
+
     /// Computes the summation of two field elements
     ///
     /// Granted that `self` and `rhs` are in canonical form, i.e. at most
@@ -489,7 +494,7 @@ impl From<u8> for Fp {
 
 impl Field for Fp {
     fn random(mut rng: impl RngCore) -> Self {
-        Fp::new(rng.next_u64())
+        Self::random(&mut rng)
     }
 
     fn zero() -> Self {
