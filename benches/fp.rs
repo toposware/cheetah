@@ -54,6 +54,11 @@ fn criterion_benchmark(c: &mut Criterion) {
         bench.iter(|| black_box(x) * black_box(x))
     });
 
+    c.bench_function("fp sqrt", |bench| {
+        let x = Fp::random(&mut rng).square();
+        bench.iter(|| Fp::sqrt(black_box(&x)))
+    });
+
     c.bench_function("fp exp", |bench| {
         let x = Fp::random(&mut rng);
         let y = Fp::random(&mut rng).output_internal();

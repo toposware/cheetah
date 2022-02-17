@@ -54,6 +54,11 @@ fn criterion_benchmark(c: &mut Criterion) {
         bench.iter(|| black_box(x) * black_box(x))
     });
 
+    c.bench_function("scalar sqrt", |bench| {
+        let x = Scalar::random(&mut rng).square();
+        bench.iter(|| Scalar::sqrt(black_box(&x)))
+    });
+
     c.bench_function("scalar exp", |bench| {
         let x = Scalar::random(&mut rng);
         let y = Scalar::random(&mut rng).output_reduced_limbs();
