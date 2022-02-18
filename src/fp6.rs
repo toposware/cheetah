@@ -7,7 +7,7 @@
 // except according to those terms.
 
 //! This module implements arithmetic over the extension field Fp6,
-//! defined with irreducible polynomial u^6 - u - 1.
+//! defined with irreducible polynomial u^6 - 7.
 
 use core::fmt::{self, Formatter};
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
@@ -29,8 +29,7 @@ use crate::fp::TWO_ADICITY;
 
 const BETA: u128 = crate::fp::GENERATOR.0 as u128;
 
-// 2^33 root of unity = 10277652121819048352*u^5 + 9084844568934916810*u^4 + 6141246800624588228*u^3
-//                          + 13627025161062455919*u^2 + 2361889345279789581*u + 3733119278093849254
+// 2^33 root of unity = 135436726719221772*u^3
 const TWO_ADIC_ROOT_OF_UNITY_P6: Fp6 = Fp6 {
     c0: Fp::zero(),
     c1: Fp::zero(),

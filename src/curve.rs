@@ -556,16 +556,16 @@ const fn mul_by_3b(a: &Fp6) -> Fp6 {
     let c1 = ab + ba;
     let c1 = Fp(reduce_u96(c1));
 
-    let c2 = ca + bb;
+    let c2 = bb + ca;
     let c2 = Fp(reduce_u96(c2));
 
-    let c3 = da + cb;
+    let c3 = cb + da;
     let c3 = Fp(reduce_u96(c3));
 
-    let c4 = ea + db;
+    let c4 = db + ea;
     let c4 = Fp(reduce_u96(c4));
 
-    let c5 = fa + eb;
+    let c5 = eb + fa;
     let c5 = Fp(reduce_u96(c5));
 
     Fp6 {
