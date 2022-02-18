@@ -49,8 +49,6 @@ const TWO_ADIC_ROOT_OF_UNITY: Fp = Fp(1753635133440165772);
 
 /// Represents a base field element.
 ///
-/// Internal values are stored in canonical representation,
-/// between 0 and 2^64 - 2^32 included.
 /// The backing type is `u64`.
 #[derive(Copy, Clone, Eq, Default)]
 pub struct Fp(pub(crate) u64);
@@ -90,10 +88,8 @@ impl ConditionallySelectable for Fp {
 impl zeroize::DefaultIsZeroes for Fp {}
 
 impl Fp {
-    /// Creates a new field element from a `u64` value.
-    ///
-    /// The value is stored in canonical form
-    /// (i.e. reduced by the modulus M if larger)
+    /// Creates a new field element from a `u64` value,
+    /// reduced by M if necessary.
     pub const fn new(value: u64) -> Self {
         Self(value % M.0)
     }
@@ -127,27 +123,19 @@ impl Fp {
     }
 
     /// Computes the summation of two field elements
-    ///
-    /// Granted that `self` and `rhs` are in canonical form, i.e. at most
-    /// 2^64 - 2^32, the carry over value can either be 0 or 1, and the
-    /// resulting value is at most 2^64 - 2^33, which allows for a single
-    /// conditional addition with Epsilon based on the carry over value.
     #[inline]
     pub const fn add(&self, rhs: &Self) -> Self {
         let (d0, is_overflow) = self.0.overflowing_add(rhs.0);
+        let (d0, is_overflow) = d0.overflowing_add(E * (is_overflow as u64));
 
         Self(d0 + E * (is_overflow as u64))
     }
 
     /// Computes the double of a field element
-    ///
-    /// Granted that `self` is in canonical form, i.e. at most
-    /// 2^64 - 2^32, the carry over value can either be 0 or 1, and the
-    /// resulting value is at most 2^64 - 2^33, which allows for a single
-    /// conditional addition with Epsilon based on the carry over value.
     #[inline]
     pub const fn double(&self) -> Self {
         let (d0, is_overflow) = shl64_by_u32_with_carry(self.0, 1, 0);
+        let (d0, is_overflow) = d0.overflowing_add(E * (is_overflow as u64));
 
         Self(d0 + E * (is_overflow as u64))
     }
@@ -162,13 +150,10 @@ impl Fp {
     }
 
     /// Computes the difference of two field elements
-    ///
-    /// Granted that `self` and `rhs` are in canonical form, i.e. at most
-    /// 2^64 - 2^32, subtracting `E * borrow` to the result cannot
-    /// underflow.
     #[inline]
     pub const fn sub(&self, rhs: &Self) -> Self {
         let (d0, is_overflow) = self.0.overflowing_sub(rhs.0);
+        let (d0, is_overflow) = d0.overflowing_sub(E * (is_overflow as u64));
 
         Self(d0 - E * (is_overflow as u64))
     }
@@ -180,13 +165,6 @@ impl Fp {
     }
 
     /// Computes the multiplication of two field elements
-    ///
-    /// Granted that `self` and `rhs` are in canonical form, i.e. at most
-    /// 2^64 - 2^32, multiplying them temporarily yields a `u128` which is
-    /// at most (2^32-2).2^96  + 1.2^64 + 0.2^32 + 0, ensuring that the
-    /// modular reduction detailed
-    /// https://github.com/mir-protocol/plonky2/blob/main/plonky2.pdf
-    /// does not yield non-canonical elements.
     #[inline]
     pub const fn mul(&self, rhs: &Self) -> Self {
         let r0 = (self.0 as u128) * (rhs.0 as u128);
@@ -613,14 +591,7 @@ impl<'de> Deserialize<'de> for Fp {
     }
 }
 
-/// Reduces a 128-bit value by M such that the output is in [0, M) range.
-///
-/// ***NOTE***: The output of this function is guaranteed to be a canonical element
-/// in `Fp`, granted that it results from the multiplication of two canonical elements
-/// before reduction.
-/// Applying it to any u128 value x (in particular for x in ](M-1)^2, 2^128-1] range,
-/// requires to call `Fp::make_canonical` to ensure that the result is in proper
-/// canonical form.
+/// Reduces a 128-bit value by M such that the output fits in a u64.
 #[inline(always)]
 pub(crate) const fn reduce_u128(x: u128) -> u64 {
     // See https://github.com/mir-protocol/plonky2/blob/main/plonky2.pdf
@@ -647,11 +618,10 @@ pub(crate) const fn reduce_u128(x: u128) -> u64 {
     result.wrapping_add(E * (is_overflow as u64))
 }
 
-/// Reduces a 96-bit value (stored as u128) by M such that the output is in [0, M) range.
+/// Reduces a 96-bit value (stored as u128) by M such that the output fits in a u64.
 ///
 /// This is similar to reduce_u128() but is aimed to be used when we are guaranteed that
-/// the value to be reduced is fitting in 96 bits. This is always the case when
-/// multiplying canonical elements (in [0, M) range) with values at most 2^32 + 1.
+/// the value to be reduced is fitting in 96 bits.
 #[inline(always)]
 pub(crate) const fn reduce_u96(x: u128) -> u64 {
     // Decompose x = r0 + c.2^64 with r0 a u64 value and c a u32 value
