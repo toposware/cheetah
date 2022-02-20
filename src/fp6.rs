@@ -321,23 +321,11 @@ impl Fp6 {
     #[inline]
     /// Computes the multiplication of an Fp6 element with an Fp element
     pub const fn mul_by_fp(&self, other: &Fp) -> Fp6 {
-        // All helper values computed below are seen as u128 after modular reduction.
-        // This allows for a faster computation of the result coordinates,
-        // by computing all operations in /ZZ, and then finally converting the
-        // values back to Fp through a modular reduction.
-        //
-        // The reduction uses `reduce_u96()` as all final values are less than 96 bits.
-
         let c0 = (&self.c0).mul(other);
-
         let c1 = (&self.c1).mul(other);
-
         let c2 = (&self.c2).mul(other);
-
         let c3 = (&self.c3).mul(other);
-
         let c4 = (&self.c4).mul(other);
-
         let c5 = (&self.c5).mul(other);
 
         Self {
@@ -1635,18 +1623,6 @@ mod test {
         a.zeroize();
         assert!(bool::from(a.is_zero()));
     }
-
-    // #[test]
-    // fn test_from_raw_unchecked() {
-    //     let mut element = Fp6::from_raw_unchecked([4287426845256712189, 0, 0, 0, 0, 0]);
-
-    //     let element_normalized = Fp6::new([4287426845256712189, 0, 0, 0, 0, 0]);
-
-    //     assert_eq!(element, Fp6::one());
-
-    //     assert!(element != Fp6::one());
-    //     assert_eq!(element, element_normalized);
-    // }
 
     #[test]
     fn test_from_fp() {
