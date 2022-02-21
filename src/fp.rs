@@ -7,15 +7,14 @@
 // except according to those terms.
 
 //! This module provides an implementation of the finite prime
-//! field Fp of characteristic p = 2^62 + 2^56 + 2^55 + 1.
+//! field Fp of characteristic p = 2^64 - 2^32 + 1.
 
 use core::{
-    convert::TryFrom,
     fmt::{self, Debug, Display, Formatter},
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
-use crate::utils::{add64_with_carry, mul64_with_carry, square_assign_multi, sub64_with_carry};
+use crate::utils::{shl64_by_u32_with_carry, square_assign_multi, sub64_with_carry};
 
 use group::ff::{Field, PrimeField};
 use rand_core::RngCore;
@@ -29,50 +28,34 @@ use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 // CONSTANTS
 // ================================================================================================
 
-// ******************************** //
-// ********* FP CONSTANTS ********* //
-// ******************************** //
-
-// Field modulus = 2^62 + 2^56 + 2^55 + 1
-const M: Fp = Fp(4719772409484279809);
-
-// 2^64 mod M; this is used for conversion of elements into Montgomery representation.
-pub(crate) const R: Fp = Fp(4287426845256712189);
-
-// 2^128 mod M; this is used for conversion of elements into Montgomery representation.
-pub(crate) const R2: Fp = Fp(3635333122111952146);
-
-// 2^192 mod M; this is used for conversion of elements into Montgomery representation.
-pub(crate) const R3: Fp = Fp(4670764763728573444);
+// Field modulus = 2^64 - 2^32 + 1
+const M: Fp = Fp(0xffffffff00000001);
 
 // Multiplicative generator g of order p-1
-// g = 3
-//   = 3422735716801576949 in Montgomery form
-const GENERATOR: Fp = Fp(3422735716801576949);
+// g = 7
+pub(crate) const GENERATOR: Fp = Fp(7);
 
-// Two-adicity of the field: (p-1) % 2^55 = 0
-pub(crate) const TWO_ADICITY: u32 = 55;
+// Epsilon = 2^32 - 1;
+const E: u64 = 0xffffffff;
 
-// 2^55 root of unity = 90479342105353296
-//                    = 1519868260574363836 in Montgomery form
-const TWO_ADIC_ROOT_OF_UNITY: Fp = Fp(0x1517a82160ed00bc);
+// Two-adicity of the field: (p-1) % 2^32 = 0
+pub(crate) const TWO_ADICITY: u32 = 32;
 
-// -M^{-1} mod 2^64; this is used during element multiplication.
-const U: u64 = 4719772409484279807;
+// 2^32 root of unity = 1753635133440165772
+const TWO_ADIC_ROOT_OF_UNITY: Fp = Fp(1753635133440165772);
 
 // FIELD ELEMENT
 // ================================================================================================
 
 /// Represents a base field element.
 ///
-/// Internal values are stored in Montgomery representation.
 /// The backing type is `u64`.
 #[derive(Copy, Clone, Eq, Default)]
 pub struct Fp(pub(crate) u64);
 
 impl Debug for Fp {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let tmp = self.output_reduced_limbs();
+        let tmp = self.output_internal();
         write!(f, "{:?}", tmp)
     }
 }
@@ -85,7 +68,7 @@ impl Display for Fp {
 
 impl ConstantTimeEq for Fp {
     fn ct_eq(&self, other: &Self) -> Choice {
-        self.0.ct_eq(&other.0)
+        self.make_canonical().0.ct_eq(&other.make_canonical().0)
     }
 }
 
@@ -98,30 +81,29 @@ impl PartialEq for Fp {
 
 impl ConditionallySelectable for Fp {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        Fp(u64::conditional_select(&a.0, &b.0, choice))
+        Self(u64::conditional_select(&a.0, &b.0, choice))
     }
 }
 
 impl zeroize::DefaultIsZeroes for Fp {}
 
 impl Fp {
-    /// Creates a new field element from a `u64` value.
-    /// The value is converted to Montgomery form by computing
-    /// (a.R^0 * R^2) / R = a.R
+    /// Creates a new field element from a `u64` value,
+    /// reduced by M if necessary.
     pub const fn new(value: u64) -> Self {
-        (&Fp(value)).mul(&R2)
+        Self(value % M.0)
     }
 
     /// Returns zero, the additive identity.
     #[inline]
     pub const fn zero() -> Self {
-        Fp(0)
+        Self(0)
     }
 
     /// Returns one, the multiplicative identity.
     #[inline]
     pub const fn one() -> Self {
-        R
+        Self(1)
     }
 
     /// Checks whether `self` is zero or not
@@ -130,59 +112,72 @@ impl Fp {
     }
 
     #[inline(always)]
-    pub(crate) const fn montgomery_reduce(r0: u64, r1: u64) -> Self {
-        let k = r0.wrapping_mul(U);
-        let (_, carry) = mul64_with_carry(r0, k, M.0, 0);
-        let (r1, _) = add64_with_carry(r1, 0, carry);
+    /// Makes the element canonical by reducing by the modulus if needed
+    pub const fn make_canonical(&self) -> Self {
+        Self(self.0 % M.0)
+    }
 
-        // The result may be within M of the correct value,
-        // hence substracting the modulus
-        (&Fp(r1)).sub(&M)
+    /// Generates a random canonical element
+    pub fn random(mut rng: impl RngCore) -> Self {
+        Self::new(rng.next_u64())
     }
 
     /// Computes the summation of two field elements
     #[inline]
     pub const fn add(&self, rhs: &Self) -> Self {
-        let (d0, _) = add64_with_carry(self.0, rhs.0, 0);
+        let (d0, is_overflow) = self.0.overflowing_add(rhs.0);
+        let (d0, is_overflow) = d0.overflowing_add(E * (is_overflow as u64));
 
-        // The result may be within M of the correct value,
-        // hence substracting the modulus
-        (&Fp(d0)).sub(&M)
+        Self(d0 + E * (is_overflow as u64))
+    }
+
+    /// Computes the double of a field element
+    #[inline]
+    pub const fn double(&self) -> Self {
+        let (d0, is_overflow) = shl64_by_u32_with_carry(self.0, 1, 0);
+        let (d0, is_overflow) = d0.overflowing_add(E * (is_overflow as u64));
+
+        Self(d0 + E * (is_overflow as u64))
+    }
+
+    /// Computes the triple of a field element
+    #[inline]
+    pub const fn triple(&self) -> Self {
+        let t = self.0 as u128;
+        let t = t + (t << 1);
+
+        Self(reduce_u96(t))
     }
 
     /// Computes the difference of two field elements
     #[inline]
     pub const fn sub(&self, rhs: &Self) -> Self {
-        let (d0, borrow) = sub64_with_carry(self.0, rhs.0, 0);
+        let (d0, is_overflow) = self.0.overflowing_sub(rhs.0);
+        let (d0, is_overflow) = d0.overflowing_sub(E * (is_overflow as u64));
 
-        // If underflow occurred,
-        // borrow = 0xfff...fff, otherwise borrow = 0x000...000.
-        let (d0, _) = add64_with_carry(d0, M.0 & borrow, 0);
-
-        Fp(d0)
+        Self(d0 - E * (is_overflow as u64))
     }
 
     /// Computes the negation of a field element
     #[inline]
     pub const fn neg(&self) -> Self {
-        // Subtract `self` from `M` to negate. Ignore the borrow
-        // because it cannot underflow; self is guaranteed to
-        // be in the field.
-        let (d0, _) = sub64_with_carry(M.0, self.0, 0);
-
-        // `tmp` could be `M` if `self` was zero. Create a mask that is
-        // zero if `self` was zero, and `u64::max_value()` if self was nonzero.
-        let mask = ((self.0 == 0) as u64).wrapping_sub(1);
-
-        Fp(d0 & mask)
+        (&Self::zero()).sub(self)
     }
 
     /// Computes the multiplication of two field elements
     #[inline]
     pub const fn mul(&self, rhs: &Self) -> Self {
-        let (r0, r1) = mul64_with_carry(0, self.0, rhs.0, 0);
+        let r0 = (self.0 as u128) * (rhs.0 as u128);
 
-        Fp::montgomery_reduce(r0, r1)
+        Self(reduce_u128(r0))
+    }
+
+    /// Computes the multiplication of a field element with a u32 value
+    #[inline]
+    pub const fn mul_by_u32(&self, rhs: u32) -> Self {
+        let r0 = (self.0 as u128) * (rhs as u128);
+
+        Self(reduce_u96(r0))
     }
 
     /// Computes the square of a field element
@@ -199,8 +194,8 @@ impl Fp {
 
         // Compute the progenitor y of self
         // y = self^((t - 1) // 2)
-        //   = self^0x41
-        let y = self.exp_vartime(0x41);
+        //   = self^0x7fffffff
+        let y = self.exp_vartime(0x7fffffff);
 
         let mut s = self * y;
         let mut t = s * y;
@@ -222,35 +217,18 @@ impl Fp {
         CtOption::new(s, (s * s).ct_eq(self))
     }
 
-    /// Computes the double of a field element
-    #[inline]
-    pub const fn double(&self) -> Self {
-        // Left-shifting the current value cannot overflow, provided that
-        // the element has been constructed via a safe method, or that it
-        // has been checked prior using an unchecked one.
-
-        // The doubled value may be within M of the correct value,
-        // hence substracting the modulus
-        (&Fp(self.0 << 1)).sub(&M)
-    }
-
-    /// Outputs the internal representation as a 64-bit limb after Montgomery reduction
-    pub const fn output_reduced_limbs(&self) -> u64 {
-        Fp::montgomery_reduce(self.0, 0).0
-    }
-
-    /// Outputs the internal representation as a 64-bit limb without Montgomery reduction
-    /// This is intended for uses like re-interpreting the type containing the internal value.
-    pub const fn output_unreduced_limbs(&self) -> u64 {
-        self.0
+    /// Outputs the internal representation as
+    /// a 64-bit limb after canonical reduction.
+    pub const fn output_internal(&self) -> u64 {
+        self.make_canonical().0
     }
 
     /// Converts an `Fp` element into a byte representation in
     /// little-endian byte order.
-    pub fn to_bytes(&self) -> [u8; 8] {
-        // Turn into canonical form by computing
-        // (a.R) / R = a
-        let tmp = Fp::montgomery_reduce(self.0, 0);
+    pub const fn to_bytes(&self) -> [u8; 8] {
+        // Turn into canonical form by removing modulus
+        // if self is greater.
+        let tmp = self.make_canonical();
 
         tmp.0.to_le_bytes()
     }
@@ -258,7 +236,7 @@ impl Fp {
     /// Attempts to convert a little-endian byte representation of
     /// a scalar into a `Fp` element, failing if the input is not canonical.
     pub fn from_bytes(bytes: &[u8; 8]) -> CtOption<Self> {
-        let mut tmp = Fp(u64::from_le_bytes(*bytes));
+        let mut tmp = Self(u64::from_le_bytes(*bytes));
 
         // Try to subtract the modulus M
         let (_, borrow) = sub64_with_carry(tmp.0, M.0, 0);
@@ -268,40 +246,19 @@ impl Fp {
         // of 0xffff...ffff. Otherwise, it'll be zero.
         let is_some = (borrow as u8) & 1;
 
-        // Convert to Montgomery form by computing
-        // (a.R^0 * R^2) / R = a.R
-        tmp *= &R2;
+        // Convert to canonical form
+        tmp = tmp.make_canonical();
 
         CtOption::new(tmp, Choice::from(is_some))
     }
 
     /// Converts a 128-bit little endian integer into
-    /// a `Fp` by reducing by the modulus.
-    pub fn from_bytes_wide(bytes: &[u8; 16]) -> Self {
-        Fp::from_u128([
-            u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[0..8]).unwrap()),
-            u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[8..16]).unwrap()),
-        ])
-    }
-
-    fn from_u128(limbs: [u64; 2]) -> Self {
-        // We reduce an arbitrary 128-bit number by decomposing it into two 64-bit digits
-        // with the higher bits multiplied by 2^64. Thus, we perform two reductions
-        //
-        // 1. the lower bits are multiplied by R^2, as normal
-        // 2. the upper bits are multiplied by R^2 * 2^64 = R^3
-        //
-        // and computing their sum in the field.
-        // The reduction works so long as the product is less than R=2^64 multiplied by
-        // the modulus. This holds because for any `c` smaller than the modulus, we have
-        // that (2^64 - 1)*c is an acceptable product for the reduction. Therefore, the
-        // reduction always works so long as `c` is in the field; in this case it is either the
-        // constant `R2` or `R3`.
-        let d0 = Fp(limbs[0]);
-        let d1 = Fp(limbs[1]);
-
-        // Convert to Montgomery form
-        d0 * R2 + d1 * R3
+    /// a `Fp` element by reducing by the modulus.
+    ///
+    /// The result is always returned in canonical form,
+    /// reduced by p if necessary.
+    pub fn from_bytes_wide(bytes: [u8; 16]) -> Self {
+        Self(reduce_u128(u128::from_le_bytes(bytes))).make_canonical()
     }
 
     /// Returns whether or not this element is strictly lexicographically
@@ -312,11 +269,11 @@ impl Fp {
         // and there is no underflow, then the element must be larger than
         // (p - 1) // 2.
 
-        // First, because self is in Montgomery form we need to reduce it
-        let tmp = Fp::montgomery_reduce(self.0, 0);
+        // First, because self may not be canonical, we need to make_canonical it
+        let tmp = self.make_canonical();
 
-        // (p-1) // 2 + 1 = 0x20c0000000000001
-        let (_, borrow) = sub64_with_carry(tmp.0, 0x20c0000000000001, 0);
+        // (p-1) // 2 + 1 = 0x7fffffff80000001
+        let (_, borrow) = sub64_with_carry(tmp.0, 0x7fffffff80000001, 0);
 
         // If the element was smaller, the subtraction will underflow
         // producing a borrow value of 0xffff...ffff, otherwise it will
@@ -362,34 +319,26 @@ impl Fp {
     /// failing if the element is zero.
     pub fn invert(&self) -> CtOption<Self> {
         // found using https://github.com/kwantam/addchain for M - 2
-        let mut t2 = self.square(); //          1: 2
-        let mut t0 = t2 * self; //              2: 3
-        let t4 = t0.square(); //                3: 6
-        let t3 = t4.square(); //                4: 12
-        let mut t1 = t3.square(); //            5: 24
-        t1 = t1.square(); //                    6: 48
-        let mut t3 = t1 * t3; //                7: 60
-        t1 = t3.square(); //                    8: 120
-        t1 *= t4; //                            9: 126
-        square_assign_multi(&mut t1, 5); //    14: 4032
-        t3 = t1 * t3; //                       15: 4092
-        t1 = t3.square(); //                   16: 8184
-        t1 *= t4; //                           17: 8190
-        square_assign_multi(&mut t1, 11); //   28: 16773120
-        t1 *= t3; //                           29: 16777212
-        t1 *= t2; //                           30: 16777214
-        t0 = t1 * t0; //                       31: 16777217
-        t2 = t0 * t1; //                       32: 33554431
-        t0 = t2 * t0; //                       33: 50331648
-        t3 = t0.square(); //                   34: 100663296
-        t1 = t3.square(); //                   35: 201326592
-        t1 *= t0; //                           36: 251658240
-        square_assign_multi(&mut t1, 3); //    39: 2013265920
-        t1 *= t3; //                           40: 2113929216
-        t1 *= t2; //                           41: 2147483647
-        t0 = t1 * t0; //                       42: 2197815295
-        square_assign_multi(&mut t0, 31); //   73: 4719772407336796160
-        t0 *= t1; //                           74: 4719772409484279807 = M - 2
+        let mut t2 = self.square(); //        1: 2
+        let mut t3 = t2 * self; //            2: 3
+        let mut t0 = t3.square(); //          3: 6
+        t0 = t0.square(); //                  4: 12
+        t2 *= t0; //                          5: 14
+        t3 *= t0; //                          6: 15
+        t0 = t3.square(); //                  7: 30
+        square_assign_multi(&mut t0, 3); //  10: 240
+        t2 *= t0; //                         11: 254
+        t3 *= t0; //                         12: 255
+        t0 = t3.square(); //                 13: 510
+        square_assign_multi(&mut t0, 7); //  20: 65280
+        t2 *= t0; //                         21: 65534
+        t0 *= t3; //                         22: 65535
+        square_assign_multi(&mut t0, 16); // 38: 4294901760
+        t2 *= t0; //                         39: 4294967294
+        t0 = t2.square(); //                 40: 8589934588
+        square_assign_multi(&mut t0, 31); // 71: 18446744065119617024
+        t0 *= t2; //                         72: 18446744069414584318
+        t0 *= self; //                       73: 18446744069414584319 = M - 2
 
         CtOption::new(t0, !self.ct_eq(&Self::zero()))
     }
@@ -397,7 +346,7 @@ impl Fp {
     /// Constructs an element of `Fp` without checking that it is
     /// canonical.
     pub const fn from_raw_unchecked(v: u64) -> Self {
-        Fp(v)
+        Self(v)
     }
 
     /// Outputs a `Fp` element of multiplicative order equals to 2^n
@@ -523,7 +472,7 @@ impl From<u8> for Fp {
 
 impl Field for Fp {
     fn random(mut rng: impl RngCore) -> Self {
-        Fp::new(rng.next_u64())
+        Self::random(&mut rng)
     }
 
     fn zero() -> Self {
@@ -572,7 +521,7 @@ impl PrimeField for Fp {
         (self.to_bytes()[0] & 1).ct_eq(&1)
     }
 
-    const NUM_BITS: u32 = 63;
+    const NUM_BITS: u32 = 64;
     const CAPACITY: u32 = Self::NUM_BITS - 1;
 
     fn multiplicative_generator() -> Self {
@@ -642,14 +591,62 @@ impl<'de> Deserialize<'de> for Fp {
     }
 }
 
+/// Reduces a 128-bit value by M such that the output fits in a u64.
+#[inline(always)]
+pub(crate) const fn reduce_u128(x: u128) -> u64 {
+    // See https://github.com/mir-protocol/plonky2/blob/main/plonky2.pdf
+    // for a more complete description of the reduction.
+
+    // Decompose x = a + b.2^32 + c.2^64 + d.2^96 with a,b,c and d u32 values
+    let ab = x as u64;
+    let cd = (x >> 64) as u64;
+    let c = (cd as u32) as u64;
+    let d = cd >> 32;
+
+    // r0 = ab - d
+    let (r0, is_overflow) = ab.overflowing_sub(d);
+    // d > ab may happen, hence handling potential overflow
+    let r0 = r0.wrapping_sub(E * (is_overflow as u64));
+
+    // r1 = c * 2^32 - c
+    // this cannot underflow
+    let r1 = (c << 32) - c;
+
+    // result = r0 + r1
+    let (result, is_overflow) = r0.overflowing_add(r1);
+    // handle potential overflow
+    result.wrapping_add(E * (is_overflow as u64))
+}
+
+/// Reduces a 96-bit value (stored as u128) by M such that the output fits in a u64.
+///
+/// This is similar to reduce_u128() but is aimed to be used when we are guaranteed that
+/// the value to be reduced is fitting in 96 bits.
+#[inline(always)]
+pub(crate) const fn reduce_u96(x: u128) -> u64 {
+    // Decompose x = r0 + c.2^64 with r0 a u64 value and c a u32 value
+    let c = ((x >> 64) as u32) as u64;
+
+    let r0 = x as u64;
+
+    // r1 = c * 2^32 - c
+    // this cannot underflow
+    let r1 = (c << 32) - c;
+
+    // result = r0 + r1
+    let (result, is_overflow) = r0.overflowing_add(r1);
+    // handle potential overflow
+    result.wrapping_add(E * (is_overflow as u64))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use rand_core::OsRng;
 
-    const LARGEST: Fp = Fp(4719772409484279808);
-    const TWO_POW_55: u64 = 36028797018963968;
-    const TWO_POW_54: u64 = 18014398509481984;
+    const LARGEST: Fp = Fp(18446744069414584320);
+    const TWO_POW_32: u64 = 4294967296;
+    const TWO_POW_31: u64 = 2147483648;
 
     // DISPLAY
     // ================================================================================================
@@ -658,25 +655,13 @@ mod tests {
     fn test_debug() {
         assert_eq!(format!("{:?}", Fp::zero()), "0");
         assert_eq!(format!("{:?}", Fp::one()), "1");
-        assert_eq!(format!("{:?}", R2), "4287426845256712189");
     }
 
     #[test]
-    fn test_output_reduced_limbs() {
-        assert_eq!(format!("{:?}", Fp::zero().output_reduced_limbs()), "0");
-        assert_eq!(format!("{:?}", Fp::one().output_reduced_limbs()), "1");
-        assert_eq!(
-            format!("{:?}", R2.output_reduced_limbs()),
-            "4287426845256712189"
-        );
-
-        let r = Fp::from_raw_unchecked(4287426845256712189);
-        assert!(format!("{:?}", r.0) != format!("{:?}", R.output_reduced_limbs()));
-
-        assert_eq!(
-            format!("{:?}", r.output_reduced_limbs()),
-            format!("{:?}", R.output_reduced_limbs())
-        );
+    fn test_output_internal() {
+        assert_eq!(format!("{:?}", Fp::zero().output_internal()), "0");
+        assert_eq!(format!("{:?}", Fp::one().output_internal()), "1");
+        assert_eq!(format!("{:?}", M.output_internal()), "0");
     }
 
     // BASIC ALGEBRA
@@ -708,12 +693,8 @@ mod tests {
         assert!(!bool::from(Fp::zero().ct_eq(&Fp::one())));
 
         assert!(Fp::zero() != Fp::one());
-        assert!(Fp::one() != R2);
-        assert!(Fp::one() == R);
 
         assert!(!Fp::zero().eq(&Fp::one()));
-        assert!(!Fp::one().eq(&R2));
-        assert!(Fp::one().eq(&R));
 
         assert_eq!(Fp::zero(), Fp::new(0));
         assert_eq!(Fp::one(), Fp::new(1));
@@ -724,7 +705,7 @@ mod tests {
         let mut tmp = LARGEST;
         tmp += &LARGEST;
 
-        assert_eq!(tmp, Fp(4719772409484279807));
+        assert_eq!(tmp, Fp(18446744069414584319));
 
         assert_eq!(tmp, LARGEST.double());
 
@@ -732,6 +713,17 @@ mod tests {
         tmp += &Fp(1);
 
         assert_eq!(tmp, Fp::zero());
+    }
+
+    #[test]
+    fn test_double_and_triple() {
+        let mut rng = OsRng;
+
+        for _ in 0..100 {
+            let e = Fp::random(&mut rng);
+            assert_eq!(e + e, e.double());
+            assert_eq!(e.triple(), e.double() + e);
+        }
     }
 
     #[test]
@@ -876,17 +868,17 @@ mod tests {
         assert_eq!(Fp::zero().sqrt().unwrap(), Fp::zero());
         assert_eq!(Fp::one().sqrt().unwrap(), Fp::one());
 
-        // 3 is not a quadratic residue in Fp
-        assert!(bool::from(Fp::new(3).sqrt().is_none()));
+        // 7 is not a quadratic residue in Fp
+        assert!(bool::from(Fp::new(7).sqrt().is_none()));
     }
 
     #[test]
     fn test_invert_is_pow() {
-        let p_minus_2 = 4719772409484279807;
+        let p_minus_2 = 18446744069414584319;
 
-        let mut r1 = R;
-        let mut r2 = R;
-        let mut r3 = R;
+        let mut r1 = Fp::random(&mut OsRng);
+        let mut r2 = r1;
+        let mut r3 = r2;
 
         for _ in 0..100 {
             r1 = r1.invert().unwrap();
@@ -908,18 +900,18 @@ mod tests {
 
     #[test]
     fn test_get_root_of_unity() {
-        let root_55 = Fp::get_root_of_unity(55);
-        let root_55_vartime = Fp::get_root_of_unity_vartime(55);
-        assert_eq!(TWO_ADIC_ROOT_OF_UNITY, root_55);
-        assert_eq!(TWO_ADIC_ROOT_OF_UNITY, root_55_vartime);
-        assert_eq!(Fp::one(), root_55.exp(TWO_POW_55));
+        let root_32 = Fp::get_root_of_unity(32);
+        let root_32_vartime = Fp::get_root_of_unity_vartime(32);
+        assert_eq!(TWO_ADIC_ROOT_OF_UNITY, root_32);
+        assert_eq!(TWO_ADIC_ROOT_OF_UNITY, root_32_vartime);
+        assert_eq!(Fp::one(), root_32.exp(TWO_POW_32));
 
-        let root_54 = Fp::get_root_of_unity(54);
-        let root_54_vartime = Fp::get_root_of_unity_vartime(54);
-        let expected = root_55.exp(2);
-        assert_eq!(expected, root_54);
-        assert_eq!(expected, root_54_vartime);
-        assert_eq!(Fp::one(), root_54.exp(TWO_POW_54));
+        let root_31 = Fp::get_root_of_unity(31);
+        let root_31_vartime = Fp::get_root_of_unity_vartime(31);
+        let expected = root_32.exp(2);
+        assert_eq!(expected, root_31);
+        assert_eq!(expected, root_31_vartime);
+        assert_eq!(Fp::one(), root_31.exp(TWO_POW_31));
     }
 
     #[test]
@@ -936,9 +928,9 @@ mod tests {
 
     #[test]
     fn test_lexicographically_largest() {
-        let a = Fp::new(1565036539327771067);
+        let a = Fp::new(2293556613039705979);
 
-        let b = Fp::new(3154735870156508742);
+        let b = Fp::new(16153187456374878342);
 
         assert_eq!(a.square(), b.square());
         assert!(!bool::from(a.lexicographically_largest()));
@@ -971,15 +963,16 @@ mod tests {
 
     #[test]
     fn test_from_raw_unchecked() {
-        let mut element = Fp::from_raw_unchecked(4287426845256712189);
+        let mut element = Fp::from_raw_unchecked(M.0 + 42);
 
-        let element_normalized = Fp::new(4287426845256712189);
+        let element_normalized = Fp::new(42);
 
-        assert_eq!(element, Fp::one());
-        element *= &R2;
-
-        assert!(element != Fp::one());
         assert_eq!(element, element_normalized);
+        assert!(element.0 != element_normalized.0);
+
+        element = element.make_canonical();
+        assert_eq!(element, element_normalized);
+        assert!(element.0 == element_normalized.0);
     }
 
     // FIELD TRAIT
@@ -1009,7 +1002,7 @@ mod tests {
         assert!(bool::from(<Fp as Field>::invert(&Fp::zero()).is_none()));
 
         assert_eq!(<Fp as Field>::sqrt(&e).unwrap(), e.sqrt().unwrap());
-        assert!(bool::from(<Fp as Field>::sqrt(&Fp::new(3)).is_none()));
+        assert!(bool::from(<Fp as Field>::sqrt(&Fp::new(7)).is_none()));
     }
 
     #[test]
@@ -1037,9 +1030,7 @@ mod tests {
 
         assert_eq!(Fp::one().to_bytes(), [1, 0, 0, 0, 0, 0, 0, 0]);
 
-        assert_eq!(R2.to_bytes(), [253, 255, 255, 255, 255, 255, 127, 59]);
-
-        assert_eq!((-&Fp::one()).to_bytes(), [0, 0, 0, 0, 0, 0, 128, 65]);
+        assert_eq!((-&Fp::one()).to_bytes(), [0, 0, 0, 0, 255, 255, 255, 255]);
     }
 
     #[test]
@@ -1061,57 +1052,34 @@ mod tests {
             Fp::one()
         );
 
-        assert_eq!(
-            Fp::from_bytes(&[253, 255, 255, 255, 255, 255, 127, 59]).unwrap(),
-            R2
-        );
-
         // -1 should work
         assert_eq!(
-            Fp::from_bytes(&[0, 0, 0, 0, 0, 0, 128, 65]).unwrap(),
+            Fp::from_bytes(&[0, 0, 0, 0, 255, 255, 255, 255]).unwrap(),
             -Fp::one()
         );
 
         // M is invalid
         assert!(bool::from(
-            Fp::from_bytes(&[1, 0, 0, 0, 0, 0, 128, 65]).is_none()
+            Fp::from_bytes(&[1, 0, 0, 0, 255, 255, 255, 255]).is_none()
         ));
 
         // Anything larger than M is invalid
         assert!(bool::from(
-            Fp::from_bytes(&[2, 0, 0, 0, 0, 0, 128, 65]).is_none()
+            Fp::from_bytes(&[42, 0, 0, 0, 255, 255, 255, 255]).is_none()
         ));
-
-        assert!(bool::from(
-            Fp::from_bytes(&[0, 0, 0, 0, 255, 255, 255, 255]).is_none()
-        ));
-    }
-
-    #[test]
-    fn test_from_u128_max() {
-        let max_u64 = 0xffff_ffff_ffff_ffff;
-        assert_eq!(R3 - R, Fp::from_u128([max_u64, max_u64]));
-    }
-
-    #[test]
-    fn test_from_bytes_wide_r2() {
-        assert_eq!(
-            R2,
-            Fp::from_bytes_wide(&[253, 255, 255, 255, 255, 255, 127, 59, 0, 0, 0, 0, 0, 0, 0, 0])
-        );
     }
 
     #[test]
     fn test_from_bytes_wide_negative_one() {
         assert_eq!(
             -&Fp::one(),
-            Fp::from_bytes_wide(&[0, 0, 0, 0, 0, 0, 128, 65, 0, 0, 0, 0, 0, 0, 0, 0])
+            Fp::from_bytes_wide([0, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0])
         );
     }
 
     #[test]
     fn test_from_bytes_wide_maximum() {
-        assert_eq!(Fp(0x551e3ce4b73f407), Fp::from_bytes_wide(&[0xff; 16]));
+        assert_eq!(Fp(0xfffffffe00000000), Fp::from_bytes_wide([0xff; 16]));
     }
 
     #[test]
@@ -1130,12 +1098,9 @@ mod tests {
         assert_eq!(element, bincode::deserialize(&element.to_bytes()).unwrap());
 
         // Check that invalid encodings fail
-        let element = Fp::random(&mut rng);
-        let mut encoded = bincode::serialize(&element).unwrap();
-        encoded[7] = 127;
+        let encoded = [0xff; 8];
         assert!(bincode::deserialize::<Fp>(&encoded).is_err());
 
-        let encoded = bincode::serialize(&element).unwrap();
         assert!(bincode::deserialize::<Fp>(&encoded[0..7]).is_err());
     }
 }

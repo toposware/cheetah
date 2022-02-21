@@ -17,7 +17,6 @@ use criterion::Criterion;
 extern crate cheetah;
 
 use cheetah::Scalar;
-use group::ff::Field;
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = OsRng;
@@ -53,6 +52,11 @@ fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("scalar square_from_mul", |bench| {
         let x = Scalar::random(&mut rng);
         bench.iter(|| black_box(x) * black_box(x))
+    });
+
+    c.bench_function("scalar sqrt", |bench| {
+        let x = Scalar::random(&mut rng).square();
+        bench.iter(|| Scalar::sqrt(black_box(&x)))
     });
 
     c.bench_function("scalar exp", |bench| {

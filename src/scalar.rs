@@ -8,7 +8,7 @@
 
 //! This module provides an implementation of the scalar field Fq
 //! of the STARK-friendly cheetah curve, with characteristic
-//! q = 0x26337f752795f77cb6b6ebb9a18fecc9f2f264f035242b271e13aee130956aa5.
+//! q = 0x7af2599b3b3f22d0563fbf0f990a37b5327aa72330157722d443623eaed4accf.
 
 use core::{
     convert::{TryFrom, TryInto},
@@ -34,72 +34,62 @@ use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 // CONSTANTS
 // ================================================================================================
 
-// Field modulus = 17278877126736494933592566161653303514319447234579276854188469089485337225893
+// Field modulus = 55610362957290864006699123731285679659474893560816383126640993521607086746831
 const M: Scalar = Scalar([
-    0x1e13aee130956aa5,
-    0xf2f264f035242b27,
-    0xb6b6ebb9a18fecc9,
-    0x26337f752795f77c,
+    0xd443623eaed4accf,
+    0x327aa72330157722,
+    0x563fbf0f990a37b5,
+    0x7af2599b3b3f22d0,
 ]);
 
 // 2^256 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R: Scalar = Scalar([
-    0x4b89e6b8dc7f8022,
-    0x4e51a25ec126fd15,
-    0xb7b679a636a07344,
-    0x1acb0341127c3313,
+    0x57793b82a256a662,
+    0x9b0ab1b99fd511ba,
+    0x538081e0cdeb9095,
+    0x0a1b4cc98981ba5f,
 ]);
 
 // 2^512 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R2: Scalar = Scalar([
-    0xd081a0324c5e8462,
-    0x800b297bdb4d56da,
-    0x9d4305b1df84c934,
-    0x1216a239925b192a,
+    0x5a93b1562a974d84,
+    0x5a5314649f39eecd,
+    0xa2780be8a30fdfc6,
+    0x2a68a265fd96d1bb,
 ]);
 
 // 2^768 mod M; this is used for conversion of elements into Montgomery representation.
 pub(crate) const R3: Scalar = Scalar([
-    0xbbca5047a6bb9424,
-    0x2f7707c1f6730698,
-    0x1dfca6ccdfbca422,
-    0x20d20982d647c982,
+    0x2d80dd65de381f7a,
+    0x3a30adaf7b70fb37,
+    0x5154791dc29dc568,
+    0x7219959569912364,
 ]);
 
 // Multiplicative generator g of order q-1
-// g = 2
-//   = 0xf62870cfd626eaab8b60792cbb0f9bea9b0dfcd4d29cf0379001e908869959f in Montgomery form
+// g = 6
+//   = 0x3ca3ccb9390a5e3bf5030b44d3856381a2402a59befe6a5e0cd7650fce07e64c in Montgomery form
 const GENERATOR: Scalar = Scalar([
-    0x79001e908869959f,
-    0xa9b0dfcd4d29cf03,
-    0xb8b60792cbb0f9be,
-    0x0f62870cfd626eaa,
+    0x0cd7650fce07e64c,
+    0xa2402a59befe6a5e,
+    0xf5030b44d3856381,
+    0x3ca3ccb9390a5e3b,
 ]);
 
-// Two-adicity of the field: (q-1) % 2^2 = 0
-const TWO_ADICITY: u32 = 2;
+// Two-adicity of the field: (q-1) % 2^1 = 0
+const TWO_ADICITY: u32 = 1;
 
-// 2^2 root of unity = 0x2d13d2b2496ec9fc67e21dae0a414bb8abd9c41c985b3108f825c4185efb292
-//                   = 0x1e31bde7bb98bb8d8df21c9eb075903b797d57622ea1c8fd2f0afc7b183ab212 in Montgomery form
+// 2^1 root of unity = 0x7af2599b3b3f22d0563fbf0f990a37b5327aa72330157722d443623eaed4acce
+//                   = 0x70d70cd1b1bd687102bf3d2ecb1ea71f976ff569904065687cca26bc0c7e066d in Montgomery form
 const TWO_ADIC_ROOT_OF_UNITY: Scalar = Scalar([
-    0x2f0afc7b183ab212,
-    0x797d57622ea1c8fd,
-    0x8df21c9eb075903b,
-    0x1e31bde7bb98bb8d,
-]);
-
-// T = 2^[(M-5)/8]
-//   = 0x11b12125017f856e781c64ef6075ec07341a645735cf3c0b4748a94fd552dc09
-//   = 0x9b51ee0c08b802c13e2a0972e04eb0a0f0ae80fbd3fc81de0c93d473638518b in Montgomery form
-const T: Scalar = Scalar([
-    0xe0c93d473638518b,
-    0x0f0ae80fbd3fc81d,
-    0x13e2a0972e04eb0a,
-    0x09b51ee0c08b802c,
+    0x7cca26bc0c7e066d,
+    0x976ff56990406568,
+    0x02bf3d2ecb1ea71f,
+    0x70d70cd1b1bd6871,
 ]);
 
 // -M^{-1} mod 2^64; this is used during element multiplication.
-const U: u64 = 11594536110104744659;
+const U: u64 = 7208734935082542545;
 
 // SCALAR FIELD ELEMENT
 // ================================================================================================
@@ -187,6 +177,13 @@ impl Scalar {
     /// Checks whether `self` is zero or not
     pub fn is_zero(&self) -> Choice {
         self.ct_eq(&Scalar::zero())
+    }
+
+    /// Generates a random element
+    pub fn random(mut rng: impl RngCore) -> Self {
+        let mut buf = [0; 64];
+        rng.fill_bytes(&mut buf);
+        Self::from_bytes_wide(&buf)
     }
 
     #[inline(always)]
@@ -345,27 +342,18 @@ impl Scalar {
 
     /// Computes the square root of this element, if it exists.
     pub fn sqrt(&self) -> CtOption<Self> {
-        // Atkin's algorithm for q mod 8 = 5
-        // See https://eprint.iacr.org/2012/685.pdf, algorithm 3
+        // Tonelli-Shank's algorithm for q mod 4 = 3
+        // See https://eprint.iacr.org/2012/685.pdf
 
-        // a1 = self^((q - 5) // 8)
-        //   = self^0x4c66feea4f2beef96d6dd773431fd993e5e4c9e06a48564e3c275dc2612ad54
-        let a1 = self.exp_vartime(&[
-            0xe3c275dc2612ad54,
-            0x3e5e4c9e06a48564,
-            0x96d6dd773431fd99,
-            0x04c66feea4f2beef,
+        // Compute s^((q+1)/4)
+        let s = self.exp_vartime(&[
+            0xb510d88fabb52b34,
+            0x4c9ea9c8cc055dc8,
+            0x158fefc3e6428ded,
+            0x1ebc9666cecfc8b4,
         ]);
 
-        let a0 = (a1.square() * self).square();
-        let a0_is_not_minus_one = !a0.ct_eq(&Scalar::one().neg());
-
-        let b = T * a1;
-        let ab = self * b;
-        let i = ab.double() * b - Scalar::one();
-        let x = ab * i;
-
-        CtOption::new(x, (x * x).ct_eq(self) & a0_is_not_minus_one)
+        CtOption::new(s, (s * s).ct_eq(self))
     }
 
     /// Computes the double of a scalar element
@@ -422,6 +410,25 @@ impl Scalar {
                 Choice::from(bit_slice[i] as u8),
             );
             result += tmp;
+        }
+
+        result
+    }
+
+    /// Converts a little-endian bit sequence into a Scalar element
+    ///
+    /// **This operation is variable time with respect
+    /// to the binary slice.** If the slice is fixed,
+    /// this operation is effectively constant time.
+    pub fn from_bits_vartime(bit_slice: &BitSlice<Lsb0, u8>) -> Scalar {
+        assert_eq!(bit_slice.len(), 256);
+
+        let mut result = Scalar::zero();
+        for i in (0..256).rev() {
+            result = result.double();
+            if bit_slice[i] {
+                result += Scalar::one();
+            }
         }
 
         result
@@ -523,11 +530,10 @@ impl Scalar {
 
         // First, because self is in Montgomery form we need to reduce it
         let tmp = Scalar::montgomery_reduce(self.0[0], self.0[1], self.0[2], self.0[3], 0, 0, 0, 0);
-
-        let (_, borrow) = sub64_with_carry(tmp.0[0], 0x8f09d770984ab552, 0);
-        let (_, borrow) = sub64_with_carry(tmp.0[1], 0xf97932781a921593, borrow);
-        let (_, borrow) = sub64_with_carry(tmp.0[2], 0x5b5b75dcd0c7f664, borrow);
-        let (_, borrow) = sub64_with_carry(tmp.0[3], 0x1319bfba93cafbbe, borrow);
+        let (_, borrow) = sub64_with_carry(tmp.0[0], 0x6a21b11f576a5668, 0);
+        let (_, borrow) = sub64_with_carry(tmp.0[1], 0x993d5391980abb91, borrow);
+        let (_, borrow) = sub64_with_carry(tmp.0[2], 0x2b1fdf87cc851bda, borrow);
+        let (_, borrow) = sub64_with_carry(tmp.0[3], 0x3d792ccd9d9f9168, borrow);
 
         // If the element was smaller, the subtraction will underflow
         // producing a borrow value of 0xffff...ffff, otherwise it will
@@ -577,109 +583,107 @@ impl Scalar {
     /// failing if the element is zero.
     pub fn invert(&self) -> CtOption<Self> {
         // found using https://github.com/kwantam/addchain for M - 2
-        let t3 = self.square(); //             1: 2
-        let t1 = t3 * self; //                 2: 3
-        let mut t0 = t3.square(); //           3: 4
-        let t2 = t1 * t3; //                   4: 5
-        let t6 = t0 * t1; //                   5: 7
-        let t4 = t2 * t0; //                   6: 9
-        let t15 = t6 * t0; //                  7: 11
-        let t9 = t4 * t0; //                   8: 13
-        let t7 = t15 * t0; //                  9: 15
-        let t5 = t7 * t0; //                  10: 19
-        let t3 = t5 * t3; //                  11: 21
-        let t11 = t5 * t0; //                 12: 23
-        let t10 = t3 * t0; //                 13: 25
-        let t13 = t11 * t0; //                14: 27
-        let t14 = t10 * t0; //                15: 29
-        let t12 = t13 * t0; //                16: 31
-        t0 = t5.square(); //                  17: 38
-        square_assign_multi(&mut t0, 7); //   24: 4864
-        t0 *= t10; //                         25: 4889
-        square_assign_multi(&mut t0, 5); //   30: 156448
-        t0 *= t11; //                         31: 156471
-        square_assign_multi(&mut t0, 4); //   35: 2503536
-        t0 *= t7; //                          36: 2503551
-        square_assign_multi(&mut t0, 6); //   42: 160227264
-        t0 *= t14; //                         43: 160227293
-        square_assign_multi(&mut t0, 5); //   48: 5127273376
-        t0 *= t4; //                          49: 5127273385
-        square_assign_multi(&mut t0, 6); //   55: 328145496640
-        t0 *= t7; //                          56: 328145496655
-        square_assign_multi(&mut t0, 7); //   63: 42002623571840
-        t0 *= t3; //                          64: 42002623571861
-        square_assign_multi(&mut t0, 4); //   68: 672041977149776
-        t0 *= t7; //                          69: 672041977149791
-        square_assign_multi(&mut t0, 6); //   75: 43010686537586624
-        t0 *= t14; //                         76: 43010686537586653
-        square_assign_multi(&mut t0, 4); //   80: 688170984601386448
-        t0 *= t7; //                          81: 688170984601386463
-        square_assign_multi(&mut t0, 6); //   87: 44042943014488733632
-        t0 *= t15; //                         88: 44042943014488733643
-        square_assign_multi(&mut t0, 5); //   93: 1409374176463639476576
-        t0 *= t9; //                          94: 1409374176463639476589
-        square_assign_multi(&mut t0, 6); //  100: 90199947293672926501696
-        t0 *= t13; //                        101: 90199947293672926501723
-        square_assign_multi(&mut t0, 6); //  107: 5772796626795067296110272
-        t0 *= t14; //                        108: 5772796626795067296110301
-        square_assign_multi(&mut t0, 6); //  114: 369458984114884306951059264
-        t0 *= t14; //                        115: 369458984114884306951059293
-        square_assign_multi(&mut t0, 2); //  117: 1477835936459537227804237172
-        t0 *= t1; //                         118: 1477835936459537227804237175
-        square_assign_multi(&mut t0, 6); //  124: 94581499933410382579471179200
-        t0 *= t9; //                         125: 94581499933410382579471179213
-        square_assign_multi(&mut t0, 6); //  131: 6053215995738264485086155469632
-        t0 *= t1; //                         132: 6053215995738264485086155469635
-        square_assign_multi(&mut t0, 8); //  140: 1549623294908995708182055800226560
-        t0 *= t12; //                        141: 1549623294908995708182055800226591
-        square_assign_multi(&mut t0, 5); //  146: 49587945437087862661825785607250912
-        t0 *= t13; //                        147: 49587945437087862661825785607250939
-        square_assign_multi(&mut t0, 7); //  154: 6347257015947246420713700557728120192
-        t0 *= t10; //                        155: 6347257015947246420713700557728120217
-        square_assign_multi(&mut t0, 7); //  162: 812448898041247541851353671389199387776
-        t0 *= t12; //                        163: 812448898041247541851353671389199387807
-        square_assign_multi(&mut t0, 7); //  170: 103993458949279685356973269937817521639296
-        t0 *= t11; //                        171: 103993458949279685356973269937817521639319
-        square_assign_multi(&mut t0, 4); //  175: 1663895343188474965711572319005080346229104
-        t0 *= t4; //                         176: 1663895343188474965711572319005080346229113
-        square_assign_multi(&mut t0, 7); //  183: 212978603928124795611081256832650284317326464
-        t0 *= t10; //                        184: 212978603928124795611081256832650284317326489
-        square_assign_multi(&mut t0, 6); //  190: 13630630651399986919109200437289618196308895296
-        t0 *= t7; //                         191: 13630630651399986919109200437289618196308895311
-        square_assign_multi(&mut t0, 10); // 201: 13957765787033586605167821247784569033020308798464
-        t0 *= t9; //                         202: 13957765787033586605167821247784569033020308798477
-        square_assign_multi(&mut t0, 5); //  207: 446648505185074771365370279929106209056649881551264
-        t0 *= t4; //                         208: 446648505185074771365370279929106209056649881551273
-        square_assign_multi(&mut t0, 3); //  211: 3573188041480598170922962239432849672453199052410184
-        t0 *= self; //                       212: 3573188041480598170922962239432849672453199052410185
-        square_assign_multi(&mut t0, 9); //  221: 1829472277238066263512556666589619032296037914834014720
-        t0 *= t3; //                         222: 1829472277238066263512556666589619032296037914834014741
-        square_assign_multi(&mut t0, 4); //  226: 29271556435809060216200906665433904516736606637344235856
-        t0 *= t4; //                         227: 29271556435809060216200906665433904516736606637344235865
-        square_assign_multi(&mut t0, 5); //  232: 936689805945889926918429013293884944535571412395015547680
-        t0 *= t6; //                         233: 936689805945889926918429013293884944535571412395015547687
-        square_assign_multi(&mut t0, 7); //  240: 119896295161073910645558913701617272900553140786561990103936
-        t0 *= t7; //                         241: 119896295161073910645558913701617272900553140786561990103951
-        square_assign_multi(&mut t0, 9); //  250: 61386903122469842250526163815228043725083208082719738933222912
-        t0 *= t5; //                         251: 61386903122469842250526163815228043725083208082719738933222931
-        square_assign_multi(&mut t0, 5); //  256: 1964380899919034952016837242087297399202662658647031645863133792
-        t0 *= t3; //                         257: 1964380899919034952016837242087297399202662658647031645863133813
-        square_assign_multi(&mut t0, 2); //  259: 7857523599676139808067348968349189596810650634588126583452535252
-        t0 *= t1; //                         260: 7857523599676139808067348968349189596810650634588126583452535255
-        square_assign_multi(&mut t0, 4); //  264: 125720377594818236929077583493587033548970410153410025335240564080
-        t0 *= t6; //                         265: 125720377594818236929077583493587033548970410153410025335240564087
-        square_assign_multi(&mut t0, 9); //  274: 64368833328546937307687722748716561177072849998545932971643168812544
-        t0 *= t5; //                         275: 64368833328546937307687722748716561177072849998545932971643168812563
-        square_assign_multi(&mut t0, 8); //  283: 16478421332108015950768057023671439661330649599627758840740651216016128
-        t0 *= t4; //                         284: 16478421332108015950768057023671439661330649599627758840740651216016137
-        square_assign_multi(&mut t0, 6); //  290: 1054618965254913020849155649514972138325161574376176565807401677825032768
-        t0 *= t3; //                         291: 1054618965254913020849155649514972138325161574376176565807401677825032789
-        square_assign_multi(&mut t0, 5); //  296: 33747806888157216667172980784479108426405170380037650105836853690401049248
-        t0 *= t3; //                         297: 33747806888157216667172980784479108426405170380037650105836853690401049269
-        square_assign_multi(&mut t0, 4); //  301: 539964910210515466674767692551665734822482726080602401693389659046416788304
-        t0 *= t2; //                         302: 539964910210515466674767692551665734822482726080602401693389659046416788309
-        square_assign_multi(&mut t0, 5); //  307: 17278877126736494933592566161653303514319447234579276854188469089485337225888
-        t0 *= t1; //                         308: 17278877126736494933592566161653303514319447234579276854188469089485337225891 = M - 2
+        let mut t0 = self.square(); //    1: 2
+        let t13 = t0.square(); //    2: 4
+        let t4 = t13 * self; //    3: 5
+        let t12 = t4 * t0; //    4: 7
+        let t14 = t4 * t13; //    5: 9
+        let t9 = t12 * t13; //    6: 11
+        let t1 = t14 * t13; //    7: 13
+        let t6 = t9 * t13; //    8: 15
+        let t7 = t1 * t13; //    9: 17
+        let t2 = t6 * t13; //   10: 19
+        let t3 = t7 * t13; //   11: 21
+        let t15 = t2 * t13; //   12: 23
+        let t10 = t3 * t13; //   13: 25
+        let t5 = t15 * t13; //   14: 27
+        let t11 = t10 * t13; //   15: 29
+        t0 = t6.square(); //   16: 30
+        let t13 = t5 * t13; //   17: 31
+        square_assign_multi(&mut t0, 5); //   22: 960
+        t0 *= t15; //   23: 983
+        square_assign_multi(&mut t0, 4); //   27: 15728
+        t0 *= t14; //   28: 15737
+        square_assign_multi(&mut t0, 6); //   34: 1007168
+        t0 *= t9; //   35: 1007179
+        square_assign_multi(&mut t0, 7); //   42: 128918912
+        t0 *= t10; //   43: 128918937
+        square_assign_multi(&mut t0, 4); //   47: 2062702992
+        t0 *= t9; //   48: 2062703003
+        square_assign_multi(&mut t0, 7); //   55: 264025984384
+        t0 *= t11; //   56: 264025984413
+        square_assign_multi(&mut t0, 5); //   61: 8448831501216
+        t0 *= t2; //   62: 8448831501235
+        square_assign_multi(&mut t0, 4); //   66: 135181304019760
+        t0 *= t6; //   67: 135181304019775
+        square_assign_multi(&mut t0, 7); //   74: 17303206914531200
+        t0 *= t7; //   75: 17303206914531217
+        square_assign_multi(&mut t0, 5); //   80: 553702621264998944
+        t0 *= t1; //   81: 553702621264998957
+        square_assign_multi(&mut t0, 10); //   91: 566991484175358931968
+        t0 *= t3; //   92: 566991484175358931989
+        square_assign_multi(&mut t0, 5); //   97: 18143727493611485823648
+        t0 *= t7; //   98: 18143727493611485823665
+        square_assign_multi(&mut t0, 5); //  103: 580599279795567546357280
+        t0 *= t13; //  104: 580599279795567546357311
+        square_assign_multi(&mut t0, 4); //  108: 9289588476729080741716976
+        t0 *= t9; //  109: 9289588476729080741716987
+        square_assign_multi(&mut t0, 4); //  113: 148633415627665291867471792
+        t0 *= t6; //  114: 148633415627665291867471807
+        square_assign_multi(&mut t0, 9); //  123: 76100308801364629436145565184
+        t0 *= t13; //  124: 76100308801364629436145565215
+        square_assign_multi(&mut t0, 7); //  131: 9740839526574672567826632347520
+        t0 *= t10; //  132: 9740839526574672567826632347545
+        square_assign_multi(&mut t0, 7); //  139: 1246827459401558088681808940485760
+        t0 *= t4; //  140: 1246827459401558088681808940485765
+        square_assign_multi(&mut t0, 8); //  148: 319187829606798870702543088764355840
+        t0 *= t5; //  149: 319187829606798870702543088764355867
+        square_assign_multi(&mut t0, 5); //  154: 10214010547417563862481378840459387744
+        t0 *= t5; //  155: 10214010547417563862481378840459387771
+        square_assign_multi(&mut t0, 4); //  159: 163424168758681021799702061447350204336
+        t0 *= t4; //  160: 163424168758681021799702061447350204341
+        square_assign_multi(&mut t0, 7); //  167: 20918293601111170790361863865260826155648
+        t0 *= t10; //  168: 20918293601111170790361863865260826155673
+        square_assign_multi(&mut t0, 6); //  174: 1338770790471114930583159287376692873963072
+        t0 *= t6; //  175: 1338770790471114930583159287376692873963087
+        square_assign_multi(&mut t0, 6); //  181: 85681330590151355557322194392108343933637568
+        t0 *= t3; //  182: 85681330590151355557322194392108343933637589
+        square_assign_multi(&mut t0, 5); //  187: 2741802578884843377834310220547467005876402848
+        t0 *= t12; //  188: 2741802578884843377834310220547467005876402855
+        square_assign_multi(&mut t0, 7); //  195: 350950730097259952362791708230075776752179565440
+        t0 *= t7; //  196: 350950730097259952362791708230075776752179565457
+        square_assign_multi(&mut t0, 5); //  201: 11230423363112318475609334663362424856069746094624
+        t0 *= t2; //  202: 11230423363112318475609334663362424856069746094643
+        square_assign_multi(&mut t0, 12); //  214: 45999814095308056476095834781132492210461680003657728
+        t0 *= t3; //  215: 45999814095308056476095834781132492210461680003657749
+        square_assign_multi(&mut t0, 6); //  221: 2943988102099715614470133425992479501469547520234095936
+        t0 *= t11; //  222: 2943988102099715614470133425992479501469547520234095965
+        square_assign_multi(&mut t0, 5); //  227: 94207619267190899663044269631759344047025520647491070880
+        t0 *= t10; //  228: 94207619267190899663044269631759344047025520647491070905
+        square_assign_multi(&mut t0, 7); //  235: 12058575266200435156869666512865196038019266642878857075840
+        t0 *= t9; //  236: 12058575266200435156869666512865196038019266642878857075851
+        square_assign_multi(&mut t0, 4); //  240: 192937204259206962509914664205843136608308266286061713213616
+        t0 *= t4; //  241: 192937204259206962509914664205843136608308266286061713213621
+        square_assign_multi(&mut t0, 4); //  245: 3086995268147311400158634627293490185732932260576987411417936
+        t0 *= self; //  246: 3086995268147311400158634627293490185732932260576987411417937
+        square_assign_multi(&mut t0, 9); //  255: 1580541577291423436881220929174266975095261317415417554645983744
+        t0 *= t5; //  256: 1580541577291423436881220929174266975095261317415417554645983771
+        square_assign_multi(&mut t0, 8); //  264: 404618643786604399841592557868612345624386897258346893989371845376
+        t0 *= t7; //  265: 404618643786604399841592557868612345624386897258346893989371845393
+        square_assign_multi(&mut t0, 4); //  269: 6473898300585670397465480925897797529990190356133550303829949526288
+        t0 *= t6; //  270: 6473898300585670397465480925897797529990190356133550303829949526303
+        square_assign_multi(&mut t0, 6); //  276: 414329491237482905437790779257459041919372182792547219445116769683392
+        t0 *= t3; //  277: 414329491237482905437790779257459041919372182792547219445116769683413
+        square_assign_multi(&mut t0, 5); //  282: 13258543719599452974009304936238689341419909849361511022243736629869216
+        t0 *= t5; //  283: 13258543719599452974009304936238689341419909849361511022243736629869243
+        square_assign_multi(&mut t0, 4); //  287: 212136699513591247584148878979819029462718557589784176355899786077907888
+        t0 *= t4; //  288: 212136699513591247584148878979819029462718557589784176355899786077907893
+        square_assign_multi(&mut t0, 7); //  295: 27153497537739679690771056509416835771227975371492374573555172617972210304
+        t0 *= t3; //  296: 27153497537739679690771056509416835771227975371492374573555172617972210325
+        square_assign_multi(&mut t0, 5); //  301: 868911921207669750104673808301338744679295211887755986353765523775110730400
+        t0 *= t2; //  302: 868911921207669750104673808301338744679295211887755986353765523775110730419
+        square_assign_multi(&mut t0, 6); //  308: 55610362957290864006699123731285679659474893560816383126640993521607086746816
+        t0 *= t1; //  309: 55610362957290864006699123731285679659474893560816383126640993521607086746829
 
         CtOption::new(t0, !self.ct_eq(&Self::zero()))
     }
@@ -813,9 +817,7 @@ impl From<u8> for Scalar {
 
 impl Field for Scalar {
     fn random(mut rng: impl RngCore) -> Self {
-        let mut buf = [0; 64];
-        rng.fill_bytes(&mut buf);
-        Self::from_bytes_wide(&buf)
+        Self::random(&mut rng)
     }
 
     fn zero() -> Self {
@@ -864,7 +866,7 @@ impl PrimeField for Scalar {
         (self.to_bytes()[0] & 1).ct_eq(&1)
     }
 
-    const NUM_BITS: u32 = 254;
+    const NUM_BITS: u32 = 255;
     const CAPACITY: u32 = Self::NUM_BITS - 1;
 
     fn multiplicative_generator() -> Self {
@@ -941,10 +943,10 @@ mod tests {
     use rand_core::OsRng;
 
     const LARGEST: Scalar = Scalar([
-        0x1e13aee130956aa4,
-        0xf2f264f035242b27,
-        0xb6b6ebb9a18fecc9,
-        0x26337f752795f77c,
+        0xd443623eaed4acce,
+        0x327aa72330157722,
+        0x563fbf0f990a37b5,
+        0x7af2599b3b3f22d0,
     ]);
 
     // DISPLAY
@@ -962,7 +964,7 @@ mod tests {
         );
         assert_eq!(
             format!("{:?}", R2),
-            "0x1acb0341127c3313b7b679a636a073444e51a25ec126fd154b89e6b8dc7f8022"
+            "0x0a1b4cc98981ba5f538081e0cdeb90959b0ab1b99fd511ba57793b82a256a662"
         );
     }
 
@@ -978,7 +980,7 @@ mod tests {
         );
         assert_eq!(
             format!("{:?}", R2.output_reduced_limbs()),
-            "[5443135306301669410, 5643470335923125525, 13237901909490168644, 1930640443276276499]"
+            "[6303134585737094754, 11171937236454543802, 6016951904694407317, 728260193229584991]",
         );
     }
 
@@ -1006,10 +1008,10 @@ mod tests {
         assert_eq!(
             tmp,
             Scalar([
-                0x1e13aee130956aa3,
-                0xf2f264f035242b27,
-                0xb6b6ebb9a18fecc9,
-                0x26337f752795f77c,
+                0xd443623eaed4accd,
+                0x327aa72330157722,
+                0x563fbf0f990a37b5,
+                0x7af2599b3b3f22d0,
             ])
         );
 
@@ -1154,10 +1156,10 @@ mod tests {
     #[test]
     fn test_invert_is_pow() {
         let q_minus_2 = [
-            0x1e13aee130956aa3,
-            0xf2f264f035242b27,
-            0xb6b6ebb9a18fecc9,
-            0x26337f752795f77c,
+            0xd443623eaed4accd,
+            0x327aa72330157722,
+            0x563fbf0f990a37b5,
+            0x7af2599b3b3f22d0,
         ];
 
         let mut r1 = R;
@@ -1183,32 +1185,27 @@ mod tests {
 
     #[test]
     fn test_get_root_of_unity() {
-        let root_2 = Scalar::get_root_of_unity(2);
-        assert_eq!(TWO_ADIC_ROOT_OF_UNITY, root_2);
-        assert_eq!(Scalar::one(), root_2.exp(&[4, 0, 0, 0]));
-
         let root_1 = Scalar::get_root_of_unity(1);
-        let expected = root_2.exp(&[2, 0, 0, 0]);
-        assert_eq!(expected, root_1);
+        assert_eq!(TWO_ADIC_ROOT_OF_UNITY, root_1);
         assert_eq!(Scalar::one(), root_1.exp(&[2, 0, 0, 0]));
     }
 
     #[test]
     fn test_lexicographically_largest() {
-        // a = 1475249844745184162945519477422622175802656699045099721608794143422599449058
+        // a = 18150892113463577006064251079316678276376639745798754653559980246979387702623
         let a = Scalar([
-            0x42e5c81ee0c2f208,
-            0x7357405276648944,
-            0xe256db77e0fb5f75,
-            0x1ef35384edf87a42,
+            0x2385774fb320cf85,
+            0xd6831bd1db2dbef1,
+            0xfca8a81ed3272e6d,
+            0x4f36676f7b6b7531,
         ]);
 
-        // b = 15803627281991310770647046684230681338516790535534177132579674946062737776835
+        // b = 37459470843827287000634872651969001383098253815017628473081013274627699044208
         let b = Scalar([
-            0xdb2de6c24fd2789d,
-            0x7f9b249dbebfa1e2,
-            0xd4601041c0948d54,
-            0x07402bf0399d7d39,
+            0xb0bdeaeefbb3dd4a,
+            0x5bf78b5154e7b831,
+            0x599716f0c5e30947,
+            0x2bbbf22bbfd3ad9e,
         ]);
 
         assert_eq!(a.square(), b.square());
@@ -1244,17 +1241,17 @@ mod tests {
     #[test]
     fn test_from_raw_unchecked() {
         let mut element = Scalar::from_raw_unchecked([
-            5443135306301669410,
-            5643470335923125525,
-            13237901909490168644,
-            1930640443276276499,
+            0x57793b82a256a662,
+            0x9b0ab1b99fd511ba,
+            0x538081e0cdeb9095,
+            0x0a1b4cc98981ba5f,
         ]);
 
         let element_normalized = Scalar::new([
-            5443135306301669410,
-            5643470335923125525,
-            13237901909490168644,
-            1930640443276276499,
+            0x57793b82a256a662,
+            0x9b0ab1b99fd511ba,
+            0x538081e0cdeb9095,
+            0x0a1b4cc98981ba5f,
         ]);
 
         assert_eq!(element, Scalar::one());
@@ -1352,16 +1349,16 @@ mod tests {
         assert_eq!(
             R2.to_bytes(),
             [
-                34, 128, 127, 220, 184, 230, 137, 75, 21, 253, 38, 193, 94, 162, 81, 78, 68, 115,
-                160, 54, 166, 121, 182, 183, 19, 51, 124, 18, 65, 3, 203, 26
+                98, 166, 86, 162, 130, 59, 121, 87, 186, 17, 213, 159, 185, 177, 10, 155, 149, 144,
+                235, 205, 224, 129, 128, 83, 95, 186, 129, 137, 201, 76, 27, 10
             ]
         );
 
         assert_eq!(
             (-&Scalar::one()).to_bytes(),
             [
-                164, 106, 149, 48, 225, 174, 19, 30, 39, 43, 36, 53, 240, 100, 242, 242, 201, 236,
-                143, 161, 185, 235, 182, 182, 124, 247, 149, 39, 117, 127, 51, 38
+                206, 172, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55,
+                10, 153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122
             ]
         );
     }
@@ -1395,8 +1392,8 @@ mod tests {
 
         assert_eq!(
             Scalar::from_bytes(&[
-                34, 128, 127, 220, 184, 230, 137, 75, 21, 253, 38, 193, 94, 162, 81, 78, 68, 115,
-                160, 54, 166, 121, 182, 183, 19, 51, 124, 18, 65, 3, 203, 26
+                98, 166, 86, 162, 130, 59, 121, 87, 186, 17, 213, 159, 185, 177, 10, 155, 149, 144,
+                235, 205, 224, 129, 128, 83, 95, 186, 129, 137, 201, 76, 27, 10
             ])
             .unwrap(),
             R2
@@ -1405,8 +1402,8 @@ mod tests {
         // -1 should work
         assert_eq!(
             Scalar::from_bytes(&[
-                164, 106, 149, 48, 225, 174, 19, 30, 39, 43, 36, 53, 240, 100, 242, 242, 201, 236,
-                143, 161, 185, 235, 182, 182, 124, 247, 149, 39, 117, 127, 51, 38
+                206, 172, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55,
+                10, 153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122
             ])
             .unwrap(),
             -Scalar::one(),
@@ -1415,8 +1412,8 @@ mod tests {
         // M is invalid
         assert!(bool::from(
             Scalar::from_bytes(&[
-                165, 106, 149, 48, 225, 174, 19, 30, 39, 43, 36, 53, 240, 100, 242, 242, 201, 236,
-                143, 161, 185, 235, 182, 182, 124, 247, 149, 39, 117, 127, 51, 38
+                207, 172, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55,
+                10, 153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122
             ])
             .is_none()
         ));
@@ -1424,22 +1421,22 @@ mod tests {
         // Anything larger than M is invalid
         assert!(bool::from(
             Scalar::from_bytes(&[
-                166, 106, 149, 48, 225, 174, 19, 30, 39, 43, 36, 53, 240, 100, 242, 242, 201, 236,
-                143, 161, 185, 235, 182, 182, 124, 247, 149, 39, 117, 127, 51, 38
+                208, 172, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55,
+                10, 153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122
             ])
             .is_none()
         ));
         assert!(bool::from(
             Scalar::from_bytes(&[
-                164, 255, 149, 48, 225, 174, 19, 30, 39, 43, 36, 53, 240, 100, 242, 242, 201, 236,
-                143, 161, 185, 235, 182, 182, 124, 247, 149, 39, 117, 127, 51, 38
+                206, 173, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55,
+                10, 153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122
             ])
             .is_none()
         ));
         assert!(bool::from(
             Scalar::from_bytes(&[
-                0, 0, 0, 48, 225, 174, 19, 30, 39, 43, 36, 53, 240, 100, 242, 242, 201, 236, 143,
-                161, 185, 235, 182, 182, 124, 247, 149, 39, 117, 127, 51, 39
+                0, 0, 0, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55, 10, 153,
+                15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 255
             ])
             .is_none()
         ));
@@ -1479,9 +1476,9 @@ mod tests {
         assert_eq!(
             R2,
             Scalar::from_bytes_wide(&[
-                34, 128, 127, 220, 184, 230, 137, 75, 21, 253, 38, 193, 94, 162, 81, 78, 68, 115,
-                160, 54, 166, 121, 182, 183, 19, 51, 124, 18, 65, 3, 203, 26, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                98, 166, 86, 162, 130, 59, 121, 87, 186, 17, 213, 159, 185, 177, 10, 155, 149, 144,
+                235, 205, 224, 129, 128, 83, 95, 186, 129, 137, 201, 76, 27, 10, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             ])
         );
     }
@@ -1491,9 +1488,9 @@ mod tests {
         assert_eq!(
             -&Scalar::one(),
             Scalar::from_bytes_wide(&[
-                164, 106, 149, 48, 225, 174, 19, 30, 39, 43, 36, 53, 240, 100, 242, 242, 201, 236,
-                143, 161, 185, 235, 182, 182, 124, 247, 149, 39, 117, 127, 51, 38, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                206, 172, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55,
+                10, 153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
             ])
         );
     }
@@ -1502,10 +1499,10 @@ mod tests {
     fn test_from_bytes_wide_maximum() {
         assert_eq!(
             Scalar([
-                0x7040698eca3c1402,
-                0xe1256563354c0983,
-                0x66462d26a91c30dd,
-                0x06070641c3cb966e,
+                0xd607a1e33be17918,
+                0x9f25fbf5db9be97c,
+                0xfdd3f73cf4b234d2,
+                0x67fe48cbe00f6904,
             ]),
             Scalar::from_bytes_wide(&[0xff; 64])
         );
@@ -1515,23 +1512,40 @@ mod tests {
     fn test_from_bits() {
         let bytes = Scalar::zero().to_bytes();
         assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), Scalar::zero());
+        assert_eq!(
+            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
+            Scalar::zero()
+        );
 
         let bytes = Scalar::one().to_bytes();
         assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), Scalar::one());
+        assert_eq!(
+            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
+            Scalar::one()
+        );
 
         let bytes = R2.to_bytes();
         assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), R2);
+        assert_eq!(Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()), R2);
 
         // -1 should work
         let bytes = (-Scalar::one()).to_bytes();
         assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), -Scalar::one());
+        assert_eq!(
+            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
+            -Scalar::one()
+        );
 
         // Modulus results in Scalar::zero()
         let bytes = [
-            165, 106, 149, 48, 225, 174, 19, 30, 39, 43, 36, 53, 240, 100, 242, 242, 201, 236, 143,
-            161, 185, 235, 182, 182, 124, 247, 149, 39, 117, 127, 51, 38,
+            207, 172, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55, 10,
+            153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122,
         ];
         assert_eq!(Scalar::from_bits(bytes.as_bits::<Lsb0>()), Scalar::zero());
+        assert_eq!(
+            Scalar::from_bits_vartime(bytes.as_bits::<Lsb0>()),
+            Scalar::zero()
+        );
     }
 
     #[test]

@@ -17,7 +17,6 @@ use criterion::Criterion;
 extern crate cheetah;
 
 use cheetah::Fp6;
-use group::ff::Field;
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = OsRng;
@@ -62,7 +61,7 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     c.bench_function("fp6 exp", |bench| {
         let x = Fp6::random(&mut rng);
-        let y = Fp6::random(&mut rng).output_reduced_limbs();
+        let y = Fp6::random(&mut rng).output_internal();
         bench.iter(|| Fp6::exp(black_box(x), black_box(&y)))
     });
 

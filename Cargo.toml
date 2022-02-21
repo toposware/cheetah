@@ -33,10 +33,6 @@ name = "fp"
 harness = false
 
 [[bench]]
-name = "fp2"
-harness = false
-
-[[bench]]
 name = "fp6"
 harness = false
 

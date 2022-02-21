@@ -1,6 +1,6 @@
 # Cheetah 🐆
 
-This crates provide an implementation of the Cheetah curve over the field extension $\mathbb{F}_{p^6}$, with p = 2<sup>62</sup> + 2<sup>56</sup> + 2<sup>55</sup> + 1.
+This crates provide an implementation of the Cheetah curve over the field extension $\mathbb{F}_{p^6}$, with p = 2<sup>64</sup> - 2<sup>32</sup> + 1.
 
 * This implementation does not require the Rust standard library
 * Arithmetic operations are all constant time unless "_vartime" is explicited mentioned
@@ -13,23 +13,24 @@ This crates provide an implementation of the Cheetah curve over the field extens
 
 ## Description
 
-Cheetah is a STARK-friendly elliptic curve defined over a sextic extension of $\mathbb{F}_p$, p = 2<sup>62</sup> + 2<sup>56</sup> + 2<sup>55</sup> + 1 defined by
+Cheetah is a STARK-friendly elliptic curve defined over a sextic extension of $\mathbb{F}_p$, p = 2<sup>64</sup> - 2<sup>32</sup> + 1 defined by
 `E: y^2 = x^3 + x + B` with 
-`B = (1200866201009650596 * u + 1935817186716799185) * v^2 + (3999205700308519553 * u + 3518137720867787056) * v + 2508413708960025374 * u + 1526905369741321712`
+`B = u + 395`
 where
-- `u^2 - 2u - 2 = 0` is the polynomial defining $\mathbb{F}_{p^2} / \mathbb{F}_p$
-- `v^3 + v + 1 = 0` is the polynomial defining $\mathbb{F}_{p^6} / \mathbb{F}_{p^2}$.
+- `u^6 - 7 = 0` is the polynomial defining $\mathbb{F}_{p^6} / \mathbb{F}_p$
 
-Cheetah defines a subgroup G of prime order `q = 0x26337f752795f77cb6b6ebb9a18fecc9f2f264f035242b271e13aee130956aa5` of 254-bits.
+Cheetah defines a subgroup G of prime order `q = 0x7af2599b3b3f22d0563fbf0f990a37b5327aa72330157722d443623eaed4accf` of 255-bits.
 
-Extension towering $\mathbb{F}_{p^2}$ and $\mathbb{F}_{p^6}$ have been specifically constructed with polynomials of small coefficients in order to reduce the cost of multiplication, squaring and inversion in the extension fields. The current implementation may however not be fully optimal with respect to the number of multiplications in the base field.
+The extension $\mathbb{F}_{p^6}$ has been specifically constructed with a sparse polynomial of the form `X^6 - A`, where `A` is a small quadratic and cubic non-residue. The current implementation may however not be fully optimal with respect to the number of multiplications in the base field.
 
-The Cheetah curve has been generated with the Sagemath utility script `find_curve_extension.sage` available [here](https://github.com/Nashtare/curve_experiments).
+The Cheetah curve has been generated with the Sagemath utility script `sextic_search.sage` available [here](https://github.com/Toposware/cheetah_evidence).
 
 
 ## Curve security
 
-Elliptic curves based on extension fields may suffer from specific attacks that do not apply to common elliptic curves constructed over large prime fields and may outperform regular Pollard-Rho attacks, and hence require more scrutiny when evaluating their estimated security level.
+Elliptic curves based on extension fields may suffer from specific attacks that do not apply to common elliptic curves constructed over large prime fields and may outperform regular Pollard-Rho attacks, and hence require more scrutiny when evaluating their estimated security level. To verify the security level
+of Cheetah against generic attacks as well as cover and decomposition attacks, please use the Sagemath utility script `verify.sage` available
+[here](https://github.com/Toposware/cheetah_evidence).
 
 ## License
 
