@@ -20,54 +20,54 @@ use cheetah::Scalar;
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = OsRng;
+    let x = Scalar::random(&mut rng);
+    let x_squared = x.square();
+    let x_bytes = x.to_bytes();
+    let y = Scalar::random(&mut rng);
+    let pow = y.output_reduced_limbs();
 
-    c.bench_function("scalar add", |bench| {
-        let x = Scalar::random(&mut rng);
-        let y = Scalar::random(&mut rng);
+    c.bench_function("Scalar add", |bench| {
         bench.iter(|| black_box(x) + black_box(y))
     });
 
-    c.bench_function("scalar sub", |bench| {
-        let x = Scalar::random(&mut rng);
-        let y = Scalar::random(&mut rng);
+    c.bench_function("Scalar sub", |bench| {
         bench.iter(|| black_box(x) - black_box(y))
     });
 
-    c.bench_function("scalar double", |bench| {
-        let x = Scalar::random(&mut rng);
+    c.bench_function("Scalar double", |bench| {
         bench.iter(|| black_box(x).double())
     });
 
-    c.bench_function("scalar mul", |bench| {
-        let x = Scalar::random(&mut rng);
-        let y = Scalar::random(&mut rng);
+    c.bench_function("Scalar mul", |bench| {
         bench.iter(|| black_box(x) * black_box(y))
     });
 
-    c.bench_function("scalar square", |bench| {
-        let x = Scalar::random(&mut rng);
+    c.bench_function("Scalar square", |bench| {
         bench.iter(|| black_box(x).square())
     });
 
-    c.bench_function("scalar square_from_mul", |bench| {
-        let x = Scalar::random(&mut rng);
+    c.bench_function("Scalar square_from_mul", |bench| {
         bench.iter(|| black_box(x) * black_box(x))
     });
 
-    c.bench_function("scalar sqrt", |bench| {
-        let x = Scalar::random(&mut rng).square();
-        bench.iter(|| Scalar::sqrt(black_box(&x)))
+    c.bench_function("Scalar sqrt", |bench| {
+        bench.iter(|| Scalar::sqrt(black_box(&x_squared)))
     });
 
-    c.bench_function("scalar exp", |bench| {
-        let x = Scalar::random(&mut rng);
-        let y = Scalar::random(&mut rng).output_reduced_limbs();
-        bench.iter(|| Scalar::exp(black_box(x), black_box(&y)))
+    c.bench_function("Scalar exp", |bench| {
+        bench.iter(|| Scalar::exp(black_box(x), black_box(&pow)))
     });
 
-    c.bench_function("scalar invert", |bench| {
-        let x = Scalar::random(&mut rng);
+    c.bench_function("Scalar invert", |bench| {
         bench.iter(|| Scalar::invert(black_box(&x)))
+    });
+
+    c.bench_function("Fp6 encoding", |bench| {
+        bench.iter(|| Scalar::to_bytes(black_box(&x)))
+    });
+
+    c.bench_function("Fp6 decoding", |bench| {
+        bench.iter(|| Scalar::from_bytes(black_box(&x_bytes)))
     });
 }
 
