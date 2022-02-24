@@ -41,5 +41,9 @@ name = "scalar"
 harness = false
 
 [[bench]]
-name = "curve"
+name = "curve_affine"
+harness = false
+
+[[bench]]
+name = "curve_projective"
 harness = false
