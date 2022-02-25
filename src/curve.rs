@@ -378,13 +378,9 @@ impl AffinePoint {
     /// Returns true if this point is free of an $h$-torsion component.
     /// This should always return true unless an "unchecked" API was used.
     pub fn is_torsion_free(&self) -> Choice {
-        const FQ_MODULUS_BYTES: [u8; 32] = [
-            207, 172, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55, 10,
-            153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122,
-        ];
+        let point: ProjectivePoint = self.into();
 
-        // Clear the r-torsion from the point and check if it is the identity
-        self.multiply(&FQ_MODULUS_BYTES).is_identity()
+        point.is_torsion_free()
     }
 }
 
@@ -1023,6 +1019,18 @@ impl ProjectivePoint {
         }
 
         acc
+    }
+
+    /// Returns true if this point is free of an $h$-torsion component.
+    /// This should always return true unless an "unchecked" API was used.
+    pub fn is_torsion_free(&self) -> Choice {
+        const FQ_MODULUS_BYTES: [u8; 32] = [
+            207, 172, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55, 10,
+            153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122,
+        ];
+
+        // Clear the r-torsion from the point and check if it is the identity
+        self.multiply(&FQ_MODULUS_BYTES).is_identity()
     }
 
     /// Converts a batch of `ProjectivePoint` elements into `AffinePoint` elements. This
@@ -1896,6 +1904,12 @@ mod tests {
         assert!(!bool::from(a.is_torsion_free()));
         assert!(bool::from(AffinePoint::identity().is_torsion_free()));
         assert!(bool::from(AffinePoint::generator().is_torsion_free()));
+
+        let a = ProjectivePoint::from(&a);
+        assert!(bool::from(a.is_on_curve()));
+        assert!(!bool::from(a.is_torsion_free()));
+        assert!(bool::from(ProjectivePoint::identity().is_torsion_free()));
+        assert!(bool::from(ProjectivePoint::generator().is_torsion_free()));
     }
 
     #[test]

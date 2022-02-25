@@ -20,54 +20,44 @@ use cheetah::Fp;
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = OsRng;
+    let x = Fp::random(&mut rng);
+    let x_squared = x.square();
+    let x_bytes = x.to_bytes();
+    let y = Fp::random(&mut rng);
+    let pow = y.output_internal();
 
-    c.bench_function("fp add", |bench| {
-        let x = Fp::random(&mut rng);
-        let y = Fp::random(&mut rng);
-        bench.iter(|| black_box(x) + black_box(y))
-    });
+    c.bench_function("Fp add", |bench| bench.iter(|| black_box(x) + black_box(y)));
 
-    c.bench_function("fp sub", |bench| {
-        let x = Fp::random(&mut rng);
-        let y = Fp::random(&mut rng);
-        bench.iter(|| black_box(x) - black_box(y))
-    });
+    c.bench_function("Fp sub", |bench| bench.iter(|| black_box(x) - black_box(y)));
 
-    c.bench_function("fp double", |bench| {
-        let x = Fp::random(&mut rng);
-        bench.iter(|| black_box(x).double())
-    });
+    c.bench_function("Fp double", |bench| bench.iter(|| black_box(x).double()));
 
-    c.bench_function("fp mul", |bench| {
-        let x = Fp::random(&mut rng);
-        let y = Fp::random(&mut rng);
-        bench.iter(|| black_box(x) * black_box(y))
-    });
+    c.bench_function("Fp mul", |bench| bench.iter(|| black_box(x) * black_box(y)));
 
-    c.bench_function("fp square", |bench| {
-        let x = Fp::random(&mut rng);
-        bench.iter(|| black_box(x).square())
-    });
+    c.bench_function("Fp square", |bench| bench.iter(|| black_box(x).square()));
 
-    c.bench_function("fp square_from_mul", |bench| {
-        let x = Fp::random(&mut rng);
+    c.bench_function("Fp square_from_mul", |bench| {
         bench.iter(|| black_box(x) * black_box(x))
     });
 
-    c.bench_function("fp sqrt", |bench| {
-        let x = Fp::random(&mut rng).square();
-        bench.iter(|| Fp::sqrt(black_box(&x)))
+    c.bench_function("Fp sqrt", |bench| {
+        bench.iter(|| Fp::sqrt(black_box(&x_squared)))
     });
 
-    c.bench_function("fp exp", |bench| {
-        let x = Fp::random(&mut rng);
-        let y = Fp::random(&mut rng).output_internal();
-        bench.iter(|| Fp::exp(black_box(x), black_box(y)))
+    c.bench_function("Fp exp", |bench| {
+        bench.iter(|| Fp::exp(black_box(x), black_box(pow)))
     });
 
-    c.bench_function("fp invert", |bench| {
-        let x = Fp::random(&mut rng);
+    c.bench_function("Fp invert", |bench| {
         bench.iter(|| Fp::invert(black_box(&x)))
+    });
+
+    c.bench_function("Fp encoding", |bench| {
+        bench.iter(|| Fp::to_bytes(black_box(&x)))
+    });
+
+    c.bench_function("Fp decoding", |bench| {
+        bench.iter(|| Fp::from_bytes(black_box(&x_bytes)))
     });
 }
 
