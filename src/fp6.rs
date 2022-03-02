@@ -626,249 +626,21 @@ impl Fp6 {
     /// Computes the multiplicative inverse of this field
     /// element, returning None in the case that this element
     /// is zero.
-    // TODO: Could be factored here and there to save some multiplications.
     #[inline]
     pub fn invert(&self) -> CtOption<Self> {
         // Adapted from "A Fast Algorithm for Computing Multiplicative
         // Inverses in GF(2m) Using Normal Bases" from Itoh and Tsujii.
 
-        let a2 = self.c0.square();
-        let a3 = self.c0 * a2;
-        let b2 = self.c1.square();
-        let b3 = self.c1 * b2;
-        let c2 = self.c2.square();
-        let c3 = self.c2 * c2;
-        let d2 = self.c3.square();
-        let d3 = self.c3 * d2;
-        let e2 = self.c4.square();
-        let e3 = self.c4 * e2;
-        let f2 = self.c5.square();
-        let f3 = self.c5 * f2;
+        let t0 = self.frobenius();
+        let t1 = self.frobenius_triple();
+        let t2 = (&t0).mul(&t1);
+        let t3 = t2.frobenius();
+        let t4 = t2.frobenius_double();
+        let t5 = (&t4).mul(&t3);
+        let t5 = (&t5).mul(&t0);
+        let inv = (&t5).mul(self).c0;
 
-        let ab = self.c0 * self.c1;
-        let ac = self.c0 * self.c2;
-        let ad = self.c0 * self.c3;
-        let ae = self.c0 * self.c4;
-        let af = self.c0 * self.c5;
-        let bc = self.c1 * self.c2;
-        let bd = self.c1 * self.c3;
-        let be = self.c1 * self.c4;
-        let bf = self.c1 * self.c5;
-        let cd = self.c2 * self.c3;
-        let ce = self.c2 * self.c4;
-        let cf = self.c2 * self.c5;
-        let de = self.c3 * self.c4;
-        let df = self.c3 * self.c5;
-        let ef = self.c4 * self.c5;
-
-        let ab2 = self.c0 * b2;
-        let ac2 = self.c0 * c2;
-        let ad2 = self.c0 * d2;
-        let ae2 = self.c0 * e2;
-        let af2 = self.c0 * f2;
-        let a2b = a2 * self.c1;
-        let a2d = a2 * self.c3;
-        let a2f = a2 * self.c5;
-
-        let bc2 = self.c1 * c2;
-        let bd2 = self.c1 * d2;
-        let be2 = self.c1 * e2;
-        let bf2 = self.c1 * f2;
-        let b2c = b2 * self.c2;
-        let b2d = b2 * self.c3;
-        let b2e = b2 * self.c4;
-        let b2f = b2 * self.c5;
-
-        let cd2 = self.c2 * d2;
-        let ce2 = self.c2 * e2;
-        let cf2 = self.c2 * f2;
-        let c2d = c2 * self.c3;
-        let c2e = c2 * self.c4;
-        let c2f = c2 * self.c5;
-
-        let de2 = self.c3 * e2;
-        let df2 = self.c3 * f2;
-        let d2e = d2 * self.c4;
-        let d2f = d2 * self.c5;
-
-        let ef2 = self.c4 * f2;
-        let e2f = e2 * self.c5;
-
-        let abc = ab * self.c2;
-        let abd = ab * self.c3;
-        let abe = ab * self.c4;
-        let abf = ab * self.c5;
-        let acd = ac * self.c3;
-        let acf = ac * self.c5;
-        let ade = ad * self.c4;
-        let adf = ad * self.c5;
-        let aef = ae * self.c5;
-
-        const TEN: u32 = 10;
-        const ALPHA: u32 = crate::fp::GENERATOR.0 as u32;
-        const ALPHA_2: u32 = ALPHA << 1;
-        const ALPHA_3: u32 = ALPHA_2 + ALPHA;
-        const ALPHA_6: u32 = ALPHA_3 << 1;
-        const ALPHA_SQUARED: u32 = ALPHA * ALPHA;
-        const ALPHA_SQUARED_2: u32 = ALPHA_SQUARED << 1;
-        const ALPHA_CUBE: u32 = ALPHA_SQUARED * ALPHA;
-
-        let t5 = (a2
-            * (Fp(5534023220824375296) * (bc2 + b2d)
-                + Fp(1844674406941458430) * (de2 - bf2)
-                + Fp(14757395255531667457) * self.c0 * (cd + be)
-                + Fp(1844674406941458432) * a2f)
-            + b2 * ((Fp(6456360424295104512) * d3
-                + Fp(922337203470729215) * (self.c4 * (cd + af).double() + c2f)
-                + Fp(8301034831236562942) * f3)
-                .double()
-                + self.c1
-                    * (Fp(11068046441648750593) * ac - Fp(7378697627765833727) * e2
-                        + Fp(3689348813882916867) * df)
-                + Fp(1844674406941458432) * b3)
-            - c2 * (Fp(1844674406941458430) * bd2
-                + Fp(5534023220824375311) * e2f
-                + Fp(7378697627765833727) * self.c2 * (be + af)
-                + Fp(5534023220824375297) * c2d)
-            + d2 * (-Fp(3689348813882916860) * abe - Fp(5534023220824375311) * bf2
-                + self.c3 * (Fp(7378697627765833727) * ac - Fp(1844674406941458437) * e2)
-                + Fp(1844674406941458437) * d2f)
-            + e2 * (Fp(5534023220824375262) * f3
-                + Fp(1844674406941458437) * (self.c4 * (cd + af).double() - be2))
-            + f2 * (-Fp(7378697627765833699) * bc * self.c4
-                - Fp(3689348813882916874) * acf
-                - Fp(5534023220824375262) * df2))
-            .mul_by_u32(TEN);
-
-        let t4 = a2
-            * (((ce2 - cd * self.c5.double()).mul_by_u32(ALPHA) - b2c).triple()
-                + self.c0 * (c2 + bd.double() + f2.mul_by_u32(ALPHA) - ae))
-            + b2 * (((cd2 + c2e + ef2.mul_by_u32(ALPHA)).triple() - self.c1 * (de + cf).double())
-                .mul_by_u32(ALPHA)
-                + ab2)
-            + c2 * (((ad2 + abf.double()).triple()
-                + (e3 + de * self.c5.double().triple()).mul_by_u32(ALPHA)
-                - self.c2 * ((bd + ae).double().double() + f2.mul_by_u32(ALPHA_2))
-                + c3)
-                .mul_by_u32(ALPHA))
-            + d2 * (((d2e + (af2 - ce2).triple()).mul_by_u32(ALPHA)
-                - self.c3 * (ab + cf.mul_by_u32(ALPHA)).double())
-            .mul_by_u32(ALPHA))
-            + e2 * ((self.c4 * (bd.double() + f2.mul_by_u32(ALPHA))
-                - ae2
-                - bc * self.c5.double().triple())
-            .mul_by_u32(ALPHA_SQUARED))
-            + f2 * (((cf2 - de * self.c5.double()).mul_by_u32(ALPHA) - abf.double())
-                .mul_by_u32(ALPHA_SQUARED));
-
-        let t3 = (a2
-            * ((Fp(922337203470729215) * (b3 + be2 + c2f)
-                + b3
-                + Fp(5534023220824375297) * d3
-                + Fp(8301034831236562942) * f3)
-                .double()
-                + self.c0 * (Fp(14757395255531667457) * bc - Fp(7378697627765833727) * ef)
-                + Fp(1844674406941458432) * a2d)
-            + b2 * (-Fp(1844674406941458430) * c2d + -Fp(3689348813882916860) * ade
-                - Fp(5534023220824375311) * df2
-                + self.c1 * (-Fp(5534023220824375297) * d2 + Fp(7378697627765833727) * ce)
-                + Fp(5534023220824375297) * b2f)
-            + c2 * (-Fp(5534023220824375311) * (de2 + d2f)
-                + self.c2
-                    * (Fp(5534023220824375297) * ad + Fp(1844674406941458437) * ef).double()
-                - Fp(5534023220824375297) * bc2)
-            + d2 * (Fp(3689348813882916860) * abc - Fp(5534023220824375311) * be2
-                + Fp(7378697627765833699) * aef
-                + Fp(5534023220824375262) * f3
-                + Fp(1844674406941458437) * (self.c3 * (ce + bf).double().double() - d3))
-            + e2 * (Fp(3689348813882916874) * self.c4 * (bc + ad) + Fp(5534023220824375262) * e2f)
-            + f2 * (-Fp(7378697627765833699) * acd - Fp(16602069662473125786) * de2
-                + Fp(11068046441648750524) * ce * self.c5
-                - Fp(5534023220824375262) * bf2))
-            .mul_by_u32(TEN);
-
-        let t2 = a2
-            * ((c2e - bd * self.c4.double() - ef2.mul_by_u32(ALPHA)).mul_by_u32(ALPHA_3)
-                + self.c0 * (b2 + (e2 + df.double()).mul_by_u32(ALPHA) - ac))
-            + b2 * ((c3 + b2e + (ad2 + cf2.mul_by_u32(ALPHA)).triple()
-                - (e3.mul_by_u32(ALPHA) + self.c1 * (cd + af)).double())
-            .mul_by_u32(ALPHA))
-            - c2 * ((d2e.mul_by_u32(ALPHA_3) + be * self.c5.mul_by_u32(ALPHA_6)
-                - self.c2 * (e2 + df.double()).mul_by_u32(ALPHA)
-                + ac2)
-                .mul_by_u32(ALPHA))
-            + d2 * ((cd2 + (ae2 + ef2.mul_by_u32(ALPHA)).triple()).mul_by_u32(ALPHA_SQUARED)
-                - self.c3 * (be + af).mul_by_u32(ALPHA_SQUARED_2))
-            + e2 * (((bc * self.c3.double() + abf.double() + cf2.mul_by_u32(ALPHA)).triple()
-                - self.c4 * (ac + df.mul_by_u32(ALPHA)).double().double()
-                + e3.mul_by_u32(ALPHA))
-            .mul_by_u32(ALPHA_SQUARED))
-            + f2 * ((af2 - self.c5 * (cd + be).double()).mul_by_u32(ALPHA_CUBE));
-
-        let t1 = (a2
-            * (Fp(1844674406941458430) * c2d
-                - Fp(1844674406941458430) * b2f
-                - Fp(5534023220824375311) * (e2f + df2)
-                - Fp(7378697627765833727) * self.c0 * (de + cf)
-                + Fp(1844674406941458432) * a2b)
-            + b2 * ((Fp(6456360424295104505) * d2f + Fp(5534023220824375311) * ce * self.c5)
-                .double()
-                + self.c1
-                    * (-Fp(5534023220824375297) * c2 + Fp(7378697627765833727) * ae
-                        - Fp(1844674406941458437) * f2)
-                + Fp(5534023220824375297) * b2d)
-            + c2 * (-Fp(1844674406941458437) * d3 - Fp(5534023220824375311) * be2
-                + Fp(7378697627765833797) * f3
-                + self.c2
-                    * (Fp(5534023220824375297) * ab + Fp(1844674406941458437) * de).double()
-                - Fp(1844674406941458437) * c2f)
-            + d2 * (-Fp(7378697627765833699) * acf - Fp(16602069662473125786) * e2f
-                + self.c3 * (-Fp(3689348813882916874) * ae + Fp(5534023220824375262) * f2)
-                + Fp(1844674406941458437) * bd2)
-            + e2 * (Fp(16602069662473125786) * bf2
-                + self.c4 * (Fp(3689348813882916874) * ab + Fp(7378697627765833797) * cf)
-                + Fp(5534023220824375262) * de2)
-            + f2 * (Fp(7378697627765833699) * abc
-                - Fp(3689348813882917070) * cd * self.c4
-                - Fp(3689348813882916727) * self.c5 * (bd + ae)
-                + Fp(1844674406941458192) * f3))
-            .mul_by_u32(TEN);
-
-        let t0 = a2
-            * ((c3
-                + e3.mul_by_u32(ALPHA)
-                + (b2e + bc * self.c3.double() + (cf2 + de * self.c5.double()).mul_by_u32(ALPHA))
-                    .triple())
-            .mul_by_u32(ALPHA)
-                - self.c0 * (d2 + (ce + bf).double()).mul_by_u32(ALPHA_2)
-                + a3)
-            + b2 * ((b2c - ac2.triple() + (d2e + af2).mul_by_u32(ALPHA_3)
-                - self.c1 * (ad + ef.mul_by_u32(ALPHA)).double())
-            .mul_by_u32(ALPHA))
-            + c2 * ((self.c2 * (d2 + bf.double()) - c2e - (adf.double() - ae2).triple())
-                .mul_by_u32(ALPHA_SQUARED))
-            + d2 * ((ad2 + (e3 + cf2.triple()).mul_by_u32(ALPHA)
-                - self.c3 * (bc + ef.mul_by_u32(ALPHA)).double())
-            .mul_by_u32(ALPHA_SQUARED))
-            + e2 * (((be * self.c5.double() - ce2 - af2.triple()).mul_by_u32(ALPHA)
-                - abd.double().triple())
-            .mul_by_u32(ALPHA_SQUARED))
-            + f2 * ((ef2.mul_by_u32(ALPHA) - self.c5 * (bc + ad).double()).mul_by_u32(ALPHA_CUBE));
-        let inv = self.c0 * t0
-            + (self.c1 * t5 + self.c2 * t4 + self.c3 * t3 + self.c4 * t2 + self.c5 * t1)
-                .mul_by_u32(ALPHA);
-
-        inv.invert().map(|t| {
-            Self {
-                c0: t0,
-                c1: t1,
-                c2: t2,
-                c3: t3,
-                c4: t4,
-                c5: t5,
-            }
-            .mul_by_fp(&t)
-        })
+        inv.invert().map(|t| t5.mul_by_fp(&t))
     }
 
     /// Exponentiates `self` by `power`, where `power` is a
@@ -900,6 +672,45 @@ impl Fp6 {
             }
         }
         res
+    }
+
+    /// Computes the Frobenius endomorphism
+    #[inline]
+    pub const fn frobenius(&self) -> Self {
+        Self {
+            c0: self.c0,
+            c1: (&Fp(18446744065119617026)).mul(&self.c1),
+            c2: (&Fp(18446744065119617025)).mul(&self.c2),
+            c3: (&Fp(18446744069414584320)).mul(&self.c3),
+            c4: (&Fp(4294967295)).mul(&self.c4),
+            c5: (&Fp(4294967296)).mul(&self.c5),
+        }
+    }
+
+    /// Computes the Frobenius endomorphism twice
+    #[inline]
+    pub const fn frobenius_double(&self) -> Self {
+        Self {
+            c0: self.c0,
+            c1: (&Fp(18446744065119617025)).mul(&self.c1),
+            c2: (&Fp(4294967295)).mul(&self.c2),
+            c3: self.c3,
+            c4: (&Fp(18446744065119617025)).mul(&self.c4),
+            c5: (&Fp(4294967295)).mul(&self.c5),
+        }
+    }
+
+    /// Computes the Frobenius endomorphism thrice
+    #[inline]
+    pub const fn frobenius_triple(&self) -> Self {
+        Self {
+            c0: self.c0,
+            c1: (&self.c1).neg(),
+            c2: self.c2,
+            c3: (&self.c3).neg(),
+            c4: self.c4,
+            c5: (&self.c5).neg(),
+        }
     }
 
     /// Outputs the internal representation as 6 64-bit limbs after canonical reduction
@@ -1553,6 +1364,19 @@ mod test {
             r1 = Fp6::random(&mut rng);
             r2 = r1;
             r3 = r1;
+        }
+    }
+
+    #[test]
+    fn test_frobenius() {
+        let mut rng = OsRng;
+
+        for _ in 0..100 {
+            let a = Fp6::random(&mut rng);
+
+            assert_eq!(a.frobenius(), a.exp(&[0xffffffff00000001, 0, 0, 0, 0, 0]));
+            assert_eq!(a.frobenius_double(), a.frobenius().frobenius());
+            assert_eq!(a.frobenius_triple(), a.frobenius_double().frobenius());
         }
     }
 
