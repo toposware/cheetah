@@ -1,6 +1,7 @@
 # Cheetah 🐆
 
-This crates provide an implementation of the Cheetah curve over the field extension $\mathbb{F}_{p^6}$, with p = 2<sup>64</sup> - 2<sup>32</sup> + 1.
+This crates provide an implementation of the Cheetah curve over a sextic extension of the prime field `Fp`,
+with p = 2<sup>64</sup> - 2<sup>32</sup> + 1.
 
 * This implementation does not require the Rust standard library
 * Arithmetic operations are all constant time unless "_vartime" is explicited mentioned
@@ -13,15 +14,19 @@ This crates provide an implementation of the Cheetah curve over the field extens
 
 ## Description
 
-Cheetah is a STARK-friendly elliptic curve defined over a sextic extension of $\mathbb{F}_p$, p = 2<sup>64</sup> - 2<sup>32</sup> + 1 defined by
+Cheetah is a STARK-friendly elliptic curve defined over a sextic extension of `Fp`, p = 2<sup>64</sup> - 2<sup>32</sup> + 1 defined by
 `E: y^2 = x^3 + x + B` with 
 `B = u + 395`
 where
-- `u^6 - 7 = 0` is the polynomial defining $\mathbb{F}_{p^6} / \mathbb{F}_p$
+- `u^6 - 7 = 0` is the polynomial defining `Fp6 / Fp`
 
-Cheetah defines a subgroup G of prime order `q = 0x7af2599b3b3f22d0563fbf0f990a37b5327aa72330157722d443623eaed4accf` of 255-bits.
+Cheetah defines a subgroup G of prime order 
+<p align="center">
+q = 55610362957290864006699123731285679659474893560816383126640993521607086746831
+</p>
+of 255-bits.
 
-The extension $\mathbb{F}_{p^6}$ has been specifically constructed with a sparse polynomial of the form `X^6 - A`, where `A` is a small quadratic and cubic non-residue. The current implementation may however not be fully optimal with respect to the number of multiplications in the base field.
+The extension `Fp6` has been specifically constructed with a sparse polynomial of the form `X^6 - A`, where `A` is a small quadratic and cubic non-residue. The current implementation may however not be fully optimal with respect to the number of multiplications in the base field.
 
 The Cheetah curve has been generated with the Sagemath utility script `sextic_search.sage` available [here](https://github.com/Toposware/cheetah_evidence).
 
