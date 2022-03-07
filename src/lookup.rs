@@ -16,30 +16,10 @@ use core::ops::Mul;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
 use zeroize::Zeroize;
 
-/// A lookup table for storing the precomputed values `[p, 2p, 3p, ..., Np]`
-/// in affine coordinates.
+/// A lookup table for storing the precomputed values
+/// `[P, 2P, 3P, ..., NP]` in affine coordinates.
 #[derive(Clone, Copy, Debug)]
 pub struct LookupTable<const N: usize>(pub(crate) [AffinePoint; N]);
-
-impl<const N: usize> Default for LookupTable<N> {
-    fn default() -> Self {
-        Self([AffinePoint::default(); N])
-    }
-}
-
-impl<const N: usize> From<ProjectivePoint> for LookupTable<N> {
-    fn from(p: ProjectivePoint) -> Self {
-        let mut points = [p; N];
-        for i in 1..N {
-            points[i] = p + points[i - 1];
-        }
-
-        let mut points_affine = [AffinePoint::identity(); N];
-        ProjectivePoint::batch_normalize(&points, &mut points_affine);
-
-        Self(points_affine)
-    }
-}
 
 impl<const N: usize> From<&ProjectivePoint> for LookupTable<N> {
     fn from(p: &ProjectivePoint) -> Self {
@@ -55,15 +35,21 @@ impl<const N: usize> From<&ProjectivePoint> for LookupTable<N> {
     }
 }
 
+impl<const N: usize> From<ProjectivePoint> for LookupTable<N> {
+    fn from(p: ProjectivePoint) -> Self {
+        Self::from(&p)
+    }
+}
+
 impl<const N: usize> From<AffinePoint> for LookupTable<N> {
     fn from(p: AffinePoint) -> Self {
-        Self::from(ProjectivePoint::from(&p))
+        Self::from(&ProjectivePoint::from(&p))
     }
 }
 
 impl<const N: usize> From<&AffinePoint> for LookupTable<N> {
     fn from(p: &AffinePoint) -> Self {
-        Self::from(ProjectivePoint::from(p))
+        Self::from(&ProjectivePoint::from(p))
     }
 }
 
@@ -131,7 +117,7 @@ impl<const N: usize> LookupTable<N> {
     }
 }
 
-/// A list of `LookupTable` of multiples of a point `p` to perform
+/// A list of `LookupTable` of multiples of a point `P` to perform
 /// efficient scalar multiplication with the Pippenger's algorith,
 /// https://cr.yp.to/papers/pippenger.pdfm.
 ///
@@ -143,11 +129,11 @@ pub struct BasePointTable(pub [LookupTable<8>; 32]);
 impl BasePointTable {
     /// Returns a precomputed table of multiples of a given point.
     pub fn create(basepoint: &ProjectivePoint) -> Self {
-        let mut table = BasePointTable([LookupTable::default(); 32]);
+        let mut table = BasePointTable([LookupTable::from(basepoint); 32]);
         let mut point = *basepoint;
-        for i in 0..32 {
-            table.0[i] = LookupTable::from(&point);
+        for i in 1..32 {
             point = point.double_multi(8);
+            table.0[i] = LookupTable::from(&point);
         }
 
         table
