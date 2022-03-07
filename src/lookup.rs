@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! This module implements lookup tables for points in Projective coordinates.
+//! This module implements lookup tables for points in Affine coordinates.
 //!
 //! Adapted from https://github.com/RustCrypto/elliptic-curves
 
@@ -17,13 +17,13 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
 use zeroize::Zeroize;
 
 /// A lookup table for storing the precomputed values `[p, 2p, 3p, ..., Np]`
-/// in projective coordinates.
+/// in affine coordinates.
 #[derive(Clone, Copy, Debug)]
-pub struct LookupTable<const N: usize>(pub(crate) [ProjectivePoint; N]);
+pub struct LookupTable<const N: usize>(pub(crate) [AffinePoint; N]);
 
 impl<const N: usize> Default for LookupTable<N> {
     fn default() -> Self {
-        Self([ProjectivePoint::default(); N])
+        Self([AffinePoint::default(); N])
     }
 }
 
@@ -34,7 +34,10 @@ impl<const N: usize> From<ProjectivePoint> for LookupTable<N> {
             points[i] = p + points[i - 1];
         }
 
-        Self(points)
+        let mut points_affine = [AffinePoint::identity(); N];
+        ProjectivePoint::batch_normalize(&points, &mut points_affine);
+
+        Self(points_affine)
     }
 }
 
@@ -45,29 +48,22 @@ impl<const N: usize> From<&ProjectivePoint> for LookupTable<N> {
             points[i] = p + points[i - 1];
         }
 
-        Self(points)
+        let mut points_affine = [AffinePoint::identity(); N];
+        ProjectivePoint::batch_normalize(&points, &mut points_affine);
+
+        Self(points_affine)
     }
 }
 
 impl<const N: usize> From<AffinePoint> for LookupTable<N> {
     fn from(p: AffinePoint) -> Self {
-        let mut points = [ProjectivePoint::from(&p); N];
-        for i in 1..N {
-            points[i] = p + points[i - 1];
-        }
-
-        Self(points)
+        Self::from(ProjectivePoint::from(&p))
     }
 }
 
 impl<const N: usize> From<&AffinePoint> for LookupTable<N> {
     fn from(p: &AffinePoint) -> Self {
-        let mut points = [ProjectivePoint::from(p); N];
-        for i in 1..N {
-            points[i] = p + points[i - 1];
-        }
-
-        Self(points)
+        Self::from(ProjectivePoint::from(p))
     }
 }
 
@@ -83,7 +79,7 @@ impl<const N: usize> LookupTable<N> {
     /// Given an `i8` x value, returns x.P.
     // To do so, we first compute |x|.P, and then conditionally
     // negate the result based on the sign of x.
-    pub(crate) fn get_point(&self, x: i8) -> ProjectivePoint {
+    pub(crate) fn get_point(&self, x: i8) -> AffinePoint {
         debug_assert!(x >= -(N as i8));
         debug_assert!(x <= N as i8);
 
@@ -92,7 +88,7 @@ impl<const N: usize> LookupTable<N> {
         let xabs = (x + xmask) ^ xmask;
 
         // Get an array element in constant time
-        let mut t = ProjectivePoint::identity();
+        let mut t = AffinePoint::identity();
         for j in 1..N + 1 {
             let c = (xabs as u8).ct_eq(&(j as u8));
             t.conditional_assign(&self.0[j - 1], c);
@@ -109,7 +105,7 @@ impl<const N: usize> LookupTable<N> {
     /// Given an `i8` x value, returns x.P.
     // To do so, we first compute |x|.P, and then conditionally
     // negate the result based on the sign of x.
-    pub(crate) fn get_point_vartime(&self, x: i8) -> ProjectivePoint {
+    pub(crate) fn get_point_vartime(&self, x: i8) -> AffinePoint {
         debug_assert!(x >= -(N as i8));
         debug_assert!(x <= N as i8);
 
@@ -118,7 +114,7 @@ impl<const N: usize> LookupTable<N> {
         let xabs = (x + xmask) ^ xmask;
 
         // Get an array element
-        let mut t = ProjectivePoint::identity();
+        let mut t = AffinePoint::identity();
         for j in 1..N + 1 {
             if xabs as usize == j {
                 t = self.0[j - 1];
@@ -158,16 +154,16 @@ impl BasePointTable {
     }
 
     /// Get the basepoint of this table.
-    pub fn get_basepoint(&self) -> ProjectivePoint {
+    pub fn get_basepoint(&self) -> AffinePoint {
         self.0[0].get_point(1)
     }
 
     /// Get the basepoint of this table.
-    pub fn get_basepoint_vartime(&self) -> ProjectivePoint {
+    pub fn get_basepoint_vartime(&self) -> AffinePoint {
         self.0[0].get_point_vartime(1)
     }
 
-    /// Performs a projective scalar multiplication from `by`
+    /// Performs a mixed scalar multiplication from `by`
     /// given as byte representation of a `Scalar` element, by
     /// using internally the Pippenger's algorithm.
     #[inline]
@@ -190,7 +186,7 @@ impl BasePointTable {
         acc
     }
 
-    /// Performs a projective scalar multiplication from `by`
+    /// Performs a mixed scalar multiplication from `by`
     /// given as byte representation of a `Scalar` element, by
     /// using internally the Pippenger's algorithm.
     ///
@@ -226,11 +222,4 @@ impl<'a, 'b> Mul<&'b Scalar> for &'a BasePointTable {
     }
 }
 
-impl<'a> Mul<Scalar> for &'a BasePointTable {
-    type Output = ProjectivePoint;
-
-    #[inline]
-    fn mul(self, scalar: Scalar) -> ProjectivePoint {
-        self.multiply(&scalar.to_bytes())
-    }
-}
+impl_binops_multiplicative_mixed!(BasePointTable, Scalar, ProjectivePoint);

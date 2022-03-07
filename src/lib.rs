@@ -28,6 +28,9 @@
 #[macro_use]
 extern crate std;
 
+#[macro_use]
+extern crate lazy_static;
+
 // Re-export group (which re-exports ff)
 pub use group;
 
