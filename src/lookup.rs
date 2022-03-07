@@ -126,6 +126,30 @@ impl<const N: usize> LookupTable<N> {
 #[derive(Clone, Debug)]
 pub struct BasePointTable(pub [LookupTable<8>; 32]);
 
+impl From<AffinePoint> for BasePointTable {
+    fn from(p: AffinePoint) -> Self {
+        Self::create(&ProjectivePoint::from(&p))
+    }
+}
+
+impl From<&AffinePoint> for BasePointTable {
+    fn from(p: &AffinePoint) -> Self {
+        Self::create(&ProjectivePoint::from(p))
+    }
+}
+
+impl From<ProjectivePoint> for BasePointTable {
+    fn from(p: ProjectivePoint) -> Self {
+        Self::create(&p)
+    }
+}
+
+impl From<&ProjectivePoint> for BasePointTable {
+    fn from(p: &ProjectivePoint) -> Self {
+        Self::create(p)
+    }
+}
+
 impl BasePointTable {
     /// Returns a precomputed table of multiples of a given point.
     pub fn create(basepoint: &ProjectivePoint) -> Self {
