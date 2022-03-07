@@ -9,8 +9,12 @@
 //! This module implements arithmetic over the extension field Fp6,
 //! defined with irreducible polynomial u^6 - 7.
 
-use core::fmt::{self, Formatter};
-use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use core::{
+    borrow::Borrow,
+    fmt::{self, Formatter},
+    iter::Sum,
+    ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
+};
 
 use group::ff::Field;
 use rand_core::RngCore;
@@ -207,6 +211,18 @@ impl<'a, 'b> Add<&'b Fp6> for &'a Fp6 {
     #[inline]
     fn add(self, rhs: &'b Fp6) -> Fp6 {
         self.add(rhs)
+    }
+}
+
+impl<T> Sum<T> for Fp6
+where
+    T: Borrow<Fp6>,
+{
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = T>,
+    {
+        iter.fold(Self::zero(), |acc, item| acc + item.borrow())
     }
 }
 

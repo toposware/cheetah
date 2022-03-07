@@ -11,8 +11,10 @@
 //! q = 0x7af2599b3b3f22d0563fbf0f990a37b5327aa72330157722d443623eaed4accf.
 
 use core::{
+    borrow::Borrow,
     convert::{TryFrom, TryInto},
     fmt::{self, Debug, Display, Formatter},
+    iter::Sum,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
@@ -497,7 +499,7 @@ impl Scalar {
     }
 
     /// Converts a `Scalar` element given as byte representation into a radix-16
-    /// representation, where each resulting coefficient is in [-8;8).
+    /// representation, where each resulting coefficient is in [-8; 8).
     ///
     /// The resulting decomposition `[a_0, ..., a_63]` is such that
     /// `sum(a_j * 2^(j * 4)) == a`.
@@ -740,6 +742,18 @@ impl<'a, 'b> Add<&'b Scalar> for &'a Scalar {
     #[inline]
     fn add(self, rhs: &'b Scalar) -> Scalar {
         self.add(rhs)
+    }
+}
+
+impl<T> Sum<T> for Scalar
+where
+    T: Borrow<Scalar>,
+{
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = T>,
+    {
+        iter.fold(Self::zero(), |acc, item| acc + item.borrow())
     }
 }
 
