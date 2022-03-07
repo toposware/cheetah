@@ -1343,6 +1343,29 @@ mod tests {
     // ================================================================================================
 
     #[test]
+    fn test_to_radix16() {
+        let mut rng = OsRng;
+
+        for _ in 0..100 {
+            let a = Scalar::random(&mut rng);
+            let digits = Scalar::bytes_to_radix_16(&a.to_bytes());
+
+            let radix = Scalar::from(16u64);
+            let mut term = Scalar::one();
+            let mut a_bis = Scalar::zero();
+            for &digit in digits.iter() {
+                if digit < 0 {
+                    a_bis += -Scalar::from((-(digit as i64)) as u64) * term;
+                } else {
+                    a_bis += Scalar::from(digit as u64) * term;
+                };
+                term *= radix;
+            }
+
+            assert_eq!(a_bis, a);
+        }
+    }
+    #[test]
     fn test_to_bytes() {
         assert_eq!(
             Scalar::zero().to_bytes(),
