@@ -6,14 +6,20 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::{BasePointTable, ProjectivePoint, Scalar};
+use crate::{BasePointTable, NafLookupTable, ProjectivePoint, Scalar};
 use core::ops::Mul;
 
 lazy_static! {
-    /// A hardcoded `BasePointTable` for the generator of the
-    /// Cheetah curve, to allow for efficient scalar multiplication.
+    /// A hardcoded `BasePointTable` for the generator of the Cheetah
+    /// curve, to allow for efficient single scalar multiplication.
     pub static ref BASEPOINT_TABLE: BasePointTable =
         BasePointTable::create(&ProjectivePoint::generator());
+
+    /// A hardcoded `NafLookupTable` for odd multiples of the generator
+    /// of the Cheetah curve, to allow for efficient double scalar
+    /// multiplications.
+    pub static ref ODD_MULTIPLES_BASEPOINT: NafLookupTable::<64> =
+        NafLookupTable::<64>::from(&ProjectivePoint::generator());
 }
 
 impl<'a, 'b> Mul<&'b Scalar> for &'a BASEPOINT_TABLE {

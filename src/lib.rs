@@ -39,6 +39,7 @@ mod utils;
 
 mod constants;
 mod lookup;
+mod naf_lookup;
 
 mod curve;
 mod fp;
@@ -52,5 +53,6 @@ pub use fp6::Fp6;
 
 pub use constants::BASEPOINT_TABLE;
 pub use lookup::{BasePointTable, LookupTable};
+pub use naf_lookup::NafLookupTable;
 
 pub use curve::{AffinePoint, CompressedPoint, ProjectivePoint, UncompressedPoint, B};
