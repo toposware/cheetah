@@ -1,6 +1,6 @@
 # Cheetah 🐆
 
-This crates provide an implementation of the Cheetah curve over a sextic extension of the prime field `Fp`,
+This crate provides an implementation of the Cheetah curve over a sextic extension of the prime field `Fp`,
 with p = 2<sup>64</sup> - 2<sup>32</sup> + 1.
 
 * This implementation does not require the Rust standard library
