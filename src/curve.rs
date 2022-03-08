@@ -876,20 +876,16 @@ impl ProjectivePoint {
     /// Performs a projective scalar multiplication from `by`
     /// given as byte representation of a `Scalar` element
     pub fn multiply(&self, by: &[u8; 32]) -> ProjectivePoint {
-        let mut acc = ProjectivePoint::identity();
         let table = LookupTable::<16>::from(self);
+        let digits = Scalar::bytes_to_radix_16(by);
 
-        for digit in by
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
-        {
-            acc = acc.double_multi(4);
-            acc = ProjectivePoint::conditional_select(
-                &acc,
-                &(acc + table.get_point(digit as i8)),
-                ((digit != 0) as u8).into(),
-            );
+        let mut acc = ProjectivePoint::from(&table.get_point(digits[63]));
+        for i in (0..63).rev() {
+            acc = acc.double();
+            acc = acc.double();
+            acc = acc.double();
+            acc = acc.double();
+            acc += table.get_point(digits[i]);
         }
 
         acc
@@ -902,18 +898,16 @@ impl ProjectivePoint {
     /// to the scalar.** If the scalar is fixed,
     /// this operation is effectively constant time.
     pub fn multiply_vartime(&self, by: &[u8; 32]) -> ProjectivePoint {
-        let mut acc = ProjectivePoint::identity();
         let table = LookupTable::<16>::from(self);
+        let digits = Scalar::bytes_to_radix_16(by);
 
-        for digit in by
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
-        {
-            acc = acc.double_multi(4);
-            if digit != 0 {
-                acc += table.get_point_vartime(digit as i8);
-            }
+        let mut acc = ProjectivePoint::from(&table.get_point_vartime(digits[63]));
+        for i in (0..63).rev() {
+            acc = acc.double();
+            acc = acc.double();
+            acc = acc.double();
+            acc = acc.double();
+            acc += table.get_point_vartime(digits[i]);
         }
 
         acc
@@ -928,32 +922,20 @@ impl ProjectivePoint {
         by_lhs: &[u8; 32],
         by_rhs: &[u8; 32],
     ) -> ProjectivePoint {
-        let mut acc = ProjectivePoint::identity();
         let table_lhs = LookupTable::<16>::from(self);
         let table_rhs = LookupTable::<16>::from(rhs);
+        let digits_lhs = Scalar::bytes_to_radix_16(by_lhs);
+        let digits_rhs = Scalar::bytes_to_radix_16(by_rhs);
 
-        for (digit_lhs, digit_rhs) in by_lhs
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
-            .zip(
-                by_rhs
-                    .iter()
-                    .rev()
-                    .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8)),
-            )
-        {
-            acc = acc.double_multi(4);
-            acc = ProjectivePoint::conditional_select(
-                &acc,
-                &(acc + table_lhs.get_point(digit_lhs as i8)),
-                ((digit_lhs != 0) as u8).into(),
-            );
-            acc = ProjectivePoint::conditional_select(
-                &acc,
-                &(acc + table_rhs.get_point(digit_rhs as i8)),
-                ((digit_rhs != 0) as u8).into(),
-            );
+        let mut acc = ProjectivePoint::from(&table_lhs.get_point(digits_lhs[63]));
+        acc += table_rhs.get_point(digits_rhs[63]);
+        for i in (0..63).rev() {
+            acc = acc.double();
+            acc = acc.double();
+            acc = acc.double();
+            acc = acc.double();
+            acc += table_lhs.get_point(digits_lhs[i]);
+            acc += table_rhs.get_point(digits_rhs[i]);
         }
 
         acc
@@ -972,28 +954,20 @@ impl ProjectivePoint {
         by_lhs: &[u8; 32],
         by_rhs: &[u8; 32],
     ) -> ProjectivePoint {
-        let mut acc = ProjectivePoint::identity();
         let table_lhs = LookupTable::<16>::from(self);
         let table_rhs = LookupTable::<16>::from(rhs);
+        let digits_lhs = Scalar::bytes_to_radix_16(by_lhs);
+        let digits_rhs = Scalar::bytes_to_radix_16(by_rhs);
 
-        for (digit_lhs, digit_rhs) in by_lhs
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
-            .zip(
-                by_rhs
-                    .iter()
-                    .rev()
-                    .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8)),
-            )
-        {
-            acc = acc.double_multi(4);
-            if digit_lhs != 0 {
-                acc += table_lhs.get_point_vartime(digit_lhs as i8);
-            }
-            if digit_rhs != 0 {
-                acc += table_rhs.get_point_vartime(digit_rhs as i8);
-            }
+        let mut acc = ProjectivePoint::from(&table_lhs.get_point_vartime(digits_lhs[63]));
+        acc += table_rhs.get_point_vartime(digits_rhs[63]);
+        for i in (0..63).rev() {
+            acc = acc.double();
+            acc = acc.double();
+            acc = acc.double();
+            acc = acc.double();
+            acc += table_lhs.get_point_vartime(digits_lhs[i]);
+            acc += table_rhs.get_point_vartime(digits_rhs[i]);
         }
 
         acc
