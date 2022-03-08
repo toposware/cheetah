@@ -88,6 +88,19 @@ fn criterion_benchmark(c: &mut Criterion) {
         },
     );
 
+    c.bench_function(
+        "Projective double scalar multiplication with basepoint - variable time",
+        |bench| {
+            bench.iter(|| {
+                ProjectivePoint::multiply_double_with_basepoint_vartime(
+                    black_box(&p),
+                    black_box(&pow),
+                    black_box(&pow2),
+                )
+            })
+        },
+    );
+
     c.bench_function("Projective scalar multiplication (basepoint)", |bench| {
         bench.iter(|| BasePointTable::multiply(black_box(&BASEPOINT_TABLE), black_box(&pow)))
     });
