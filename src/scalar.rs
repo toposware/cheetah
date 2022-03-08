@@ -522,6 +522,70 @@ impl Scalar {
         result
     }
 
+    /// Converts a `Scalar` element given as byte representation into a w-NAF
+    /// representation, where each resulting coefficient is odd and in (-2^(w-1); 2^(w-1)).
+    /// In addition, the leading coefficient is non-zero, and there cannot be
+    /// more than one non-zero coefficient in any w consecutive set of coefficients.
+    pub(crate) fn bytes_to_naf(bytes: &[u8; 32], w: usize) -> [i8; 256] {
+        // Taken from https://github.com/dalek-cryptography/curve25519-dalek/blob/main/src/scalar.rs
+        // from an adaptation of Algorithm 3.35 in Guide to Elliptic Curve Cryptography by
+        // Hankerson, Menezes and Vanstone.
+
+        debug_assert!(w >= 2);
+        debug_assert!(w <= 8);
+
+        let mut naf = [0i8; 256];
+
+        let mut x_u64 = [0u64; 5];
+
+        x_u64[0] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[0..8]).unwrap());
+        x_u64[1] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[8..16]).unwrap());
+        x_u64[2] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[16..24]).unwrap());
+        x_u64[3] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[24..32]).unwrap());
+
+        let width = 1 << w;
+        let window_mask = width - 1;
+
+        let mut pos = 0;
+        let mut carry = 0;
+        while pos < 256 {
+            // Construct a buffer of bits of the scalar, starting at bit `pos`
+            let u64_idx = pos / 64;
+            let bit_idx = pos % 64;
+            let bit_buf = if bit_idx < 64 - w {
+                // This window's bits are contained in a single u64
+                x_u64[u64_idx] >> bit_idx
+            } else {
+                // Combine the current u64's bits with the bits from the next u64
+                (x_u64[u64_idx] >> bit_idx) | (x_u64[1 + u64_idx] << (64 - bit_idx))
+            };
+
+            // Add the carry into the current window
+            let window = carry + (bit_buf & window_mask);
+
+            if window & 1 == 0 {
+                // If the window value is even, preserve the carry and continue.
+                // Why is the carry preserved?
+                // If carry == 0 and window & 1 == 0, then the next carry should be 0
+                // If carry == 1 and window & 1 == 0, then bit_buf & 1 == 1 so the next carry should be 1
+                pos += 1;
+                continue;
+            }
+
+            if window < width / 2 {
+                carry = 0;
+                naf[pos] = window as i8;
+            } else {
+                carry = 1;
+                naf[pos] = (window as i8).wrapping_sub(width as i8);
+            }
+
+            pos += w;
+        }
+
+        naf
+    }
+
     /// Returns whether or not this element is strictly lexicographically
     /// larger than its negation.
     pub fn lexicographically_largest(&self) -> Choice {
@@ -1365,6 +1429,30 @@ mod tests {
             assert_eq!(a_bis, a);
         }
     }
+
+    #[test]
+    fn test_to_naf() {
+        let mut rng = OsRng;
+        for _ in 0..100 {
+            let a = Scalar::random(&mut rng);
+
+            for w in [2, 3, 4, 5, 6, 7, 8] {
+                let digits = Scalar::bytes_to_naf(&a.to_bytes(), w);
+
+                let mut b = Scalar::zero();
+                for &digit in digits.iter().rev() {
+                    if digit < 0 {
+                        b = b.double() - Scalar::from((-digit as i64) as u64);
+                    } else {
+                        b = b.double() + Scalar::from(digit as u64);
+                    };
+                }
+
+                assert_eq!(a, b);
+            }
+        }
+    }
+
     #[test]
     fn test_to_bytes() {
         assert_eq!(
