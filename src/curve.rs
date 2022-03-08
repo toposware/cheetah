@@ -934,7 +934,6 @@ impl ProjectivePoint {
 
     /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
     /// `by_lhs` and `by_rhs` given as byte representations of `Scalar` elements.
-    #[inline]
     pub fn multiply_double(
         &self,
         rhs: &ProjectivePoint,
@@ -966,7 +965,6 @@ impl ProjectivePoint {
     /// **This operation is variable time with respect
     /// to the scalars.** If the scalars are fixed,
     /// this operation is effectively constant time.
-    #[inline]
     pub fn multiply_double_vartime(
         &self,
         rhs: &ProjectivePoint,
@@ -1005,7 +1003,6 @@ impl ProjectivePoint {
     /// **This operation is variable time with respect
     /// to the scalars.** If the scalars are fixed,
     /// this operation is effectively constant time.
-    #[inline]
     pub fn multiply_double_with_basepoint_vartime(
         &self,
         by_self: &[u8; 32],
