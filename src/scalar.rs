@@ -526,7 +526,10 @@ impl Scalar {
     /// representation, where each resulting coefficient is odd and in (-2^(w-1); 2^(w-1)).
     /// In addition, the leading coefficient is non-zero, and there cannot be
     /// more than one non-zero coefficient in any w consecutive set of coefficients.
-    pub(crate) fn bytes_to_naf(bytes: &[u8; 32], w: usize) -> [i8; 256] {
+    ///
+    /// **This operation is variable time with respect to the scalar.**
+    /// If the scalar is fixed, this operation is effectively constant time.
+    pub(crate) fn bytes_to_wnaf_vartime(bytes: &[u8; 32], w: usize) -> [i8; 256] {
         // Taken from https://github.com/dalek-cryptography/curve25519-dalek/blob/main/src/scalar.rs
         // from an adaptation of Algorithm 3.35 in Guide to Elliptic Curve Cryptography by
         // Hankerson, Menezes and Vanstone.
@@ -1437,7 +1440,7 @@ mod tests {
             let a = Scalar::random(&mut rng);
 
             for w in [2, 3, 4, 5, 6, 7, 8] {
-                let digits = Scalar::bytes_to_naf(&a.to_bytes(), w);
+                let digits = Scalar::bytes_to_wnaf_vartime(&a.to_bytes(), w);
 
                 let mut b = Scalar::zero();
                 for &digit in digits.iter().rev() {

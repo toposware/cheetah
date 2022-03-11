@@ -1008,8 +1008,8 @@ impl ProjectivePoint {
         by_self: &[u8; 32],
         by_basepoint: &[u8; 32],
     ) -> ProjectivePoint {
-        let by_self_digits = Scalar::bytes_to_naf(by_self, 5);
-        let by_basepoint_digits = Scalar::bytes_to_naf(by_basepoint, 8);
+        let by_self_digits = Scalar::bytes_to_wnaf_vartime(by_self, 5);
+        let by_basepoint_digits = Scalar::bytes_to_wnaf_vartime(by_basepoint, 8);
 
         // We skip unset digits
         let mut i: usize = 255;
