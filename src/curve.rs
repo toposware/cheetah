@@ -51,12 +51,6 @@ pub const B: Fp6 = Fp6 {
 
 const B3: Fp6 = (&B).mul(&Fp6::new([3, 0, 0, 0, 0, 0]));
 
-// cofactor = 708537115134665106932687062569690615370
-//          = 0x2150b48e071ef610049bc3f5d54304e4a
-const COFACTOR_BYTES: [u8; 17] = [
-    74, 78, 48, 84, 93, 63, 188, 73, 0, 97, 239, 113, 224, 72, 11, 21, 2,
-];
-
 /// An affine point
 #[derive(Copy, Clone, Debug)]
 pub struct AffinePoint {
@@ -917,16 +911,33 @@ impl ProjectivePoint {
     /// to the scalar.** If the scalar is fixed,
     /// this operation is effectively constant time.
     pub fn multiply_vartime(&self, by: &[u8; 32]) -> ProjectivePoint {
-        let table = LookupTable::<16>::from(self);
-        let digits = Scalar::bytes_to_radix_16(by);
+        let digits = Scalar::bytes_to_wnaf_vartime(by, 5);
 
-        let mut acc = ProjectivePoint::from(&table.get_point_vartime(digits[63]));
-        for i in (0..63).rev() {
+        // We skip unset digits
+        let mut i: usize = 255;
+        for j in (0..256).rev() {
+            i = j;
+            if digits[i] != 0 {
+                break;
+            }
+        }
+        let table = NafLookupTable::<8>::from(self);
+        let mut acc = ProjectivePoint::identity();
+
+        loop {
             acc = acc.double();
-            acc = acc.double();
-            acc = acc.double();
-            acc = acc.double();
-            acc += table.get_point_vartime(digits[i]);
+
+            match digits[i].cmp(&0) {
+                Ordering::Greater => acc += &table.get_point(digits[i] as usize),
+                Ordering::Less => acc -= &table.get_point(-digits[i] as usize),
+                Ordering::Equal => (),
+            };
+
+            if i == 0 {
+                break;
+            }
+
+            i -= 1;
         }
 
         acc
@@ -971,20 +982,41 @@ impl ProjectivePoint {
         by_lhs: &[u8; 32],
         by_rhs: &[u8; 32],
     ) -> ProjectivePoint {
-        let table_lhs = LookupTable::<16>::from(self);
-        let table_rhs = LookupTable::<16>::from(rhs);
-        let digits_lhs = Scalar::bytes_to_radix_16(by_lhs);
-        let digits_rhs = Scalar::bytes_to_radix_16(by_rhs);
+        let by_lhs_digits = Scalar::bytes_to_wnaf_vartime(by_lhs, 5);
+        let by_rhs_digits = Scalar::bytes_to_wnaf_vartime(by_rhs, 5);
 
-        let mut acc = ProjectivePoint::from(&table_lhs.get_point_vartime(digits_lhs[63]));
-        acc += table_rhs.get_point_vartime(digits_rhs[63]);
-        for i in (0..63).rev() {
+        // We skip unset digits
+        let mut i: usize = 255;
+        for j in (0..256).rev() {
+            i = j;
+            if by_lhs_digits[i] != 0 || by_rhs_digits[i] != 0 {
+                break;
+            }
+        }
+        let table_self = NafLookupTable::<8>::from(self);
+        let table_rhs = NafLookupTable::<8>::from(rhs);
+        let mut acc = ProjectivePoint::identity();
+
+        loop {
             acc = acc.double();
-            acc = acc.double();
-            acc = acc.double();
-            acc = acc.double();
-            acc += table_lhs.get_point_vartime(digits_lhs[i]);
-            acc += table_rhs.get_point_vartime(digits_rhs[i]);
+
+            match by_lhs_digits[i].cmp(&0) {
+                Ordering::Greater => acc += &table_self.get_point(by_lhs_digits[i] as usize),
+                Ordering::Less => acc -= &table_self.get_point(-by_lhs_digits[i] as usize),
+                Ordering::Equal => (),
+            };
+
+            match by_rhs_digits[i].cmp(&0) {
+                Ordering::Greater => acc += &table_rhs.get_point(by_rhs_digits[i] as usize),
+                Ordering::Less => acc -= &table_rhs.get_point(-by_rhs_digits[i] as usize),
+                Ordering::Equal => (),
+            };
+
+            if i == 0 {
+                break;
+            }
+
+            i -= 1;
         }
 
         acc
@@ -1054,24 +1086,14 @@ impl ProjectivePoint {
 
     /// Multiplies by the curve cofactor
     pub fn clear_cofactor(&self) -> ProjectivePoint {
-        let mut acc = ProjectivePoint::identity();
+        // cofactor = 708537115134665106932687062569690615370
+        //          = 0x2150b48e071ef610049bc3f5d54304e4a
+        const COFACTOR_BYTES: [u8; 32] = [
+            74, 78, 48, 84, 93, 63, 188, 73, 0, 97, 239, 113, 224, 72, 11, 21, 2, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ];
 
-        // This is a simple double-and-add implementation of point
-        // multiplication, moving from most significant to least
-        // significant bit of the scalar.
-        //
-        // We skip the first six unset bits
-        for bit in COFACTOR_BYTES
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(6)
-        {
-            acc = acc.double();
-            acc = if bit { acc + self } else { acc };
-        }
-
-        acc
+        self.multiply_vartime(&COFACTOR_BYTES)
     }
 
     /// Returns true if this point is free of an $h$-torsion component.
@@ -1083,7 +1105,7 @@ impl ProjectivePoint {
         ];
 
         // Clear the r-torsion from the point and check if it is the identity
-        self.multiply(&FQ_MODULUS_BYTES).is_identity()
+        self.multiply_vartime(&FQ_MODULUS_BYTES).is_identity()
     }
 
     /// Converts a batch of `ProjectivePoint` elements into `AffinePoint` elements. This
