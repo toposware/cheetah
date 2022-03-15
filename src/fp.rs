@@ -10,7 +10,9 @@
 //! field Fp of characteristic p = 2^64 - 2^32 + 1.
 
 use core::{
+    borrow::Borrow,
     fmt::{self, Debug, Display, Formatter},
+    iter::Sum,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
@@ -404,6 +406,18 @@ impl<'a, 'b> Add<&'b Fp> for &'a Fp {
     #[inline]
     fn add(self, rhs: &'b Fp) -> Fp {
         self.add(rhs)
+    }
+}
+
+impl<T> Sum<T> for Fp
+where
+    T: Borrow<Fp>,
+{
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = T>,
+    {
+        iter.fold(Self::zero(), |acc, item| acc + item.borrow())
     }
 }
 

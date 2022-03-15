@@ -12,6 +12,7 @@
 
 use core::{
     borrow::Borrow,
+    cmp::Ordering,
     fmt,
     iter::Sum,
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
@@ -21,7 +22,9 @@ use crate::fp::reduce_u96;
 use crate::fp::GENERATOR;
 use crate::{Fp, Fp6, Scalar};
 
+use crate::constants::ODD_MULTIPLES_BASEPOINT;
 use crate::LookupTable;
+use crate::NafLookupTable;
 
 use group::{Curve, Group};
 use rand_core::RngCore;
@@ -47,12 +50,6 @@ pub const B: Fp6 = Fp6 {
 };
 
 const B3: Fp6 = (&B).mul(&Fp6::new([3, 0, 0, 0, 0, 0]));
-
-// cofactor = 708537115134665106932687062569690615370
-//          = 0x2150b48e071ef610049bc3f5d54304e4a
-const COFACTOR_BYTES: [u8; 17] = [
-    74, 78, 48, 84, 93, 63, 188, 73, 0, 97, 239, 113, 224, 72, 11, 21, 2,
-];
 
 /// An affine point
 #[derive(Copy, Clone, Debug)]
@@ -366,6 +363,22 @@ impl AffinePoint {
         by_rhs: &[u8; 32],
     ) -> AffinePoint {
         ProjectivePoint::multiply_double_vartime(&self.into(), &rhs.into(), by_lhs, by_rhs).into()
+    }
+
+    /// Performs the affine sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with `by_lhs`
+    /// and `by_rhs` given as byte representations of `Scalar` elements.
+    ///
+    /// **This operation is variable time with respect
+    /// to the scalars.** If the scalars are fixed,
+    /// this operation is effectively constant time.
+    #[inline]
+    pub fn multiply_double_with_basepoint_vartime(
+        &self,
+        by_self: &[u8; 32],
+        by_basepoint: &[u8; 32],
+    ) -> AffinePoint {
+        ProjectivePoint::multiply_double_with_basepoint_vartime(&self.into(), by_self, by_basepoint)
+            .into()
     }
 
     /// Multiplies by the curve cofactor
@@ -876,20 +889,16 @@ impl ProjectivePoint {
     /// Performs a projective scalar multiplication from `by`
     /// given as byte representation of a `Scalar` element
     pub fn multiply(&self, by: &[u8; 32]) -> ProjectivePoint {
-        let mut acc = ProjectivePoint::identity();
         let table = LookupTable::<16>::from(self);
+        let digits = Scalar::bytes_to_radix_16(by);
 
-        for digit in by
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
-        {
-            acc = acc.double_multi(4);
-            acc = ProjectivePoint::conditional_select(
-                &acc,
-                &(acc + table.get_point(digit as i8)),
-                ((digit != 0) as u8).into(),
-            );
+        let mut acc = ProjectivePoint::from(&table.get_point(digits[63]));
+        for i in (0..63).rev() {
+            acc = acc.double();
+            acc = acc.double();
+            acc = acc.double();
+            acc = acc.double();
+            acc += table.get_point(digits[i]);
         }
 
         acc
@@ -902,18 +911,27 @@ impl ProjectivePoint {
     /// to the scalar.** If the scalar is fixed,
     /// this operation is effectively constant time.
     pub fn multiply_vartime(&self, by: &[u8; 32]) -> ProjectivePoint {
-        let mut acc = ProjectivePoint::identity();
-        let table = LookupTable::<16>::from(self);
+        let digits = Scalar::bytes_to_wnaf_vartime(by, 5);
 
-        for digit in by
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
-        {
-            acc = acc.double_multi(4);
-            if digit != 0 {
-                acc += table.get_point_vartime(digit as i8);
+        // We skip unset digits
+        let mut i: usize = 255;
+        for j in (0..256).rev() {
+            if digits[i] != 0 {
+                i = j;
+                break;
             }
+        }
+        let table = NafLookupTable::<8>::from(self);
+        let mut acc = ProjectivePoint::identity();
+
+        for j in (0..i + 1).rev() {
+            acc = acc.double();
+
+            match digits[j].cmp(&0) {
+                Ordering::Greater => acc += &table.get_point(digits[j] as usize),
+                Ordering::Less => acc -= &table.get_point(-digits[j] as usize),
+                Ordering::Equal => (),
+            };
         }
 
         acc
@@ -921,39 +939,26 @@ impl ProjectivePoint {
 
     /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
     /// `by_lhs` and `by_rhs` given as byte representations of `Scalar` elements.
-    #[inline]
     pub fn multiply_double(
         &self,
         rhs: &ProjectivePoint,
         by_lhs: &[u8; 32],
         by_rhs: &[u8; 32],
     ) -> ProjectivePoint {
-        let mut acc = ProjectivePoint::identity();
         let table_lhs = LookupTable::<16>::from(self);
         let table_rhs = LookupTable::<16>::from(rhs);
+        let digits_lhs = Scalar::bytes_to_radix_16(by_lhs);
+        let digits_rhs = Scalar::bytes_to_radix_16(by_rhs);
 
-        for (digit_lhs, digit_rhs) in by_lhs
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
-            .zip(
-                by_rhs
-                    .iter()
-                    .rev()
-                    .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8)),
-            )
-        {
-            acc = acc.double_multi(4);
-            acc = ProjectivePoint::conditional_select(
-                &acc,
-                &(acc + table_lhs.get_point(digit_lhs as i8)),
-                ((digit_lhs != 0) as u8).into(),
-            );
-            acc = ProjectivePoint::conditional_select(
-                &acc,
-                &(acc + table_rhs.get_point(digit_rhs as i8)),
-                ((digit_rhs != 0) as u8).into(),
-            );
+        let mut acc = ProjectivePoint::from(&table_lhs.get_point(digits_lhs[63]));
+        acc += table_rhs.get_point(digits_rhs[63]);
+        for i in (0..63).rev() {
+            acc = acc.double();
+            acc = acc.double();
+            acc = acc.double();
+            acc = acc.double();
+            acc += table_lhs.get_point(digits_lhs[i]);
+            acc += table_rhs.get_point(digits_rhs[i]);
         }
 
         acc
@@ -965,35 +970,97 @@ impl ProjectivePoint {
     /// **This operation is variable time with respect
     /// to the scalars.** If the scalars are fixed,
     /// this operation is effectively constant time.
-    #[inline]
     pub fn multiply_double_vartime(
         &self,
         rhs: &ProjectivePoint,
         by_lhs: &[u8; 32],
         by_rhs: &[u8; 32],
     ) -> ProjectivePoint {
-        let mut acc = ProjectivePoint::identity();
-        let table_lhs = LookupTable::<16>::from(self);
-        let table_rhs = LookupTable::<16>::from(rhs);
+        let by_lhs_digits = Scalar::bytes_to_wnaf_vartime(by_lhs, 5);
+        let by_rhs_digits = Scalar::bytes_to_wnaf_vartime(by_rhs, 5);
 
-        for (digit_lhs, digit_rhs) in by_lhs
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8))
-            .zip(
-                by_rhs
-                    .iter()
-                    .rev()
-                    .flat_map(|byte| (0..2).rev().map(move |i| (byte >> (i * 4)) & 15u8)),
-            )
-        {
-            acc = acc.double_multi(4);
-            if digit_lhs != 0 {
-                acc += table_lhs.get_point_vartime(digit_lhs as i8);
+        // We skip unset digits
+        let mut i: usize = 255;
+        for j in (0..256).rev() {
+            if by_lhs_digits[i] != 0 || by_rhs_digits[i] != 0 {
+                i = j;
+                break;
             }
-            if digit_rhs != 0 {
-                acc += table_rhs.get_point_vartime(digit_rhs as i8);
+        }
+        let table_self = NafLookupTable::<8>::from(self);
+        let table_rhs = NafLookupTable::<8>::from(rhs);
+        let mut acc = ProjectivePoint::identity();
+
+        for j in (0..i + 1).rev() {
+            acc = acc.double();
+
+            match by_lhs_digits[j].cmp(&0) {
+                Ordering::Greater => acc += &table_self.get_point(by_lhs_digits[j] as usize),
+                Ordering::Less => acc -= &table_self.get_point(-by_lhs_digits[j] as usize),
+                Ordering::Equal => (),
+            };
+
+            match by_rhs_digits[j].cmp(&0) {
+                Ordering::Greater => acc += &table_rhs.get_point(by_rhs_digits[j] as usize),
+                Ordering::Less => acc -= &table_rhs.get_point(-by_rhs_digits[j] as usize),
+                Ordering::Equal => (),
+            };
+        }
+
+        acc
+    }
+
+    // TODO: It would be nice to have a constant-time variant of the method below,
+    // though this may be tricky for accessing the point in the table.
+
+    /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `g`] with
+    /// `by_lhs` and `by_rhs` given as byte representations of `Scalar` elements
+    /// and `g` being the curve basepoint.
+    ///
+    /// This operation is useful to speed-up verification of signature schemes
+    /// such as ECDSA or Schnorr signatures.
+    ///
+    /// **This operation is variable time with respect
+    /// to the scalars.** If the scalars are fixed,
+    /// this operation is effectively constant time.
+    pub fn multiply_double_with_basepoint_vartime(
+        &self,
+        by_self: &[u8; 32],
+        by_basepoint: &[u8; 32],
+    ) -> ProjectivePoint {
+        let by_self_digits = Scalar::bytes_to_wnaf_vartime(by_self, 5);
+        let by_basepoint_digits = Scalar::bytes_to_wnaf_vartime(by_basepoint, 8);
+
+        // We skip unset digits
+        let mut i: usize = 255;
+        for j in (0..256).rev() {
+            if by_self_digits[i] != 0 || by_basepoint_digits[i] != 0 {
+                i = j;
+                break;
             }
+        }
+        let table_self = NafLookupTable::<8>::from(self);
+        let table_basepoint = &ODD_MULTIPLES_BASEPOINT;
+        let mut acc = ProjectivePoint::identity();
+
+        for j in (0..i + 1).rev() {
+            acc = acc.double();
+
+            match by_self_digits[j].cmp(&0) {
+                Ordering::Greater => acc += &table_self.get_point(by_self_digits[j] as usize),
+                Ordering::Less => acc -= &table_self.get_point(-by_self_digits[j] as usize),
+                Ordering::Equal => (),
+            };
+
+            match by_basepoint_digits[j].cmp(&0) {
+                Ordering::Greater => {
+                    acc += &table_basepoint.get_point(by_basepoint_digits[j] as usize)
+                }
+                Ordering::Less => {
+                    acc -= &table_basepoint.get_point(-by_basepoint_digits[j] as usize)
+                }
+                Ordering::Equal => (),
+            };
         }
 
         acc
@@ -1001,24 +1068,14 @@ impl ProjectivePoint {
 
     /// Multiplies by the curve cofactor
     pub fn clear_cofactor(&self) -> ProjectivePoint {
-        let mut acc = ProjectivePoint::identity();
+        // cofactor = 708537115134665106932687062569690615370
+        //          = 0x2150b48e071ef610049bc3f5d54304e4a
+        const COFACTOR_BYTES: [u8; 32] = [
+            74, 78, 48, 84, 93, 63, 188, 73, 0, 97, 239, 113, 224, 72, 11, 21, 2, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ];
 
-        // This is a simple double-and-add implementation of point
-        // multiplication, moving from most significant to least
-        // significant bit of the scalar.
-        //
-        // We skip the first six unset bits
-        for bit in COFACTOR_BYTES
-            .iter()
-            .rev()
-            .flat_map(|byte| (0..8).rev().map(move |i| ((byte >> i) & 1u8) != 0))
-            .skip(6)
-        {
-            acc = acc.double();
-            acc = if bit { acc + self } else { acc };
-        }
-
-        acc
+        self.multiply_vartime(&COFACTOR_BYTES)
     }
 
     /// Returns true if this point is free of an $h$-torsion component.
@@ -1030,7 +1087,7 @@ impl ProjectivePoint {
         ];
 
         // Clear the r-torsion from the point and check if it is the identity
-        self.multiply(&FQ_MODULUS_BYTES).is_identity()
+        self.multiply_vartime(&FQ_MODULUS_BYTES).is_identity()
     }
 
     /// Converts a batch of `ProjectivePoint` elements into `AffinePoint` elements. This
@@ -1800,6 +1857,23 @@ mod tests {
             );
             assert_eq!(
                 g.multiply_double_vartime(&h, &a.to_bytes(), &b.to_bytes()),
+                g * a + h * b
+            );
+        }
+    }
+
+    #[test]
+    fn test_projective_double_scalar_multiplication_with_basepoint() {
+        let mut rng = OsRng;
+        let g = ProjectivePoint::generator() * Scalar::random(&mut rng);
+        let h = ProjectivePoint::generator();
+
+        for _ in 0..100 {
+            let a = Scalar::random(&mut rng);
+            let b = Scalar::random(&mut rng);
+
+            assert_eq!(
+                g.multiply_double_with_basepoint_vartime(&a.to_bytes(), &b.to_bytes()),
                 g * a + h * b
             );
         }

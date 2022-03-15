@@ -17,6 +17,7 @@ use criterion::Criterion;
 extern crate cheetah;
 
 use cheetah::AffinePoint;
+use cheetah::BasePointTable;
 use cheetah::Scalar;
 
 fn criterion_benchmark(c: &mut Criterion) {
@@ -65,6 +66,23 @@ fn criterion_benchmark(c: &mut Criterion) {
             })
         },
     );
+
+    c.bench_function(
+        "AffinePoint double scalar multiplication with basepoint - variable time",
+        |bench| {
+            bench.iter(|| {
+                AffinePoint::multiply_double_with_basepoint_vartime(
+                    black_box(&p),
+                    black_box(&pow),
+                    black_box(&pow2),
+                )
+            })
+        },
+    );
+
+    c.bench_function("Affine basepoint table creation", |bench| {
+        bench.iter(|| BasePointTable::from(black_box(&p)))
+    });
 
     c.bench_function("Affine uncompressed encoding", |bench| {
         bench.iter(|| AffinePoint::to_uncompressed(black_box(&p)))

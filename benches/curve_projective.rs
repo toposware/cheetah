@@ -88,6 +88,19 @@ fn criterion_benchmark(c: &mut Criterion) {
         },
     );
 
+    c.bench_function(
+        "Projective double scalar multiplication with basepoint - variable time",
+        |bench| {
+            bench.iter(|| {
+                ProjectivePoint::multiply_double_with_basepoint_vartime(
+                    black_box(&p),
+                    black_box(&pow),
+                    black_box(&pow2),
+                )
+            })
+        },
+    );
+
     c.bench_function("Projective scalar multiplication (basepoint)", |bench| {
         bench.iter(|| BasePointTable::multiply(black_box(&BASEPOINT_TABLE), black_box(&pow)))
     });
@@ -100,6 +113,10 @@ fn criterion_benchmark(c: &mut Criterion) {
             })
         },
     );
+
+    c.bench_function("Projective basepoint table creation", |bench| {
+        bench.iter(|| BasePointTable::from(black_box(&p)))
+    });
 
     c.bench_function("Projective uncompressed encoding", |bench| {
         bench.iter(|| ProjectivePoint::to_uncompressed(black_box(&p)))
@@ -137,7 +154,6 @@ fn criterion_benchmark(c: &mut Criterion) {
     for &batch_size in BATCH_SIZES.iter() {
         let name = batch_str.clone() + &batch_size.to_string();
         c.bench_function(&name, |bench| {
-            let mut rng = OsRng;
             let projective_points = vec![ProjectivePoint::random(&mut rng); batch_size as usize];
             let mut affine_points = vec![AffinePoint::identity(); batch_size as usize];
             bench.iter(|| {
