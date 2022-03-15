@@ -916,28 +916,22 @@ impl ProjectivePoint {
         // We skip unset digits
         let mut i: usize = 255;
         for j in (0..256).rev() {
-            i = j;
             if digits[i] != 0 {
+                i = j;
                 break;
             }
         }
         let table = NafLookupTable::<8>::from(self);
         let mut acc = ProjectivePoint::identity();
 
-        loop {
+        for j in (0..i + 1).rev() {
             acc = acc.double();
 
-            match digits[i].cmp(&0) {
-                Ordering::Greater => acc += &table.get_point(digits[i] as usize),
-                Ordering::Less => acc -= &table.get_point(-digits[i] as usize),
+            match digits[j].cmp(&0) {
+                Ordering::Greater => acc += &table.get_point(digits[j] as usize),
+                Ordering::Less => acc -= &table.get_point(-digits[j] as usize),
                 Ordering::Equal => (),
             };
-
-            if i == 0 {
-                break;
-            }
-
-            i -= 1;
         }
 
         acc
@@ -988,8 +982,8 @@ impl ProjectivePoint {
         // We skip unset digits
         let mut i: usize = 255;
         for j in (0..256).rev() {
-            i = j;
             if by_lhs_digits[i] != 0 || by_rhs_digits[i] != 0 {
+                i = j;
                 break;
             }
         }
@@ -997,26 +991,20 @@ impl ProjectivePoint {
         let table_rhs = NafLookupTable::<8>::from(rhs);
         let mut acc = ProjectivePoint::identity();
 
-        loop {
+        for j in (0..i + 1).rev() {
             acc = acc.double();
 
-            match by_lhs_digits[i].cmp(&0) {
-                Ordering::Greater => acc += &table_self.get_point(by_lhs_digits[i] as usize),
-                Ordering::Less => acc -= &table_self.get_point(-by_lhs_digits[i] as usize),
+            match by_lhs_digits[j].cmp(&0) {
+                Ordering::Greater => acc += &table_self.get_point(by_lhs_digits[j] as usize),
+                Ordering::Less => acc -= &table_self.get_point(-by_lhs_digits[j] as usize),
                 Ordering::Equal => (),
             };
 
-            match by_rhs_digits[i].cmp(&0) {
-                Ordering::Greater => acc += &table_rhs.get_point(by_rhs_digits[i] as usize),
-                Ordering::Less => acc -= &table_rhs.get_point(-by_rhs_digits[i] as usize),
+            match by_rhs_digits[j].cmp(&0) {
+                Ordering::Greater => acc += &table_rhs.get_point(by_rhs_digits[j] as usize),
+                Ordering::Less => acc -= &table_rhs.get_point(-by_rhs_digits[j] as usize),
                 Ordering::Equal => (),
             };
-
-            if i == 0 {
-                break;
-            }
-
-            i -= 1;
         }
 
         acc
@@ -1046,8 +1034,8 @@ impl ProjectivePoint {
         // We skip unset digits
         let mut i: usize = 255;
         for j in (0..256).rev() {
-            i = j;
             if by_self_digits[i] != 0 || by_basepoint_digits[i] != 0 {
+                i = j;
                 break;
             }
         }
@@ -1055,30 +1043,24 @@ impl ProjectivePoint {
         let table_basepoint = &ODD_MULTIPLES_BASEPOINT;
         let mut acc = ProjectivePoint::identity();
 
-        loop {
+        for j in (0..i + 1).rev() {
             acc = acc.double();
 
-            match by_self_digits[i].cmp(&0) {
-                Ordering::Greater => acc += &table_self.get_point(by_self_digits[i] as usize),
-                Ordering::Less => acc -= &table_self.get_point(-by_self_digits[i] as usize),
+            match by_self_digits[j].cmp(&0) {
+                Ordering::Greater => acc += &table_self.get_point(by_self_digits[j] as usize),
+                Ordering::Less => acc -= &table_self.get_point(-by_self_digits[j] as usize),
                 Ordering::Equal => (),
             };
 
-            match by_basepoint_digits[i].cmp(&0) {
+            match by_basepoint_digits[j].cmp(&0) {
                 Ordering::Greater => {
-                    acc += &table_basepoint.get_point(by_basepoint_digits[i] as usize)
+                    acc += &table_basepoint.get_point(by_basepoint_digits[j] as usize)
                 }
                 Ordering::Less => {
-                    acc -= &table_basepoint.get_point(-by_basepoint_digits[i] as usize)
+                    acc -= &table_basepoint.get_point(-by_basepoint_digits[j] as usize)
                 }
                 Ordering::Equal => (),
             };
-
-            if i == 0 {
-                break;
-            }
-
-            i -= 1;
         }
 
         acc
