@@ -62,11 +62,11 @@ fn criterion_benchmark(c: &mut Criterion) {
         bench.iter(|| Scalar::invert(black_box(&x)))
     });
 
-    c.bench_function("Fp6 encoding", |bench| {
+    c.bench_function("Scalar encoding", |bench| {
         bench.iter(|| Scalar::to_bytes(black_box(&x)))
     });
 
-    c.bench_function("Fp6 decoding", |bench| {
+    c.bench_function("Scalar decoding", |bench| {
         bench.iter(|| Scalar::from_bytes(black_box(&x_bytes)))
     });
 }
