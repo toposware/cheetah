@@ -54,17 +54,17 @@ const TWO_ADICITY_P6: u32 = TWO_ADICITY + 1;
 /// the sextic extension.
 pub struct Fp6 {
     /// First coefficient, lowest degree
-    pub c0: Fp,
+    pub(crate) c0: Fp,
     /// Second coefficient
-    pub c1: Fp,
+    pub(crate) c1: Fp,
     /// Third coefficient
-    pub c2: Fp,
+    pub(crate) c2: Fp,
     /// Fourth coefficient
-    pub c3: Fp,
+    pub(crate) c3: Fp,
     /// Fifth coefficient
-    pub c4: Fp,
+    pub(crate) c4: Fp,
     /// Sixth coefficient, highest degree
-    pub c5: Fp,
+    pub(crate) c5: Fp,
 }
 
 impl fmt::Debug for Fp6 {
