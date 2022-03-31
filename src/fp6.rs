@@ -993,7 +993,7 @@ impl<'de> Deserialize<'de> for Fp6 {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use rand_core::OsRng;
 
