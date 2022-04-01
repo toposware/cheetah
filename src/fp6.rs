@@ -54,17 +54,17 @@ const TWO_ADICITY_P6: u32 = TWO_ADICITY + 1;
 /// the sextic extension.
 pub struct Fp6 {
     /// First coefficient, lowest degree
-    pub c0: Fp,
+    pub(crate) c0: Fp,
     /// Second coefficient
-    pub c1: Fp,
+    pub(crate) c1: Fp,
     /// Third coefficient
-    pub c2: Fp,
+    pub(crate) c2: Fp,
     /// Fourth coefficient
-    pub c3: Fp,
+    pub(crate) c3: Fp,
     /// Fifth coefficient
-    pub c4: Fp,
+    pub(crate) c4: Fp,
     /// Sixth coefficient, highest degree
-    pub c5: Fp,
+    pub(crate) c5: Fp,
 }
 
 impl fmt::Debug for Fp6 {
@@ -318,11 +318,21 @@ impl Fp6 {
     /// larger than its negation.
     #[inline]
     pub fn lexicographically_largest(&self) -> Choice {
-        // If this element's c2 coefficient is lexicographically largest
-        // then it is lexicographically largest. In the event
-        // the c2 coefficient is zero and the c1 coefficient is
+        // If this element's c5 coefficient is lexicographically largest
+        // then it is lexicographically largest.
+        // In the event the c5 coefficient is zero and the c4 coefficient is
         // lexicographically largest, then this element is lexicographically
-        // largest. Otherwise, in the event both the c2 and c1 coefficients
+        // largest.
+        // Otherwise, in the event both the c5 and c4 coefficients are zero
+        // and the c3 coefficient is lexicographically largest, then this
+        // element is lexicographically largest.
+        // Otherwise, in the event both the c5, c4 and c3 coefficients are
+        // zero and the c2 coefficient is lexicographically largest, then
+        // this element is lexicographically largest.
+        // Otherwise, in the event both the c5, c4, c3 and c2 coefficients
+        // are zero and the c1 coefficient is lexicographically largest,
+        // then this element is lexicographically largest.
+        // Otherwise, in the event both the c5, c4, c3, c2 and c1 coefficients
         // are zero and the c0 coefficient is lexicographically largest,
         // then this element is lexicographically largest.
 
@@ -363,95 +373,173 @@ impl Fp6 {
         // values back to Fp through a modular reduction.
         //
         // The reduction uses `reduce_u96()` as all final values are less than 96 bits.
+        //
+        // To speed-up sextic extension multiplication, we do not use the direct sextic
+        // representation and schoolbook method. Instead, we switch to a towered
+        // representation, as a quadratic extension over a cubic one. The conversion
+        // between these representations is costless.
+        // Indeed, an element c = c_0 + c_1.Z + + c_2.Z^2 + c_3.Z^3 + c_4.Z^4 + c_5.Z^5 in
+        // GF(p^6), defined as GF(p)[Z]/[Z^6 - δ] (with δ = 7 here) can be represented as
+        // the element a = (a_00 + a_01.X + a_02.X^2) + (a_10 + a_11.X + a_12.X^2).Y where
+        // the cubic extension GF(p^3) is defined as Fp[X]/(X3 − β). β = δ^2 is a cubic
+        // non-residue in GF(p), and the sextic extension is defined as GF(p^3)[Y]/(Y^2 − γ),
+        // with γ = δ a quadratic non-residue. The correspondence is then:
+        //      a_00 = c_0
+        //      a_01 = c_2
+        //      a_02 = c_4
+        //      a_10 = c_1
+        //      a_11 = c_3
+        //      a_12 = c_5
+        //
+        // We then use the Karatsuba method for arithmetic on the cubic extension of GF(p),
+        // and the Schoolbook method for the final quadratic extension.
+        //
+        // Multiplication of GF(p^3) elements by γ consists of a single multiplication
+        // by β and a permutation of coordinates.
+        // Indeed, for a = a_0 + a_1.X + a_2.X^2, we have a*γ = a_2.β + a_0.X + a_1.X^2.
+        //
+        // With a = a_0 + a_1.Y and b = b_0 + b_1.Y, we compute the product c = ab with:
+        // c_0 = a_0*b_0 + a_1*b_1.γ;
+        // c_1 = a_0*b_1 + a_1*b_0;
 
-        let aa = (&self.c0).mul(&other.c0).0 as u128;
-        let ab = (&self.c0).mul(&other.c1).0 as u128;
-        let ac = (&self.c0).mul(&other.c2).0 as u128;
-        let ad = (&self.c0).mul(&other.c3).0 as u128;
-        let ae = (&self.c0).mul(&other.c4).0 as u128;
-        let af = (&self.c0).mul(&other.c5).0 as u128;
+        // Precomputations for a_0 * b_0
+        let t00 = (&self.c0).mul(&other.c0).0 as u128;
+        let t01 = (&self.c2).mul(&other.c2).0 as u128;
+        let t02 = (&self.c4).mul(&other.c4).0 as u128;
 
-        let ba = (&self.c1).mul(&other.c0).0 as u128;
-        let bb = (&self.c1).mul(&other.c1).0 as u128;
-        let bc = (&self.c1).mul(&other.c2).0 as u128;
-        let bd = (&self.c1).mul(&other.c3).0 as u128;
-        let be = (&self.c1).mul(&other.c4).0 as u128;
-        let bf = (&self.c1).mul(&other.c5).0 as u128;
+        let s012 = (&self.c2).add(&self.c4);
+        let tmp = (&other.c2).add(&other.c4);
+        let s012 = (&s012).mul(&tmp).0 as u128;
 
-        let ca = (&self.c2).mul(&other.c0).0 as u128;
-        let cb = (&self.c2).mul(&other.c1).0 as u128;
-        let cc = (&self.c2).mul(&other.c2).0 as u128;
-        let cd = (&self.c2).mul(&other.c3).0 as u128;
-        let ce = (&self.c2).mul(&other.c4).0 as u128;
-        let cf = (&self.c2).mul(&other.c5).0 as u128;
+        let s001 = (&self.c0).add(&self.c2);
+        let tmp = (&other.c0).add(&other.c2);
+        let s001 = (&s001).mul(&tmp).0 as u128;
 
-        let da = (&self.c3).mul(&other.c0).0 as u128;
-        let db = (&self.c3).mul(&other.c1).0 as u128;
-        let dc = (&self.c3).mul(&other.c2).0 as u128;
-        let dd = (&self.c3).mul(&other.c3).0 as u128;
-        let de = (&self.c3).mul(&other.c4).0 as u128;
-        let df = (&self.c3).mul(&other.c5).0 as u128;
+        let s002 = (&self.c0).add(&self.c4);
+        let tmp = (&other.c0).add(&other.c4);
+        let s002 = (&s002).mul(&tmp).0 as u128;
 
-        let ea = (&self.c4).mul(&other.c0).0 as u128;
-        let eb = (&self.c4).mul(&other.c1).0 as u128;
-        let ec = (&self.c4).mul(&other.c2).0 as u128;
-        let ed = (&self.c4).mul(&other.c3).0 as u128;
-        let ee = (&self.c4).mul(&other.c4).0 as u128;
-        let ef = (&self.c4).mul(&other.c5).0 as u128;
+        // Precomputations for a_1 * b_1
+        let t10 = (&self.c1).mul(&other.c1).0 as u128;
+        let t11 = (&self.c3).mul(&other.c3).0 as u128;
+        let t12 = (&self.c5).mul(&other.c5).0 as u128;
 
-        let fa = (&self.c5).mul(&other.c0).0 as u128;
-        let fb = (&self.c5).mul(&other.c1).0 as u128;
-        let fc = (&self.c5).mul(&other.c2).0 as u128;
-        let fd = (&self.c5).mul(&other.c3).0 as u128;
-        let fe = (&self.c5).mul(&other.c4).0 as u128;
-        let ff = (&self.c5).mul(&other.c5).0 as u128;
+        let s112 = (&self.c3).add(&self.c5);
+        let tmp = (&other.c3).add(&other.c5);
+        let s112 = (&s112).mul(&tmp).0 as u128;
 
-        let c0 = bf + fb;
-        let c0 = c0 + ce;
-        let c0 = c0 + ec;
-        let c0 = c0 + dd;
-        let c0 = c0 * BETA;
-        let c0 = c0 + aa;
-        let c0 = Fp(reduce_u96(c0));
+        let s101 = (&self.c1).add(&self.c3);
+        let tmp = (&other.c1).add(&other.c3);
+        let s101 = (&s101).mul(&tmp).0 as u128;
 
-        let c1 = cf + fc;
-        let c1 = c1 + de;
-        let c1 = c1 + ed;
-        let c1 = c1 * BETA;
-        let c1 = c1 + ab;
-        let c1 = c1 + ba;
-        let c1 = Fp(reduce_u96(c1));
+        let s102 = (&self.c1).add(&self.c5);
+        let tmp = (&other.c1).add(&other.c5);
+        let s102 = (&s102).mul(&tmp).0 as u128;
 
-        let c2 = df + fd;
-        let c2 = c2 + ee;
-        let c2 = c2 * BETA;
-        let c2 = c2 + ac;
-        let c2 = c2 + ca;
-        let c2 = c2 + bb;
-        let c2 = Fp(reduce_u96(c2));
+        // Precomputations for a_0 * b_1
+        let t20 = (&self.c0).mul(&other.c1).0 as u128;
+        let t21 = (&self.c2).mul(&other.c3).0 as u128;
+        let t22 = (&self.c4).mul(&other.c5).0 as u128;
 
-        let c3 = ef + fe;
-        let c3 = c3 * BETA;
-        let c3 = c3 + ad;
-        let c3 = c3 + da;
-        let c3 = c3 + bc;
-        let c3 = c3 + cb;
-        let c3 = Fp(reduce_u96(c3));
+        let s212 = (&self.c2).add(&self.c4);
+        let tmp = (&other.c3).add(&other.c5);
+        let s212 = (&s212).mul(&tmp).0 as u128;
 
-        let c4 = ff * BETA;
-        let c4 = c4 + ae;
-        let c4 = c4 + ea;
-        let c4 = c4 + bd;
-        let c4 = c4 + db;
-        let c4 = c4 + cc;
-        let c4 = Fp(reduce_u96(c4));
+        let s201 = (&self.c0).add(&self.c2);
+        let tmp = (&other.c1).add(&other.c3);
+        let s201 = (&s201).mul(&tmp).0 as u128;
 
-        let c5 = af + fa;
-        let c5 = c5 + be;
-        let c5 = c5 + eb;
-        let c5 = c5 + cd;
-        let c5 = c5 + dc;
-        let c5 = Fp(reduce_u96(c5));
+        let s202 = (&self.c0).add(&self.c4);
+        let tmp = (&other.c1).add(&other.c5);
+        let s202 = (&s202).mul(&tmp).0 as u128;
+
+        // Precomputations for a_1 * b_0
+        let t30 = (&self.c1).mul(&other.c0).0 as u128;
+        let t31 = (&self.c3).mul(&other.c2).0 as u128;
+        let t32 = (&self.c5).mul(&other.c4).0 as u128;
+
+        let s312 = (&self.c3).add(&self.c5);
+        let tmp = (&other.c2).add(&other.c4);
+        let s312 = (&s312).mul(&tmp).0 as u128;
+
+        let s301 = (&self.c1).add(&self.c3);
+        let tmp = (&other.c0).add(&other.c2);
+        let s301 = (&s301).mul(&tmp).0 as u128;
+
+        let s302 = (&self.c1).add(&self.c5);
+        let tmp = (&other.c0).add(&other.c4);
+        let s302 = (&s302).mul(&tmp).0 as u128;
+
+        // c_0 = a_0*b_0 + a_1*b_1.γ;
+        // c_1 = a_0*b_1 + a_1*b_0;
+
+        // Compute a_0 * b_0
+        let d00 = t01 + t02;
+        let d00 = s012 + 0x1fffffffe00000002 - d00;
+        let d00 = d00 * BETA;
+        let d00 = d00 + t00;
+
+        let d01 = t02 * BETA;
+        let tmp = t00 + t01;
+        let d01 = d01 + 0x1fffffffe00000002 - tmp;
+        let d01 = d01 + s001;
+
+        let d02 = t00 + t02;
+        let d02 = t01 + 0x1fffffffe00000002 - d02;
+        let d02 = d02 + s002;
+
+        // Compute a_1 * b_1
+        let d10 = t11 + t12;
+        let d10 = s112 + 0x1fffffffe00000002 - d10;
+        let d10 = d10 * BETA;
+        let d10 = d10 + t10;
+
+        let d11 = t12 * BETA;
+        let tmp = t10 + t11;
+        let d11 = d11 + 0x1fffffffe00000002 - tmp;
+        let d11 = d11 + s101;
+
+        let d12 = t10 + t12;
+        let d12 = t11 + 0x1fffffffe00000002 - d12;
+        let d12 = d12 + s102;
+
+        // Compute a_0 * b_1
+        let d20 = t21 + t22;
+        let d20 = s212 + 0x1fffffffe00000002 - d20;
+        let d20 = d20 * BETA;
+        let d20 = d20 + t20;
+
+        let d21 = t22 * BETA;
+        let tmp = t20 + t21;
+        let d21 = d21 + 0x1fffffffe00000002 - tmp;
+        let d21 = d21 + s201;
+
+        let d22 = t20 + t22;
+        let d22 = t21 + 0x1fffffffe00000002 - d22;
+        let d22 = d22 + s202;
+
+        // Compute a_1 * b_0
+        let d30 = t31 + t32;
+        let d30 = s312 + 0x1fffffffe00000002 - d30;
+        let d30 = d30 * BETA;
+        let d30 = d30 + t30;
+
+        let d31 = t32 * BETA;
+        let tmp = t30 + t31;
+        let d31 = d31 + 0x1fffffffe00000002 - tmp;
+        let d31 = d31 + s301;
+
+        let d32 = t30 + t32;
+        let d32 = t31 + 0x1fffffffe00000002 - d32;
+        let d32 = d32 + s302;
+
+        // Compute the final coordinates, reduced by the modulus
+        let c0 = Fp(reduce_u96(d00 + d12 * BETA));
+        let c2 = Fp(reduce_u96(d01 + d10));
+        let c4 = Fp(reduce_u96(d02 + d11));
+        let c1 = Fp(reduce_u96(d20 + d30));
+        let c3 = Fp(reduce_u96(d21 + d31));
+        let c5 = Fp(reduce_u96(d22 + d32));
 
         Self {
             c0,
@@ -905,7 +993,7 @@ impl<'de> Deserialize<'de> for Fp6 {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use rand_core::OsRng;
 
