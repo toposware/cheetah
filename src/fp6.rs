@@ -111,9 +111,15 @@ impl From<[Fp; 6]> for Fp6 {
     }
 }
 
+impl From<&Fp6> for [Fp; 6] {
+    fn from(f: &Fp6) -> [Fp; 6] {
+        [f.c0, f.c1, f.c2, f.c3, f.c4, f.c5]
+    }
+}
+
 impl From<Fp6> for [Fp; 6] {
     fn from(f: Fp6) -> [Fp; 6] {
-        [f.c0, f.c1, f.c2, f.c3, f.c4, f.c5]
+        Self::from(&f)
     }
 }
 
