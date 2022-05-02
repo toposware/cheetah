@@ -694,6 +694,19 @@ impl Fp6 {
         }
     }
 
+    /// Computes the triple of a field element
+    #[inline]
+    pub const fn triple(&self) -> Self {
+        Self {
+            c0: (&self.c0).triple(),
+            c1: (&self.c1).triple(),
+            c2: (&self.c2).triple(),
+            c3: (&self.c3).triple(),
+            c4: (&self.c4).triple(),
+            c5: (&self.c5).triple(),
+        }
+    }
+
     /// Computes the summation of two field elements
     #[inline]
     pub const fn add(&self, rhs: &Self) -> Self {

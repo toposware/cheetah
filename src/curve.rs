@@ -886,6 +886,47 @@ impl ProjectivePoint {
         ProjectivePoint::conditional_select(&tmp, self, rhs.is_identity())
     }
 
+    /// Adds this point to another point in the affine model. This formulae is faster than
+    /// `ProjectivePoint::add_mixed` but is not complete.
+    /// **This is dangerous to call unless you know that the points to be added are not
+    /// identical, opposite of each other, and neither of them is the identity point; otherwise,
+    /// API invariants may be broken.** Please consider using `add_mixed()` instead.
+    pub fn add_mixed_unchecked(&self, rhs: &AffinePoint) -> ProjectivePoint {
+        // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
+
+        let t0 = (&rhs.y).mul(&self.z);
+        let t0 = (&t0).sub(&self.y);
+
+        let t1 = (&rhs.x).mul(&self.z);
+        let t1 = (&t1).sub(&self.x);
+
+        let t2 = t0.square();
+        let t2 = (&t2).mul(&self.z);
+        let t3 = t1.square();
+        let t4 = (&t1).mul(&t3);
+        let t2 = (&t2).sub(&t4);
+        let t5 = (&t3).mul(&self.x);
+        let t6 = t5.double();
+        let t2 = (&t2).sub(&t6);
+
+        let x3 = (&t1).mul(&t2);
+
+        let y3 = (&t5).sub(&t2);
+        let y3 = (&y3).mul(&t0);
+        let t7 = (&t4).mul(&self.y);
+        let y3 = (&y3).sub(&t7);
+
+        let z3 = (&t4).mul(&self.z);
+
+        let tmp = ProjectivePoint {
+            x: x3,
+            y: y3,
+            z: z3,
+        };
+
+        ProjectivePoint::conditional_select(&tmp, self, rhs.is_identity())
+    }
+
     /// Performs a projective scalar multiplication from `by`
     /// given as byte representation of a `Scalar` element
     pub fn multiply(&self, by: &[u8; 32]) -> ProjectivePoint {
@@ -1794,6 +1835,19 @@ mod tests {
             assert!(!bool::from(d.is_identity()));
             assert!(bool::from(d.is_on_curve()));
             assert_eq!(c, d);
+        }
+        {
+            let mut rng = OsRng;
+            for _ in 0..100 {
+                let a = ProjectivePoint::random(&mut rng);
+                let b = AffinePoint::random(&mut rng);
+
+                // If this fails, we are very unlucky!
+                assert_eq!(a.add_mixed(&b), a.add_mixed_unchecked(&b));
+            }
+
+            let a = ProjectivePoint::random(&mut rng);
+            assert_ne!(a.add(&a), a.add_mixed_unchecked(&a.to_affine()));
         }
     }
 
