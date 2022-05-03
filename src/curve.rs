@@ -477,11 +477,7 @@ impl<'a> Neg for &'a ProjectivePoint {
 
     #[inline]
     fn neg(self) -> ProjectivePoint {
-        ProjectivePoint {
-            x: self.x,
-            y: -self.y,
-            z: self.z,
-        }
+        self.neg()
     }
 }
 
@@ -770,6 +766,16 @@ impl ProjectivePoint {
         ProjectivePoint::conditional_select(&tmp, &ProjectivePoint::identity(), self.is_identity())
     }
 
+    /// Computes the negation of a point in projective coordinates
+    #[inline]
+    pub const fn neg(&self) -> Self {
+        Self {
+            x: self.x,
+            y: (&self.y).neg(),
+            z: self.z,
+        }
+    }
+
     /// Adds this point to another point.
     pub const fn add(&self, rhs: &ProjectivePoint) -> ProjectivePoint {
         // Algorithm 1, https://eprint.iacr.org/2015/1060.pdf
@@ -935,10 +941,7 @@ impl ProjectivePoint {
 
         let mut acc = ProjectivePoint::from(&table.get_point(digits[63]));
         for i in (0..63).rev() {
-            acc = acc.double();
-            acc = acc.double();
-            acc = acc.double();
-            acc = acc.double();
+            acc = acc.double_multi(4);
             acc += table.get_point(digits[i]);
         }
 
@@ -994,10 +997,7 @@ impl ProjectivePoint {
         let mut acc = ProjectivePoint::from(&table_lhs.get_point(digits_lhs[63]));
         acc += table_rhs.get_point(digits_rhs[63]);
         for i in (0..63).rev() {
-            acc = acc.double();
-            acc = acc.double();
-            acc = acc.double();
-            acc = acc.double();
+            acc = acc.double_multi(4);
             acc += table_lhs.get_point(digits_lhs[i]);
             acc += table_rhs.get_point(digits_rhs[i]);
         }
@@ -1748,7 +1748,7 @@ mod tests {
             assert!(c == ProjectivePoint::generator());
         }
         {
-            let a = ProjectivePoint::generator().double().double(); // 4P
+            let a = ProjectivePoint::generator().double_multi(2); // 4P
             let b = ProjectivePoint::generator().double(); // 2P
             let c = a + b;
 
@@ -1822,7 +1822,7 @@ mod tests {
             assert!(c == ProjectivePoint::generator());
         }
         {
-            let a = ProjectivePoint::generator().double().double(); // 4P
+            let a = ProjectivePoint::generator().double_multi(2); // 4P
             let b = ProjectivePoint::generator().double(); // 2P
             let c = a + b;
 
