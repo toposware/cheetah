@@ -22,6 +22,8 @@ use crate::fp::reduce_u96;
 use crate::fp::GENERATOR;
 use crate::{Fp, Fp6, Scalar};
 
+use crate::{MINUS_SHIFT_POINT_POW_256, SHIFT_POINT};
+
 use crate::constants::ODD_MULTIPLES_BASEPOINT;
 use crate::LookupTable;
 use crate::NafLookupTable;
@@ -939,13 +941,13 @@ impl ProjectivePoint {
         let table = LookupTable::<16>::from(self);
         let digits = Scalar::bytes_to_radix_16(by);
 
-        let mut acc = ProjectivePoint::from(&table.get_point(digits[63]));
-        for i in (0..63).rev() {
+        let mut acc = SHIFT_POINT;
+        for i in (0..64).rev() {
             acc = acc.double_multi(4);
-            acc += table.get_point(digits[i]);
+            acc = acc.add_mixed_unchecked(&table.get_point(digits[i]));
         }
 
-        acc
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_POW_256)
     }
 
     /// Performs a projective scalar multiplication from `by`
@@ -994,15 +996,14 @@ impl ProjectivePoint {
         let digits_lhs = Scalar::bytes_to_radix_16(by_lhs);
         let digits_rhs = Scalar::bytes_to_radix_16(by_rhs);
 
-        let mut acc = ProjectivePoint::from(&table_lhs.get_point(digits_lhs[63]));
-        acc += table_rhs.get_point(digits_rhs[63]);
-        for i in (0..63).rev() {
+        let mut acc = SHIFT_POINT;
+        for i in (0..64).rev() {
             acc = acc.double_multi(4);
-            acc += table_lhs.get_point(digits_lhs[i]);
-            acc += table_rhs.get_point(digits_rhs[i]);
+            acc = acc.add_mixed_unchecked(&table_lhs.get_point(digits_lhs[i]));
+            acc = acc.add_mixed_unchecked(&table_rhs.get_point(digits_rhs[i]));
         }
 
-        acc
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_POW_256)
     }
 
     /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
