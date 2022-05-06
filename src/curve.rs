@@ -1189,8 +1189,20 @@ impl ProjectivePoint {
 /// A compressed point, storing the `x` coordinate of
 /// a point, along an extra byte storing metadata
 /// to be used for decompression.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct CompressedPoint(pub [u8; 49]);
+
+impl Default for CompressedPoint {
+    fn default() -> Self {
+        AffinePoint::identity().to_compressed()
+    }
+}
+
+impl ConstantTimeEq for CompressedPoint {
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.as_bytes().ct_eq(other.as_bytes())
+    }
+}
 
 impl CompressedPoint {
     /// Converts an `AffinePoint` to a `CompressedPoint`
@@ -1269,62 +1281,42 @@ impl CompressedPoint {
             })
         })
     }
-}
 
-#[cfg(feature = "serialize")]
-impl Serialize for CompressedPoint {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        use serde::ser::SerializeTuple;
-        let mut tup = serializer.serialize_tuple(49)?;
-        for byte in self.0.iter() {
-            tup.serialize_element(byte)?;
-        }
-        tup.end()
+    /// Copies the bytes of this `CompressedPoint`.
+    pub fn to_bytes(&self) -> [u8; 49] {
+        self.0
     }
-}
 
-#[cfg(feature = "serialize")]
-impl<'de> Deserialize<'de> for CompressedPoint {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct CompressedPointVisitor;
+    /// Views this `CompressedPoint` as an array of bytes.
+    pub fn as_bytes(&self) -> &[u8; 49] {
+        &self.0
+    }
 
-        impl<'de> Visitor<'de> for CompressedPointVisitor {
-            type Value = CompressedPoint;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("49 bytes of data")
-            }
-
-            fn visit_seq<A>(self, mut seq: A) -> Result<CompressedPoint, A::Error>
-            where
-                A: serde::de::SeqAccess<'de>,
-            {
-                let mut bytes = [0u8; 49];
-                for (i, byte) in bytes.iter_mut().enumerate() {
-                    *byte = seq
-                        .next_element()?
-                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 49 bytes"))?;
-                }
-
-                Ok(CompressedPoint(bytes))
-            }
-        }
-
-        deserializer.deserialize_tuple(49, CompressedPointVisitor)
+    /// Interprets the provided bytes as a `CompressedPoint`.
+    /// This does not check the validity of the input, and may result
+    /// in failure when calling `to_affine()`.
+    pub fn from_bytes(bytes: &[u8; 49]) -> Self {
+        Self(*bytes)
     }
 }
 
 /// A uncompressed point, storing the `x` and `y` coordinates
 /// of a point, along an extra byte storing metadata to be
 /// used for decompression.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct UncompressedPoint(pub [u8; 97]);
+
+impl Default for UncompressedPoint {
+    fn default() -> Self {
+        AffinePoint::identity().to_uncompressed()
+    }
+}
+
+impl ConstantTimeEq for UncompressedPoint {
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.as_bytes().ct_eq(other.as_bytes())
+    }
+}
 
 impl UncompressedPoint {
     /// Converts an `AffinePoint` to an `UncompressedPoint`
@@ -1387,54 +1379,22 @@ impl UncompressedPoint {
             })
         })
     }
-}
 
-#[cfg(feature = "serialize")]
-impl Serialize for UncompressedPoint {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        use serde::ser::SerializeTuple;
-        let mut tup = serializer.serialize_tuple(97)?;
-        for byte in self.0.iter() {
-            tup.serialize_element(byte)?;
-        }
-        tup.end()
+    /// Copies the bytes of this `UncompressedPoint`.
+    pub fn to_bytes(&self) -> [u8; 97] {
+        self.0
     }
-}
 
-#[cfg(feature = "serialize")]
-impl<'de> Deserialize<'de> for UncompressedPoint {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct UncompressedPointVisitor;
+    /// Views this `UncompressedPoint` as an array of bytes.
+    pub fn as_bytes(&self) -> &[u8; 97] {
+        &self.0
+    }
 
-        impl<'de> Visitor<'de> for UncompressedPointVisitor {
-            type Value = UncompressedPoint;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("97 bytes of data")
-            }
-
-            fn visit_seq<A>(self, mut seq: A) -> Result<UncompressedPoint, A::Error>
-            where
-                A: serde::de::SeqAccess<'de>,
-            {
-                let mut bytes = [0u8; 97];
-                for (i, byte) in bytes.iter_mut().enumerate() {
-                    *byte = seq
-                        .next_element()?
-                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 97 bytes"))?;
-                }
-
-                Ok(UncompressedPoint(bytes))
-            }
-        }
-
-        deserializer.deserialize_tuple(97, UncompressedPointVisitor)
+    /// Interprets the provided bytes as a `UncompressedPoint`.
+    /// This does not check the validity of the input, and may result
+    /// in failure when calling `to_affine()`.
+    pub fn from_bytes(bytes: &[u8; 97]) -> Self {
+        Self(*bytes)
     }
 }
 
@@ -1482,6 +1442,36 @@ impl Curve for ProjectivePoint {
 // ================================================================================================
 
 #[cfg(feature = "serialize")]
+impl Serialize for CompressedPoint {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeTuple;
+        let mut tup = serializer.serialize_tuple(49)?;
+        for byte in self.0.iter() {
+            tup.serialize_element(byte)?;
+        }
+        tup.end()
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl Serialize for UncompressedPoint {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeTuple;
+        let mut tup = serializer.serialize_tuple(97)?;
+        for byte in self.0.iter() {
+            tup.serialize_element(byte)?;
+        }
+        tup.end()
+    }
+}
+
+#[cfg(feature = "serialize")]
 impl Serialize for AffinePoint {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -1498,6 +1488,74 @@ impl Serialize for ProjectivePoint {
         S: Serializer,
     {
         self.to_compressed().serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl<'de> Deserialize<'de> for CompressedPoint {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct CompressedPointVisitor;
+
+        impl<'de> Visitor<'de> for CompressedPointVisitor {
+            type Value = CompressedPoint;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("49 bytes of data")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<CompressedPoint, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut bytes = [0u8; 49];
+                for (i, byte) in bytes.iter_mut().enumerate() {
+                    *byte = seq
+                        .next_element()?
+                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 49 bytes"))?;
+                }
+
+                Ok(CompressedPoint(bytes))
+            }
+        }
+
+        deserializer.deserialize_tuple(49, CompressedPointVisitor)
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl<'de> Deserialize<'de> for UncompressedPoint {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct UncompressedPointVisitor;
+
+        impl<'de> Visitor<'de> for UncompressedPointVisitor {
+            type Value = UncompressedPoint;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("97 bytes of data")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<UncompressedPoint, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut bytes = [0u8; 97];
+                for (i, byte) in bytes.iter_mut().enumerate() {
+                    *byte = seq
+                        .next_element()?
+                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 97 bytes"))?;
+                }
+
+                Ok(UncompressedPoint(bytes))
+            }
+        }
+
+        deserializer.deserialize_tuple(97, UncompressedPointVisitor)
     }
 }
 
@@ -2121,6 +2179,14 @@ mod tests {
             let bytes = ProjectivePoint::identity().to_compressed();
             let point_decompressed = ProjectivePoint::from_compressed(&bytes).unwrap();
             assert!(bool::from(point_decompressed.is_identity()));
+
+            assert_eq!(
+                ProjectivePoint::identity().to_compressed().to_bytes(),
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128
+                ]
+            );
         }
 
         // Invalid points
@@ -2172,6 +2238,16 @@ mod tests {
             let bytes = ProjectivePoint::identity().to_uncompressed();
             let point_decompressed = ProjectivePoint::from_uncompressed(&bytes).unwrap();
             assert!(bool::from(point_decompressed.is_identity()));
+
+            assert_eq!(
+                ProjectivePoint::identity().to_uncompressed().to_bytes(),
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128
+                ]
+            );
         }
 
         // Invalid points
