@@ -14,6 +14,7 @@ use core::{
     borrow::Borrow,
     convert::{TryFrom, TryInto},
     fmt::{self, Debug, Display, Formatter},
+    hash::{Hash, Hasher},
     iter::Sum,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
@@ -124,6 +125,12 @@ impl Debug for Scalar {
 impl Display for Scalar {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+impl Hash for Scalar {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        self.0.hash(hasher);
     }
 }
 

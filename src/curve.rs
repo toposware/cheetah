@@ -14,6 +14,7 @@ use core::{
     borrow::Borrow,
     cmp::Ordering,
     fmt,
+    hash::{Hash, Hasher},
     iter::Sum,
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
@@ -72,6 +73,13 @@ impl zeroize::DefaultIsZeroes for AffinePoint {}
 impl fmt::Display for AffinePoint {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+impl Hash for AffinePoint {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        self.x.hash(hasher);
+        self.y.hash(hasher);
     }
 }
 
@@ -418,6 +426,12 @@ impl zeroize::DefaultIsZeroes for ProjectivePoint {}
 impl fmt::Display for ProjectivePoint {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+impl Hash for ProjectivePoint {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        self.to_affine().hash(hasher);
     }
 }
 

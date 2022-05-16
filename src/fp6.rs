@@ -12,6 +12,7 @@
 use core::{
     borrow::Borrow,
     fmt::{self, Formatter},
+    hash::{Hash, Hasher},
     iter::Sum,
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
@@ -80,6 +81,17 @@ impl fmt::Debug for Fp6 {
 impl Default for Fp6 {
     fn default() -> Self {
         Self::zero()
+    }
+}
+
+impl Hash for Fp6 {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        self.c0.hash(hasher);
+        self.c1.hash(hasher);
+        self.c2.hash(hasher);
+        self.c3.hash(hasher);
+        self.c4.hash(hasher);
+        self.c5.hash(hasher);
     }
 }
 
