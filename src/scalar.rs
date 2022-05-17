@@ -406,6 +406,24 @@ impl Scalar {
         CtOption::new(tmp, Choice::from(is_some))
     }
 
+    /// Converts a 256-bit little endian integer into
+    /// a `Scalar`. The element does ***NOT*** have to
+    /// be canonical.
+    /// This is to be used when providing an unconstrained
+    /// slice of bytes, for instance a hash digest.
+    pub fn from_bytes_non_canonical(bytes: &[u8; 32]) -> Self {
+        let mut tmp = Scalar([0, 0, 0, 0]);
+
+        tmp.0[0] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[0..8]).unwrap());
+        tmp.0[1] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[8..16]).unwrap());
+        tmp.0[2] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[16..24]).unwrap());
+        tmp.0[3] = u64::from_le_bytes(<[u8; 8]>::try_from(&bytes[24..32]).unwrap());
+
+        // Convert to Montgomery form by computing
+        // (a.R^0 * R^2) / R = a.R
+        tmp * R2
+    }
+
     /// Converts a little-endian bit sequence into a Scalar element
     pub fn from_bits(bit_slice: &BitSlice<Lsb0, u8>) -> Scalar {
         assert_eq!(bit_slice.len(), 256);
@@ -1495,6 +1513,66 @@ mod tests {
                 206, 172, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55,
                 10, 153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122
             ]
+        );
+    }
+
+    #[test]
+    fn test_from_bytes_non_canonical() {
+        let mut rng = OsRng;
+        for _ in 0..100 {
+            let a = Scalar::random(&mut rng);
+            let bytes = a.to_bytes();
+            assert_eq!(a, Scalar::from_bytes_non_canonical(&bytes));
+        }
+
+        assert_eq!(
+            Scalar::from_bytes_non_canonical(&[
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0
+            ]),
+            Scalar::zero()
+        );
+
+        assert_eq!(
+            Scalar::from_bytes_non_canonical(&[
+                1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0
+            ]),
+            Scalar::one()
+        );
+
+        assert_eq!(
+            Scalar::from_bytes_non_canonical(&[
+                98, 166, 86, 162, 130, 59, 121, 87, 186, 17, 213, 159, 185, 177, 10, 155, 149, 144,
+                235, 205, 224, 129, 128, 83, 95, 186, 129, 137, 201, 76, 27, 10
+            ]),
+            R2
+        );
+
+        assert_eq!(
+            Scalar::from_bytes_non_canonical(&[
+                206, 172, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55,
+                10, 153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122
+            ]),
+            -Scalar::one(),
+        );
+
+        // M will yield zero
+        assert_eq!(
+            Scalar::from_bytes_non_canonical(&[
+                207, 172, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55,
+                10, 153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122
+            ]),
+            Scalar::zero(),
+        );
+
+        // M+1 will yield one
+        assert_eq!(
+            Scalar::from_bytes_non_canonical(&[
+                208, 172, 212, 174, 62, 98, 67, 212, 34, 119, 21, 48, 35, 167, 122, 50, 181, 55,
+                10, 153, 15, 191, 63, 86, 208, 34, 63, 59, 155, 89, 242, 122
+            ]),
+            Scalar::one(),
         );
     }
 
