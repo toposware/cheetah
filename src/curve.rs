@@ -23,7 +23,7 @@ use crate::fp::reduce_u96;
 use crate::fp::GENERATOR;
 use crate::{Fp, Fp6, Scalar};
 
-use crate::{MINUS_SHIFT_POINT_POW_256, SHIFT_POINT};
+use crate::{MINUS_SHIFT_POINT_ARRAY, SHIFT_POINT};
 
 use crate::constants::ODD_MULTIPLES_BASEPOINT;
 use crate::LookupTable;
@@ -1028,7 +1028,7 @@ impl ProjectivePoint {
             acc = acc.add_mixed_unchecked(&table.get_point(digits[i]));
         }
 
-        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_POW_256)
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
     }
 
     /// Performs a projective scalar multiplication from `by`
@@ -1049,10 +1049,10 @@ impl ProjectivePoint {
             }
         }
         let table = NafLookupTable::<8>::from(self);
-        let mut acc = ProjectivePoint::identity();
+        let mut acc = SHIFT_POINT;
 
         for j in (0..i + 1).rev() {
-            acc = acc.double();
+            acc = acc.double_unchecked();
 
             match digits[j].cmp(&0) {
                 Ordering::Greater => acc += &table.get_point(digits[j] as usize),
@@ -1061,7 +1061,7 @@ impl ProjectivePoint {
             };
         }
 
-        acc
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[i + 1])
     }
 
     /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
@@ -1084,7 +1084,7 @@ impl ProjectivePoint {
             acc = acc.add_mixed_unchecked(&table_rhs.get_point(digits_rhs[i]));
         }
 
-        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_POW_256)
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
     }
 
     /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
@@ -1112,25 +1112,36 @@ impl ProjectivePoint {
         }
         let table_self = NafLookupTable::<8>::from(self);
         let table_rhs = NafLookupTable::<8>::from(rhs);
-        let mut acc = ProjectivePoint::identity();
+        let mut acc = SHIFT_POINT;
 
         for j in (0..i + 1).rev() {
-            acc = acc.double();
+            acc = acc.double_unchecked();
 
             match by_lhs_digits[j].cmp(&0) {
-                Ordering::Greater => acc += &table_self.get_point(by_lhs_digits[j] as usize),
-                Ordering::Less => acc -= &table_self.get_point(-by_lhs_digits[j] as usize),
+                Ordering::Greater => {
+                    acc = acc.add_mixed_unchecked(&table_self.get_point(by_lhs_digits[j] as usize))
+                }
+                Ordering::Less => {
+                    acc = acc.add_mixed_unchecked(
+                        &table_self.get_point(-by_lhs_digits[j] as usize).neg(),
+                    )
+                }
                 Ordering::Equal => (),
             };
 
             match by_rhs_digits[j].cmp(&0) {
-                Ordering::Greater => acc += &table_rhs.get_point(by_rhs_digits[j] as usize),
-                Ordering::Less => acc -= &table_rhs.get_point(-by_rhs_digits[j] as usize),
+                Ordering::Greater => {
+                    acc = acc.add_mixed_unchecked(&table_rhs.get_point(by_rhs_digits[j] as usize))
+                }
+                Ordering::Less => {
+                    acc = acc
+                        .add_mixed_unchecked(&table_rhs.get_point(-by_rhs_digits[j] as usize).neg())
+                }
                 Ordering::Equal => (),
             };
         }
 
-        acc
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[i + 1])
     }
 
     // TODO: It would be nice to have a constant-time variant of the method below,
@@ -1164,29 +1175,41 @@ impl ProjectivePoint {
         }
         let table_self = NafLookupTable::<8>::from(self);
         let table_basepoint = &ODD_MULTIPLES_BASEPOINT;
-        let mut acc = ProjectivePoint::identity();
+        let mut acc = SHIFT_POINT;
 
         for j in (0..i + 1).rev() {
-            acc = acc.double();
+            acc = acc.double_unchecked();
 
             match by_self_digits[j].cmp(&0) {
-                Ordering::Greater => acc += &table_self.get_point(by_self_digits[j] as usize),
-                Ordering::Less => acc -= &table_self.get_point(-by_self_digits[j] as usize),
+                Ordering::Greater => {
+                    acc = acc.add_mixed_unchecked(&table_self.get_point(by_self_digits[j] as usize))
+                }
+                Ordering::Less => {
+                    acc = acc.add_mixed_unchecked(
+                        &table_self.get_point(-by_self_digits[j] as usize).neg(),
+                    )
+                }
                 Ordering::Equal => (),
             };
 
             match by_basepoint_digits[j].cmp(&0) {
                 Ordering::Greater => {
-                    acc += &table_basepoint.get_point(by_basepoint_digits[j] as usize)
+                    acc = acc.add_mixed_unchecked(
+                        &table_basepoint.get_point(by_basepoint_digits[j] as usize),
+                    )
                 }
                 Ordering::Less => {
-                    acc -= &table_basepoint.get_point(-by_basepoint_digits[j] as usize)
+                    acc = acc.add_mixed_unchecked(
+                        &table_basepoint
+                            .get_point(-by_basepoint_digits[j] as usize)
+                            .neg(),
+                    )
                 }
                 Ordering::Equal => (),
             };
         }
 
-        acc
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[i + 1])
     }
 
     /// Multiplies by the curve cofactor

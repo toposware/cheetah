@@ -11,7 +11,7 @@
 //! Adapted from https://github.com/RustCrypto/elliptic-curves
 
 use crate::{AffinePoint, ProjectivePoint, Scalar};
-use crate::{MINUS_SHIFT_POINT_POW_4, SHIFT_POINT};
+use crate::{MINUS_SHIFT_POINT_ARRAY, SHIFT_POINT};
 
 use core::ops::Mul;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
@@ -194,7 +194,7 @@ impl BasePointTable {
             acc = acc.add_mixed_unchecked(&tables[i / 2].get_point(a[i]));
         }
 
-        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_POW_4)
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[4])
     }
 
     /// Performs a mixed scalar multiplication from `by`
@@ -221,7 +221,7 @@ impl BasePointTable {
             acc = acc.add_mixed_unchecked(&tables[i / 2].get_point(a[i]));
         }
 
-        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_POW_4)
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[4])
     }
 }
 
