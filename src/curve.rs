@@ -14,6 +14,7 @@ use core::{
     borrow::Borrow,
     cmp::Ordering,
     fmt,
+    hash::{Hash, Hasher},
     iter::Sum,
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
@@ -21,6 +22,8 @@ use core::{
 use crate::fp::reduce_u96;
 use crate::fp::GENERATOR;
 use crate::{Fp, Fp6, Scalar};
+
+use crate::{MINUS_SHIFT_POINT_POW_256, SHIFT_POINT};
 
 use crate::constants::ODD_MULTIPLES_BASEPOINT;
 use crate::LookupTable;
@@ -70,6 +73,13 @@ impl zeroize::DefaultIsZeroes for AffinePoint {}
 impl fmt::Display for AffinePoint {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+impl Hash for AffinePoint {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        self.x.hash(hasher);
+        self.y.hash(hasher);
     }
 }
 
@@ -419,6 +429,12 @@ impl fmt::Display for ProjectivePoint {
     }
 }
 
+impl Hash for ProjectivePoint {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        self.to_affine().hash(hasher);
+    }
+}
+
 impl<'a> From<&'a AffinePoint> for ProjectivePoint {
     fn from(p: &'a AffinePoint) -> ProjectivePoint {
         ProjectivePoint {
@@ -477,11 +493,7 @@ impl<'a> Neg for &'a ProjectivePoint {
 
     #[inline]
     fn neg(self) -> ProjectivePoint {
-        ProjectivePoint {
-            x: self.x,
-            y: -self.y,
-            z: self.z,
-        }
+        self.neg()
     }
 }
 
@@ -770,6 +782,16 @@ impl ProjectivePoint {
         ProjectivePoint::conditional_select(&tmp, &ProjectivePoint::identity(), self.is_identity())
     }
 
+    /// Computes the negation of a point in projective coordinates
+    #[inline]
+    pub const fn neg(&self) -> Self {
+        Self {
+            x: self.x,
+            y: (&self.y).neg(),
+            z: self.z,
+        }
+    }
+
     /// Adds this point to another point.
     pub const fn add(&self, rhs: &ProjectivePoint) -> ProjectivePoint {
         // Algorithm 1, https://eprint.iacr.org/2015/1060.pdf
@@ -886,22 +908,60 @@ impl ProjectivePoint {
         ProjectivePoint::conditional_select(&tmp, self, rhs.is_identity())
     }
 
+    /// Adds this point to another point in the affine model. This formulae is faster than
+    /// `ProjectivePoint::add_mixed` but is not complete.
+    /// **This is dangerous to call unless you know that the points to be added are not
+    /// identical, opposite of each other, and neither of them is the identity point; otherwise,
+    /// API invariants may be broken.** Please consider using `add_mixed()` instead.
+    pub fn add_mixed_unchecked(&self, rhs: &AffinePoint) -> ProjectivePoint {
+        // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
+
+        let t0 = (&rhs.y).mul(&self.z);
+        let t0 = (&t0).sub(&self.y);
+
+        let t1 = (&rhs.x).mul(&self.z);
+        let t1 = (&t1).sub(&self.x);
+
+        let t2 = t0.square();
+        let t2 = (&t2).mul(&self.z);
+        let t3 = t1.square();
+        let t4 = (&t1).mul(&t3);
+        let t2 = (&t2).sub(&t4);
+        let t5 = (&t3).mul(&self.x);
+        let t6 = t5.double();
+        let t2 = (&t2).sub(&t6);
+
+        let x3 = (&t1).mul(&t2);
+
+        let y3 = (&t5).sub(&t2);
+        let y3 = (&y3).mul(&t0);
+        let t7 = (&t4).mul(&self.y);
+        let y3 = (&y3).sub(&t7);
+
+        let z3 = (&t4).mul(&self.z);
+
+        let tmp = ProjectivePoint {
+            x: x3,
+            y: y3,
+            z: z3,
+        };
+
+        ProjectivePoint::conditional_select(&tmp, self, rhs.is_identity())
+    }
+
     /// Performs a projective scalar multiplication from `by`
     /// given as byte representation of a `Scalar` element
     pub fn multiply(&self, by: &[u8; 32]) -> ProjectivePoint {
         let table = LookupTable::<16>::from(self);
         let digits = Scalar::bytes_to_radix_16(by);
 
-        let mut acc = ProjectivePoint::from(&table.get_point(digits[63]));
-        for i in (0..63).rev() {
-            acc = acc.double();
-            acc = acc.double();
-            acc = acc.double();
-            acc = acc.double();
-            acc += table.get_point(digits[i]);
+        let mut acc = SHIFT_POINT;
+        for i in (0..64).rev() {
+            acc = acc.double_multi(4);
+            acc = acc.add_mixed_unchecked(&table.get_point(digits[i]));
         }
 
-        acc
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_POW_256)
     }
 
     /// Performs a projective scalar multiplication from `by`
@@ -950,18 +1010,14 @@ impl ProjectivePoint {
         let digits_lhs = Scalar::bytes_to_radix_16(by_lhs);
         let digits_rhs = Scalar::bytes_to_radix_16(by_rhs);
 
-        let mut acc = ProjectivePoint::from(&table_lhs.get_point(digits_lhs[63]));
-        acc += table_rhs.get_point(digits_rhs[63]);
-        for i in (0..63).rev() {
-            acc = acc.double();
-            acc = acc.double();
-            acc = acc.double();
-            acc = acc.double();
-            acc += table_lhs.get_point(digits_lhs[i]);
-            acc += table_rhs.get_point(digits_rhs[i]);
+        let mut acc = SHIFT_POINT;
+        for i in (0..64).rev() {
+            acc = acc.double_multi(4);
+            acc = acc.add_mixed_unchecked(&table_lhs.get_point(digits_lhs[i]));
+            acc = acc.add_mixed_unchecked(&table_rhs.get_point(digits_rhs[i]));
         }
 
-        acc
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_POW_256)
     }
 
     /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
@@ -1147,8 +1203,20 @@ impl ProjectivePoint {
 /// A compressed point, storing the `x` coordinate of
 /// a point, along an extra byte storing metadata
 /// to be used for decompression.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct CompressedPoint(pub [u8; 49]);
+
+impl Default for CompressedPoint {
+    fn default() -> Self {
+        AffinePoint::identity().to_compressed()
+    }
+}
+
+impl ConstantTimeEq for CompressedPoint {
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.as_bytes().ct_eq(other.as_bytes())
+    }
+}
 
 impl CompressedPoint {
     /// Converts an `AffinePoint` to a `CompressedPoint`
@@ -1227,62 +1295,42 @@ impl CompressedPoint {
             })
         })
     }
-}
 
-#[cfg(feature = "serialize")]
-impl Serialize for CompressedPoint {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        use serde::ser::SerializeTuple;
-        let mut tup = serializer.serialize_tuple(49)?;
-        for byte in self.0.iter() {
-            tup.serialize_element(byte)?;
-        }
-        tup.end()
+    /// Copies the bytes of this `CompressedPoint`.
+    pub fn to_bytes(&self) -> [u8; 49] {
+        self.0
     }
-}
 
-#[cfg(feature = "serialize")]
-impl<'de> Deserialize<'de> for CompressedPoint {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct CompressedPointVisitor;
+    /// Views this `CompressedPoint` as an array of bytes.
+    pub fn as_bytes(&self) -> &[u8; 49] {
+        &self.0
+    }
 
-        impl<'de> Visitor<'de> for CompressedPointVisitor {
-            type Value = CompressedPoint;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("49 bytes of data")
-            }
-
-            fn visit_seq<A>(self, mut seq: A) -> Result<CompressedPoint, A::Error>
-            where
-                A: serde::de::SeqAccess<'de>,
-            {
-                let mut bytes = [0u8; 49];
-                for (i, byte) in bytes.iter_mut().enumerate() {
-                    *byte = seq
-                        .next_element()?
-                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 49 bytes"))?;
-                }
-
-                Ok(CompressedPoint(bytes))
-            }
-        }
-
-        deserializer.deserialize_tuple(49, CompressedPointVisitor)
+    /// Interprets the provided bytes as a `CompressedPoint`.
+    /// This does not check the validity of the input, and may result
+    /// in failure when calling `to_affine()`.
+    pub fn from_bytes(bytes: &[u8; 49]) -> Self {
+        Self(*bytes)
     }
 }
 
 /// A uncompressed point, storing the `x` and `y` coordinates
 /// of a point, along an extra byte storing metadata to be
 /// used for decompression.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct UncompressedPoint(pub [u8; 97]);
+
+impl Default for UncompressedPoint {
+    fn default() -> Self {
+        AffinePoint::identity().to_uncompressed()
+    }
+}
+
+impl ConstantTimeEq for UncompressedPoint {
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.as_bytes().ct_eq(other.as_bytes())
+    }
+}
 
 impl UncompressedPoint {
     /// Converts an `AffinePoint` to an `UncompressedPoint`
@@ -1345,54 +1393,22 @@ impl UncompressedPoint {
             })
         })
     }
-}
 
-#[cfg(feature = "serialize")]
-impl Serialize for UncompressedPoint {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        use serde::ser::SerializeTuple;
-        let mut tup = serializer.serialize_tuple(97)?;
-        for byte in self.0.iter() {
-            tup.serialize_element(byte)?;
-        }
-        tup.end()
+    /// Copies the bytes of this `UncompressedPoint`.
+    pub fn to_bytes(&self) -> [u8; 97] {
+        self.0
     }
-}
 
-#[cfg(feature = "serialize")]
-impl<'de> Deserialize<'de> for UncompressedPoint {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct UncompressedPointVisitor;
+    /// Views this `UncompressedPoint` as an array of bytes.
+    pub fn as_bytes(&self) -> &[u8; 97] {
+        &self.0
+    }
 
-        impl<'de> Visitor<'de> for UncompressedPointVisitor {
-            type Value = UncompressedPoint;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("97 bytes of data")
-            }
-
-            fn visit_seq<A>(self, mut seq: A) -> Result<UncompressedPoint, A::Error>
-            where
-                A: serde::de::SeqAccess<'de>,
-            {
-                let mut bytes = [0u8; 97];
-                for (i, byte) in bytes.iter_mut().enumerate() {
-                    *byte = seq
-                        .next_element()?
-                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 97 bytes"))?;
-                }
-
-                Ok(UncompressedPoint(bytes))
-            }
-        }
-
-        deserializer.deserialize_tuple(97, UncompressedPointVisitor)
+    /// Interprets the provided bytes as a `UncompressedPoint`.
+    /// This does not check the validity of the input, and may result
+    /// in failure when calling `to_affine()`.
+    pub fn from_bytes(bytes: &[u8; 97]) -> Self {
+        Self(*bytes)
     }
 }
 
@@ -1440,6 +1456,36 @@ impl Curve for ProjectivePoint {
 // ================================================================================================
 
 #[cfg(feature = "serialize")]
+impl Serialize for CompressedPoint {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeTuple;
+        let mut tup = serializer.serialize_tuple(49)?;
+        for byte in self.0.iter() {
+            tup.serialize_element(byte)?;
+        }
+        tup.end()
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl Serialize for UncompressedPoint {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        use serde::ser::SerializeTuple;
+        let mut tup = serializer.serialize_tuple(97)?;
+        for byte in self.0.iter() {
+            tup.serialize_element(byte)?;
+        }
+        tup.end()
+    }
+}
+
+#[cfg(feature = "serialize")]
 impl Serialize for AffinePoint {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -1456,6 +1502,74 @@ impl Serialize for ProjectivePoint {
         S: Serializer,
     {
         self.to_compressed().serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl<'de> Deserialize<'de> for CompressedPoint {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct CompressedPointVisitor;
+
+        impl<'de> Visitor<'de> for CompressedPointVisitor {
+            type Value = CompressedPoint;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("49 bytes of data")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<CompressedPoint, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut bytes = [0u8; 49];
+                for (i, byte) in bytes.iter_mut().enumerate() {
+                    *byte = seq
+                        .next_element()?
+                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 49 bytes"))?;
+                }
+
+                Ok(CompressedPoint(bytes))
+            }
+        }
+
+        deserializer.deserialize_tuple(49, CompressedPointVisitor)
+    }
+}
+
+#[cfg(feature = "serialize")]
+impl<'de> Deserialize<'de> for UncompressedPoint {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct UncompressedPointVisitor;
+
+        impl<'de> Visitor<'de> for UncompressedPointVisitor {
+            type Value = UncompressedPoint;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("97 bytes of data")
+            }
+
+            fn visit_seq<A>(self, mut seq: A) -> Result<UncompressedPoint, A::Error>
+            where
+                A: serde::de::SeqAccess<'de>,
+            {
+                let mut bytes = [0u8; 97];
+                for (i, byte) in bytes.iter_mut().enumerate() {
+                    *byte = seq
+                        .next_element()?
+                        .ok_or_else(|| serde::de::Error::invalid_length(i, &"expected 97 bytes"))?;
+                }
+
+                Ok(UncompressedPoint(bytes))
+            }
+        }
+
+        deserializer.deserialize_tuple(97, UncompressedPointVisitor)
     }
 }
 
@@ -1707,7 +1821,7 @@ mod tests {
             assert!(c == ProjectivePoint::generator());
         }
         {
-            let a = ProjectivePoint::generator().double().double(); // 4P
+            let a = ProjectivePoint::generator().double_multi(2); // 4P
             let b = ProjectivePoint::generator().double(); // 2P
             let c = a + b;
 
@@ -1781,7 +1895,7 @@ mod tests {
             assert!(c == ProjectivePoint::generator());
         }
         {
-            let a = ProjectivePoint::generator().double().double(); // 4P
+            let a = ProjectivePoint::generator().double_multi(2); // 4P
             let b = ProjectivePoint::generator().double(); // 2P
             let c = a + b;
 
@@ -1794,6 +1908,19 @@ mod tests {
             assert!(!bool::from(d.is_identity()));
             assert!(bool::from(d.is_on_curve()));
             assert_eq!(c, d);
+        }
+        {
+            let mut rng = OsRng;
+            for _ in 0..100 {
+                let a = ProjectivePoint::random(&mut rng);
+                let b = AffinePoint::random(&mut rng);
+
+                // If this fails, we are very unlucky!
+                assert_eq!(a.add_mixed(&b), a.add_mixed_unchecked(&b));
+            }
+
+            let a = ProjectivePoint::random(&mut rng);
+            assert_ne!(a.add(&a), a.add_mixed_unchecked(&a.to_affine()));
         }
     }
 
@@ -2066,6 +2193,14 @@ mod tests {
             let bytes = ProjectivePoint::identity().to_compressed();
             let point_decompressed = ProjectivePoint::from_compressed(&bytes).unwrap();
             assert!(bool::from(point_decompressed.is_identity()));
+
+            assert_eq!(
+                ProjectivePoint::identity().to_compressed().to_bytes(),
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128
+                ]
+            );
         }
 
         // Invalid points
@@ -2117,6 +2252,16 @@ mod tests {
             let bytes = ProjectivePoint::identity().to_uncompressed();
             let point_decompressed = ProjectivePoint::from_uncompressed(&bytes).unwrap();
             assert!(bool::from(point_decompressed.is_identity()));
+
+            assert_eq!(
+                ProjectivePoint::identity().to_uncompressed().to_bytes(),
+                [
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128
+                ]
+            );
         }
 
         // Invalid points

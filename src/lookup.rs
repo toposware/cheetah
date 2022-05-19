@@ -11,6 +11,7 @@
 //! Adapted from https://github.com/RustCrypto/elliptic-curves
 
 use crate::{AffinePoint, ProjectivePoint, Scalar};
+use crate::{MINUS_SHIFT_POINT_POW_4, SHIFT_POINT};
 
 use core::ops::Mul;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
@@ -181,19 +182,19 @@ impl BasePointTable {
         let a = Scalar::bytes_to_radix_16(scalar);
 
         let tables = &self.0;
-        let mut acc = ProjectivePoint::identity();
+        let mut acc = SHIFT_POINT;
 
         for i in (0..64).filter(|x| x % 2 == 1) {
-            acc += &tables[i / 2].get_point(a[i]);
+            acc = acc.add_mixed_unchecked(&tables[i / 2].get_point(a[i]));
         }
 
         acc = acc.double_multi(4);
 
         for i in (0..64).filter(|x| x % 2 == 0) {
-            acc += &tables[i / 2].get_point(a[i]);
+            acc = acc.add_mixed_unchecked(&tables[i / 2].get_point(a[i]));
         }
 
-        acc
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_POW_4)
     }
 
     /// Performs a mixed scalar multiplication from `by`
@@ -208,19 +209,19 @@ impl BasePointTable {
         let a = Scalar::bytes_to_radix_16(scalar);
 
         let tables = &self.0;
-        let mut acc = ProjectivePoint::identity();
+        let mut acc = SHIFT_POINT;
 
         for i in (0..64).filter(|x| x % 2 == 1) {
-            acc += &tables[i / 2].get_point_vartime(a[i]);
+            acc = acc.add_mixed_unchecked(&tables[i / 2].get_point(a[i]));
         }
 
         acc = acc.double_multi(4);
 
         for i in (0..64).filter(|x| x % 2 == 0) {
-            acc += &tables[i / 2].get_point_vartime(a[i]);
+            acc = acc.add_mixed_unchecked(&tables[i / 2].get_point(a[i]));
         }
 
-        acc
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_POW_4)
     }
 }
 

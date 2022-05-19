@@ -42,6 +42,10 @@ fn criterion_benchmark(c: &mut Criterion) {
         bench.iter(|| black_box(p) + black_box(p2_affine))
     });
 
+    c.bench_function("Projective unchecked mixed addition", |bench| {
+        bench.iter(|| black_box(p).add_mixed_unchecked(black_box(&p2_affine)))
+    });
+
     c.bench_function("Projective subtraction", |bench| {
         bench.iter(|| black_box(p) - black_box(p2))
     });

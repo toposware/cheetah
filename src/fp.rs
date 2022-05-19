@@ -12,6 +12,7 @@
 use core::{
     borrow::Borrow,
     fmt::{self, Debug, Display, Formatter},
+    hash::{Hash, Hasher},
     iter::Sum,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
@@ -65,6 +66,12 @@ impl Debug for Fp {
 impl Display for Fp {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+impl Hash for Fp {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        self.0.hash(hasher);
     }
 }
 

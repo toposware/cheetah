@@ -12,6 +12,7 @@
 use core::{
     borrow::Borrow,
     fmt::{self, Formatter},
+    hash::{Hash, Hasher},
     iter::Sum,
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
@@ -80,6 +81,17 @@ impl fmt::Debug for Fp6 {
 impl Default for Fp6 {
     fn default() -> Self {
         Self::zero()
+    }
+}
+
+impl Hash for Fp6 {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        self.c0.hash(hasher);
+        self.c1.hash(hasher);
+        self.c2.hash(hasher);
+        self.c3.hash(hasher);
+        self.c4.hash(hasher);
+        self.c5.hash(hasher);
     }
 }
 
@@ -691,6 +703,19 @@ impl Fp6 {
             c3: (&self.c3).double(),
             c4: (&self.c4).double(),
             c5: (&self.c5).double(),
+        }
+    }
+
+    /// Computes the triple of a field element
+    #[inline]
+    pub const fn triple(&self) -> Self {
+        Self {
+            c0: (&self.c0).triple(),
+            c1: (&self.c1).triple(),
+            c2: (&self.c2).triple(),
+            c3: (&self.c3).triple(),
+            c4: (&self.c4).triple(),
+            c5: (&self.c5).triple(),
         }
     }
 
