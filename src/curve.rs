@@ -730,6 +730,21 @@ impl ProjectivePoint {
         output
     }
 
+    /// Computes `n` iterated doubling of this point.
+    /// **This is dangerous to call unless you know that the point to be doubled
+    /// is not the identity point, otherwise, API invariants may be broken.**
+    /// Please consider using `double()` instead.
+    pub fn double_multi_unchecked(&self, n: u32) -> ProjectivePoint {
+        assert!(n >= 1);
+        let mut output = self.double_unchecked();
+
+        for _ in 1..n {
+            output = output.double_unchecked();
+        }
+
+        output
+    }
+
     /// Computes the doubling of this point.
     pub fn double(&self) -> ProjectivePoint {
         // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
@@ -780,6 +795,58 @@ impl ProjectivePoint {
         // The calculation above fails for doubling the infinity point,
         // hence we do a final conditional selection.
         ProjectivePoint::conditional_select(&tmp, &ProjectivePoint::identity(), self.is_identity())
+    }
+
+    /// Computes the doubling of this point. This formulae is faster than
+    /// `ProjectivePoint::double` but is not working for the infinity point.
+    /// **This is dangerous to call unless you know that the point to be doubled
+    /// is not the identity point, otherwise, API invariants may be broken.**
+    /// Please consider using `double()` instead.
+    pub fn double_unchecked(&self) -> ProjectivePoint {
+        // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
+
+        let x2 = self.x.square();
+        let z2 = self.z.square();
+
+        let a = x2.double();
+        let a = (&a).add(&x2);
+        let a = (&a).add(&z2);
+
+        let b = (&self.y).mul(&self.z);
+        let t3 = (&self.y).mul(&b);
+        let c = (&t3).mul(&self.x);
+
+        let d = c.double();
+        let c4 = d.double();
+        let d = c4.double();
+
+        let t = a.square();
+        let d = (&t).sub(&d);
+
+        let x3 = (&b).mul(&d);
+        let x3 = x3.double();
+
+        let y3 = (&c4).sub(&d);
+        let y3 = (&a).mul(&y3);
+        let t3 = t3.square();
+
+        let t3 = t3.double();
+        let t3 = t3.double();
+        let t3 = t3.double();
+
+        let y3 = (&y3).sub(&t3);
+        let z3 = b.square();
+        let z3 = (&z3).mul(&b);
+
+        let z3 = z3.double();
+        let z3 = z3.double();
+        let z3 = z3.double();
+
+        ProjectivePoint {
+            x: x3,
+            y: y3,
+            z: z3,
+        }
     }
 
     /// Computes the negation of a point in projective coordinates
@@ -957,7 +1024,7 @@ impl ProjectivePoint {
 
         let mut acc = SHIFT_POINT;
         for i in (0..64).rev() {
-            acc = acc.double_multi(4);
+            acc = acc.double_multi_unchecked(4);
             acc = acc.add_mixed_unchecked(&table.get_point(digits[i]));
         }
 
@@ -1012,7 +1079,7 @@ impl ProjectivePoint {
 
         let mut acc = SHIFT_POINT;
         for i in (0..64).rev() {
-            acc = acc.double_multi(4);
+            acc = acc.double_multi_unchecked(4);
             acc = acc.add_mixed_unchecked(&table_lhs.get_point(digits_lhs[i]));
             acc = acc.add_mixed_unchecked(&table_rhs.get_point(digits_rhs[i]));
         }
@@ -1761,6 +1828,7 @@ mod tests {
             let tmp = ProjectivePoint::generator().double();
             assert!(!bool::from(tmp.is_identity()));
             assert!(bool::from(tmp.is_on_curve()));
+            assert_eq!(tmp, ProjectivePoint::generator().double_unchecked());
 
             assert_eq!(
                 AffinePoint::from(tmp),

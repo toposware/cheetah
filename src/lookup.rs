@@ -188,7 +188,7 @@ impl BasePointTable {
             acc = acc.add_mixed_unchecked(&tables[i / 2].get_point(a[i]));
         }
 
-        acc = acc.double_multi(4);
+        acc = acc.double_multi_unchecked(4);
 
         for i in (0..64).filter(|x| x % 2 == 0) {
             acc = acc.add_mixed_unchecked(&tables[i / 2].get_point(a[i]));
@@ -215,7 +215,7 @@ impl BasePointTable {
             acc = acc.add_mixed_unchecked(&tables[i / 2].get_point(a[i]));
         }
 
-        acc = acc.double_multi(4);
+        acc = acc.double_multi_unchecked(4);
 
         for i in (0..64).filter(|x| x % 2 == 0) {
             acc = acc.add_mixed_unchecked(&tables[i / 2].get_point(a[i]));
