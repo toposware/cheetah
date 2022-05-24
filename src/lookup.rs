@@ -101,12 +101,8 @@ impl<const N: usize> LookupTable<N> {
         let xabs = (x + xmask) ^ xmask;
 
         // Get an array element
-        let mut t = AffinePoint::identity();
-        for j in 1..N + 1 {
-            if xabs as usize == j {
-                t = self.0[j - 1];
-            }
-        }
+        let mut t = self.0[xabs as usize - 1];
+
         // Now t == |x| * p.
 
         if xmask & 1 == 1 {
