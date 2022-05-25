@@ -54,6 +54,10 @@ fn criterion_benchmark(c: &mut Criterion) {
         bench.iter(|| black_box(p).double())
     });
 
+    c.bench_function("Projective unchecked doubling", |bench| {
+        bench.iter(|| black_box(p).double_unchecked())
+    });
+
     c.bench_function(
         "Projective scalar multiplication (variable base)",
         |bench| bench.iter(|| ProjectivePoint::multiply(black_box(&p), black_box(&pow))),

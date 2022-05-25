@@ -7,6 +7,7 @@
 // except according to those terms.
 
 use rand_core::OsRng;
+use rand_core::RngCore;
 
 #[macro_use]
 extern crate criterion;
@@ -25,6 +26,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     let x_bytes = x.to_bytes();
     let y = Fp6::random(&mut rng);
     let pow = y.output_internal();
+    let y32 = rng.next_u32();
 
     c.bench_function("Fp6 add", |bench| {
         bench.iter(|| black_box(x) + black_box(y))
@@ -35,6 +37,10 @@ fn criterion_benchmark(c: &mut Criterion) {
     });
 
     c.bench_function("Fp6 double", |bench| bench.iter(|| black_box(x).double()));
+
+    c.bench_function("Fp6 mul u32", |bench| {
+        bench.iter(|| black_box(x).mul_by_u32(black_box(y32)))
+    });
 
     c.bench_function("Fp6 mul", |bench| {
         bench.iter(|| black_box(x) * black_box(y))

@@ -23,7 +23,7 @@ use crate::fp::reduce_u96;
 use crate::fp::GENERATOR;
 use crate::{Fp, Fp6, Scalar};
 
-use crate::{MINUS_SHIFT_POINT_POW_256, SHIFT_POINT};
+use crate::{MINUS_SHIFT_POINT_ARRAY, SHIFT_POINT};
 
 use crate::constants::ODD_MULTIPLES_BASEPOINT;
 use crate::LookupTable;
@@ -730,8 +730,74 @@ impl ProjectivePoint {
         output
     }
 
+    /// Computes `n` iterated doubling of this point.
+    /// **This is dangerous to call unless you know that the point to be doubled
+    /// is not the identity point, otherwise, API invariants may be broken.**
+    /// Please consider using `double()` instead.
+    pub fn double_multi_unchecked(&self, n: u32) -> ProjectivePoint {
+        assert!(n >= 1);
+        let mut output = self.double_unchecked();
+
+        for _ in 1..n {
+            output = output.double_unchecked();
+        }
+
+        output
+    }
+
     /// Computes the doubling of this point.
     pub fn double(&self) -> ProjectivePoint {
+        // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
+
+        let x2 = self.x.square();
+        let z2 = self.z.square();
+
+        let a = x2.double();
+        let a = (&a).add(&x2);
+        let a = (&a).add(&z2);
+
+        let b = (&self.y).mul(&self.z);
+        let t3 = (&self.y).mul(&b);
+        let c = (&t3).mul(&self.x);
+
+        let c4 = c.mul_by_u32(4);
+        let d = c4.double();
+
+        let t = a.square();
+        let d = (&t).sub(&d);
+
+        let x3 = (&b).mul(&d);
+        let x3 = x3.double();
+
+        let y3 = (&c4).sub(&d);
+        let y3 = (&a).mul(&y3);
+        let t3 = t3.square();
+
+        let t3 = t3.mul_by_u32(8);
+
+        let y3 = (&y3).sub(&t3);
+        let z3 = b.square();
+        let z3 = (&z3).mul(&b);
+
+        let z3 = z3.mul_by_u32(8);
+
+        let tmp = ProjectivePoint {
+            x: x3,
+            y: y3,
+            z: z3,
+        };
+
+        // The calculation above fails for doubling the infinity point,
+        // hence we do a final conditional selection.
+        ProjectivePoint::conditional_select(&tmp, &ProjectivePoint::identity(), self.is_identity())
+    }
+
+    /// Computes the doubling of this point. This formulae is faster than
+    /// `ProjectivePoint::double` but is not working for the infinity point.
+    /// **This is dangerous to call unless you know that the point to be doubled
+    /// is not the identity point, otherwise, API invariants may be broken.**
+    /// Please consider using `double()` instead.
+    pub const fn double_unchecked(&self) -> ProjectivePoint {
         // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
 
         let x2 = self.x.square();
@@ -757,29 +823,23 @@ impl ProjectivePoint {
 
         let y3 = (&c4).sub(&d);
         let y3 = (&a).mul(&y3);
-        let t3 = t3.square();
 
         let t3 = t3.double();
-        let t3 = t3.double();
+        let t3 = t3.square();
         let t3 = t3.double();
 
         let y3 = (&y3).sub(&t3);
-        let z3 = b.square();
+
+        let z3 = b.double();
+        let z3 = z3.square();
         let z3 = (&z3).mul(&b);
-
-        let z3 = z3.double();
-        let z3 = z3.double();
         let z3 = z3.double();
 
-        let tmp = ProjectivePoint {
+        ProjectivePoint {
             x: x3,
             y: y3,
             z: z3,
-        };
-
-        // The calculation above fails for doubling the infinity point,
-        // hence we do a final conditional selection.
-        ProjectivePoint::conditional_select(&tmp, &ProjectivePoint::identity(), self.is_identity())
+        }
     }
 
     /// Computes the negation of a point in projective coordinates
@@ -957,11 +1017,11 @@ impl ProjectivePoint {
 
         let mut acc = SHIFT_POINT;
         for i in (0..64).rev() {
-            acc = acc.double_multi(4);
+            acc = acc.double_multi_unchecked(4);
             acc = acc.add_mixed_unchecked(&table.get_point(digits[i]));
         }
 
-        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_POW_256)
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
     }
 
     /// Performs a projective scalar multiplication from `by`
@@ -982,10 +1042,10 @@ impl ProjectivePoint {
             }
         }
         let table = NafLookupTable::<8>::from(self);
-        let mut acc = ProjectivePoint::identity();
+        let mut acc = SHIFT_POINT;
 
         for j in (0..i + 1).rev() {
-            acc = acc.double();
+            acc = acc.double_unchecked();
 
             match digits[j].cmp(&0) {
                 Ordering::Greater => acc += &table.get_point(digits[j] as usize),
@@ -994,7 +1054,7 @@ impl ProjectivePoint {
             };
         }
 
-        acc
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[i + 1])
     }
 
     /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
@@ -1012,12 +1072,12 @@ impl ProjectivePoint {
 
         let mut acc = SHIFT_POINT;
         for i in (0..64).rev() {
-            acc = acc.double_multi(4);
+            acc = acc.double_multi_unchecked(4);
             acc = acc.add_mixed_unchecked(&table_lhs.get_point(digits_lhs[i]));
             acc = acc.add_mixed_unchecked(&table_rhs.get_point(digits_rhs[i]));
         }
 
-        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_POW_256)
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
     }
 
     /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
@@ -1045,25 +1105,36 @@ impl ProjectivePoint {
         }
         let table_self = NafLookupTable::<8>::from(self);
         let table_rhs = NafLookupTable::<8>::from(rhs);
-        let mut acc = ProjectivePoint::identity();
+        let mut acc = SHIFT_POINT;
 
         for j in (0..i + 1).rev() {
-            acc = acc.double();
+            acc = acc.double_unchecked();
 
             match by_lhs_digits[j].cmp(&0) {
-                Ordering::Greater => acc += &table_self.get_point(by_lhs_digits[j] as usize),
-                Ordering::Less => acc -= &table_self.get_point(-by_lhs_digits[j] as usize),
+                Ordering::Greater => {
+                    acc = acc.add_mixed_unchecked(&table_self.get_point(by_lhs_digits[j] as usize))
+                }
+                Ordering::Less => {
+                    acc = acc.add_mixed_unchecked(
+                        &table_self.get_point(-by_lhs_digits[j] as usize).neg(),
+                    )
+                }
                 Ordering::Equal => (),
             };
 
             match by_rhs_digits[j].cmp(&0) {
-                Ordering::Greater => acc += &table_rhs.get_point(by_rhs_digits[j] as usize),
-                Ordering::Less => acc -= &table_rhs.get_point(-by_rhs_digits[j] as usize),
+                Ordering::Greater => {
+                    acc = acc.add_mixed_unchecked(&table_rhs.get_point(by_rhs_digits[j] as usize))
+                }
+                Ordering::Less => {
+                    acc = acc
+                        .add_mixed_unchecked(&table_rhs.get_point(-by_rhs_digits[j] as usize).neg())
+                }
                 Ordering::Equal => (),
             };
         }
 
-        acc
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[i + 1])
     }
 
     // TODO: It would be nice to have a constant-time variant of the method below,
@@ -1097,29 +1168,41 @@ impl ProjectivePoint {
         }
         let table_self = NafLookupTable::<8>::from(self);
         let table_basepoint = &ODD_MULTIPLES_BASEPOINT;
-        let mut acc = ProjectivePoint::identity();
+        let mut acc = SHIFT_POINT;
 
         for j in (0..i + 1).rev() {
-            acc = acc.double();
+            acc = acc.double_unchecked();
 
             match by_self_digits[j].cmp(&0) {
-                Ordering::Greater => acc += &table_self.get_point(by_self_digits[j] as usize),
-                Ordering::Less => acc -= &table_self.get_point(-by_self_digits[j] as usize),
+                Ordering::Greater => {
+                    acc = acc.add_mixed_unchecked(&table_self.get_point(by_self_digits[j] as usize))
+                }
+                Ordering::Less => {
+                    acc = acc.add_mixed_unchecked(
+                        &table_self.get_point(-by_self_digits[j] as usize).neg(),
+                    )
+                }
                 Ordering::Equal => (),
             };
 
             match by_basepoint_digits[j].cmp(&0) {
                 Ordering::Greater => {
-                    acc += &table_basepoint.get_point(by_basepoint_digits[j] as usize)
+                    acc = acc.add_mixed_unchecked(
+                        &table_basepoint.get_point(by_basepoint_digits[j] as usize),
+                    )
                 }
                 Ordering::Less => {
-                    acc -= &table_basepoint.get_point(-by_basepoint_digits[j] as usize)
+                    acc = acc.add_mixed_unchecked(
+                        &table_basepoint
+                            .get_point(-by_basepoint_digits[j] as usize)
+                            .neg(),
+                    )
                 }
                 Ordering::Equal => (),
             };
         }
 
-        acc
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[i + 1])
     }
 
     /// Multiplies by the curve cofactor
@@ -1761,6 +1844,7 @@ mod tests {
             let tmp = ProjectivePoint::generator().double();
             assert!(!bool::from(tmp.is_identity()));
             assert!(bool::from(tmp.is_on_curve()));
+            assert_eq!(tmp, ProjectivePoint::generator().double_unchecked());
 
             assert_eq!(
                 AffinePoint::from(tmp),

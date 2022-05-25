@@ -51,9 +51,7 @@ pub use scalar::Scalar;
 pub use fp::Fp;
 pub use fp6::Fp6;
 
-pub use constants::{
-    BASEPOINT_TABLE, MINUS_SHIFT_POINT_POW_256, MINUS_SHIFT_POINT_POW_4, SHIFT_POINT,
-};
+pub use constants::{BASEPOINT_TABLE, MINUS_SHIFT_POINT_ARRAY, SHIFT_POINT};
 pub use lookup::{BasePointTable, LookupTable};
 pub use naf_lookup::NafLookupTable;
 

@@ -814,6 +814,17 @@ mod tests {
     }
 
     #[test]
+    fn test_multiplication_by_u32() {
+        let mut rng = OsRng;
+
+        for _ in 0..100 {
+            let a = Fp::random(&mut rng);
+            let b = rng.next_u32();
+            assert_eq!(a.mul_by_u32(b), a * Fp::from(b));
+        }
+    }
+
+    #[test]
     fn test_division() {
         let mut rng = OsRng;
         let scale = Fp::random(&mut rng);
