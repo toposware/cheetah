@@ -760,8 +760,7 @@ impl ProjectivePoint {
         let t3 = (&self.y).mul(&b);
         let c = (&t3).mul(&self.x);
 
-        let d = c.double();
-        let c4 = d.double();
+        let c4 = c.mul_by_u32(4);
         let d = c4.double();
 
         let t = a.square();
@@ -774,17 +773,13 @@ impl ProjectivePoint {
         let y3 = (&a).mul(&y3);
         let t3 = t3.square();
 
-        let t3 = t3.double();
-        let t3 = t3.double();
-        let t3 = t3.double();
+        let t3 = t3.mul_by_u32(8);
 
         let y3 = (&y3).sub(&t3);
         let z3 = b.square();
         let z3 = (&z3).mul(&b);
 
-        let z3 = z3.double();
-        let z3 = z3.double();
-        let z3 = z3.double();
+        let z3 = z3.mul_by_u32(8);
 
         let tmp = ProjectivePoint {
             x: x3,
@@ -802,7 +797,7 @@ impl ProjectivePoint {
     /// **This is dangerous to call unless you know that the point to be doubled
     /// is not the identity point, otherwise, API invariants may be broken.**
     /// Please consider using `double()` instead.
-    pub fn double_unchecked(&self) -> ProjectivePoint {
+    pub const fn double_unchecked(&self) -> ProjectivePoint {
         // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
 
         let x2 = self.x.square();
@@ -828,18 +823,16 @@ impl ProjectivePoint {
 
         let y3 = (&c4).sub(&d);
         let y3 = (&a).mul(&y3);
-        let t3 = t3.square();
 
         let t3 = t3.double();
-        let t3 = t3.double();
+        let t3 = t3.square();
         let t3 = t3.double();
 
         let y3 = (&y3).sub(&t3);
-        let z3 = b.square();
-        let z3 = (&z3).mul(&b);
 
-        let z3 = z3.double();
-        let z3 = z3.double();
+        let z3 = b.double();
+        let z3 = z3.square();
+        let z3 = (&z3).mul(&b);
         let z3 = z3.double();
 
         ProjectivePoint {
