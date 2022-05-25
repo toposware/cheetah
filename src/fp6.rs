@@ -363,6 +363,26 @@ impl Fp6 {
     }
 
     #[inline]
+    /// Computes the multiplication of an Fp6 element with a u32
+    pub const fn mul_by_u32(&self, other: u32) -> Fp6 {
+        let c0 = (&self.c0).mul_by_u32(other);
+        let c1 = (&self.c1).mul_by_u32(other);
+        let c2 = (&self.c2).mul_by_u32(other);
+        let c3 = (&self.c3).mul_by_u32(other);
+        let c4 = (&self.c4).mul_by_u32(other);
+        let c5 = (&self.c5).mul_by_u32(other);
+
+        Self {
+            c0,
+            c1,
+            c2,
+            c3,
+            c4,
+            c5,
+        }
+    }
+
+    #[inline]
     /// Computes the multiplication of an Fp6 element with an Fp element
     pub const fn mul_by_fp(&self, other: &Fp) -> Fp6 {
         let c0 = (&self.c0).mul(other);
@@ -1350,6 +1370,17 @@ mod tests {
         };
 
         assert_eq!(a * b, c);
+    }
+
+    #[test]
+    fn test_multiplication_by_u32() {
+        let mut rng = OsRng;
+
+        for _ in 0..100 {
+            let a = Fp6::random(&mut rng);
+            let b = rng.next_u32();
+            assert_eq!(a.mul_by_u32(b), a * Fp6::from(b));
+        }
     }
 
     #[test]
