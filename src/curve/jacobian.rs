@@ -23,7 +23,7 @@ use super::B;
 use crate::{AffinePoint, CompressedPoint, UncompressedPoint};
 use crate::{Fp, Fp6, Scalar};
 
-use crate::{MINUS_SHIFT_POINT_ARRAY, SHIFT_POINT_JACOBIAN};
+use crate::{MINUS_SHIFT_POINT_ARRAY, SHIFT_POINT_MODIFIED_JACOBIAN};
 
 use crate::constants::ODD_MULTIPLES_BASEPOINT;
 use crate::LookupTable;
@@ -109,6 +109,22 @@ impl<'a> From<&'a AffinePoint> for JacobianPoint {
 
 impl From<AffinePoint> for JacobianPoint {
     fn from(p: AffinePoint) -> JacobianPoint {
+        JacobianPoint::from(&p)
+    }
+}
+
+impl<'a> From<&'a ModifiedJacobianPoint> for JacobianPoint {
+    fn from(p: &'a ModifiedJacobianPoint) -> JacobianPoint {
+        JacobianPoint {
+            x: p.x,
+            y: p.y,
+            z: p.z,
+        }
+    }
+}
+
+impl From<ModifiedJacobianPoint> for JacobianPoint {
+    fn from(p: ModifiedJacobianPoint) -> JacobianPoint {
         JacobianPoint::from(&p)
     }
 }
@@ -582,13 +598,14 @@ impl JacobianPoint {
         let table = LookupTable::<16>::from(self);
         let digits = Scalar::bytes_to_radix_16(by);
 
-        let mut acc = *SHIFT_POINT_JACOBIAN;
+        let mut acc = *SHIFT_POINT_MODIFIED_JACOBIAN;
         for i in (0..64).rev() {
             acc = acc.double_multi_unchecked(4);
             acc = acc.add_mixed_unchecked(&table.get_point(digits[i]));
         }
 
         acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
+            .into()
     }
 
     /// Performs a jacobian scalar multiplication from `by`
@@ -609,19 +626,24 @@ impl JacobianPoint {
             }
         }
         let table = NafLookupTable::<8>::from(self);
-        let mut acc = *SHIFT_POINT_JACOBIAN;
+        let mut acc = *SHIFT_POINT_MODIFIED_JACOBIAN;
 
         for j in (0..i + 1).rev() {
             acc = acc.double_unchecked();
 
             match digits[j].cmp(&0) {
-                Ordering::Greater => acc += &table.get_point(digits[j] as usize),
-                Ordering::Less => acc -= &table.get_point(-digits[j] as usize),
+                Ordering::Greater => {
+                    acc = acc.add_mixed_unchecked(&table.get_point(digits[j] as usize))
+                }
+                Ordering::Less => {
+                    acc = acc.add_mixed_unchecked(&table.get_point(-digits[j] as usize).neg())
+                }
                 Ordering::Equal => (),
             };
         }
 
         acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[i + 1])
+            .into()
     }
 
     /// Performs the jacobian sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
@@ -637,7 +659,7 @@ impl JacobianPoint {
         let digits_lhs = Scalar::bytes_to_radix_16(by_lhs);
         let digits_rhs = Scalar::bytes_to_radix_16(by_rhs);
 
-        let mut acc = *SHIFT_POINT_JACOBIAN;
+        let mut acc = *SHIFT_POINT_MODIFIED_JACOBIAN;
         for i in (0..64).rev() {
             acc = acc.double_multi_unchecked(4);
             acc = acc.add_mixed_unchecked(&table_lhs.get_point(digits_lhs[i]));
@@ -645,6 +667,7 @@ impl JacobianPoint {
         }
 
         acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
+            .into()
     }
 
     /// Performs the jacobian sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
@@ -672,7 +695,7 @@ impl JacobianPoint {
         }
         let table_self = NafLookupTable::<8>::from(self);
         let table_rhs = NafLookupTable::<8>::from(rhs);
-        let mut acc = *SHIFT_POINT_JACOBIAN;
+        let mut acc = *SHIFT_POINT_MODIFIED_JACOBIAN;
 
         for j in (0..i + 1).rev() {
             acc = acc.double_unchecked();
@@ -702,6 +725,7 @@ impl JacobianPoint {
         }
 
         acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[i + 1])
+            .into()
     }
 
     // TODO: It would be nice to have a constant-time variant of the method below,
@@ -735,7 +759,7 @@ impl JacobianPoint {
         }
         let table_self = NafLookupTable::<8>::from(self);
         let table_basepoint = &ODD_MULTIPLES_BASEPOINT;
-        let mut acc = *SHIFT_POINT_JACOBIAN;
+        let mut acc = *SHIFT_POINT_MODIFIED_JACOBIAN;
 
         for j in (0..i + 1).rev() {
             acc = acc.double_unchecked();
@@ -770,6 +794,7 @@ impl JacobianPoint {
         }
 
         acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[i + 1])
+            .into()
     }
 
     /// Multiplies by the curve cofactor
@@ -850,6 +875,260 @@ impl JacobianPoint {
 
         (self.y.square()).ct_eq(&(self.x.square() * self.x + self.x * z4 + z2 * z4 * B))
             | (self.z.is_zero())
+    }
+}
+
+/// A modified jacobian point
+#[derive(Copy, Clone, Debug)]
+pub struct ModifiedJacobianPoint {
+    pub(crate) x: Fp6,
+    pub(crate) y: Fp6,
+    pub(crate) z: Fp6,
+    pub(crate) z4: Fp6,
+}
+
+impl Default for ModifiedJacobianPoint {
+    fn default() -> ModifiedJacobianPoint {
+        ModifiedJacobianPoint::identity()
+    }
+}
+
+impl zeroize::DefaultIsZeroes for ModifiedJacobianPoint {}
+
+impl fmt::Display for ModifiedJacobianPoint {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl Hash for ModifiedJacobianPoint {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        AffinePoint::from(self).hash(hasher);
+    }
+}
+
+impl<'a> From<&'a AffinePoint> for ModifiedJacobianPoint {
+    fn from(p: &'a AffinePoint) -> ModifiedJacobianPoint {
+        ModifiedJacobianPoint {
+            x: p.x,
+            y: p.y,
+            z: Fp6::conditional_select(&Fp6::one(), &Fp6::zero(), p.infinity),
+            z4: Fp6::conditional_select(&Fp6::one(), &Fp6::zero(), p.infinity),
+        }
+    }
+}
+
+impl From<AffinePoint> for ModifiedJacobianPoint {
+    fn from(p: AffinePoint) -> ModifiedJacobianPoint {
+        ModifiedJacobianPoint::from(&p)
+    }
+}
+
+impl<'a> From<&'a JacobianPoint> for ModifiedJacobianPoint {
+    fn from(p: &'a JacobianPoint) -> ModifiedJacobianPoint {
+        ModifiedJacobianPoint {
+            x: p.x,
+            y: p.y,
+            z: p.z,
+            z4: p.z.square().square(),
+        }
+    }
+}
+
+impl From<JacobianPoint> for ModifiedJacobianPoint {
+    fn from(p: JacobianPoint) -> ModifiedJacobianPoint {
+        ModifiedJacobianPoint::from(&p)
+    }
+}
+
+impl ConstantTimeEq for ModifiedJacobianPoint {
+    fn ct_eq(&self, other: &Self) -> Choice {
+        // Is (xz^2, yz^3, z) equal to (x'z'^2, y'z'^3, z') when converted to affine?
+
+        let z1_squared = self.z.square();
+        let z2_squared = other.z.square();
+
+        let x1 = self.x * z2_squared;
+        let x2 = other.x * z1_squared;
+
+        let y1 = self.y * z2_squared * other.z;
+        let y2 = other.y * z1_squared * self.z;
+
+        let self_is_zero = self.z.is_zero();
+        let other_is_zero = other.z.is_zero();
+
+        (self_is_zero & other_is_zero) // Both point at infinity
+            | ((!self_is_zero) & (!other_is_zero) & x1.ct_eq(&x2) & y1.ct_eq(&y2))
+        // Neither point at infinity, coordinates are the same
+    }
+}
+
+impl ConditionallySelectable for ModifiedJacobianPoint {
+    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
+        ModifiedJacobianPoint {
+            x: Fp6::conditional_select(&a.x, &b.x, choice),
+            y: Fp6::conditional_select(&a.y, &b.y, choice),
+            z: Fp6::conditional_select(&a.z, &b.z, choice),
+            z4: Fp6::conditional_select(&a.z4, &b.z4, choice),
+        }
+    }
+}
+
+impl Eq for ModifiedJacobianPoint {}
+impl PartialEq for ModifiedJacobianPoint {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        bool::from(self.ct_eq(other))
+    }
+}
+
+impl<'a> Neg for &'a ModifiedJacobianPoint {
+    type Output = ModifiedJacobianPoint;
+
+    #[inline]
+    fn neg(self) -> ModifiedJacobianPoint {
+        self.neg()
+    }
+}
+
+impl Neg for ModifiedJacobianPoint {
+    type Output = ModifiedJacobianPoint;
+
+    #[inline]
+    fn neg(self) -> ModifiedJacobianPoint {
+        -&self
+    }
+}
+
+impl ModifiedJacobianPoint {
+    /// Returns the identity of the group: the point at infinity.
+    pub const fn identity() -> ModifiedJacobianPoint {
+        ModifiedJacobianPoint {
+            x: Fp6::one(),
+            y: Fp6::one(),
+            z: Fp6::zero(),
+            z4: Fp6::zero(),
+        }
+    }
+
+    /// Computes `n` iterated doubling of this point.
+    /// **This is dangerous to call unless you know that the point to be doubled
+    /// is not the identity point, otherwise, API invariants may be broken.**
+    /// Please consider using `double()` instead.
+    pub fn double_multi_unchecked(&self, n: u32) -> ModifiedJacobianPoint {
+        assert!(n >= 1);
+        let mut output = self.double_unchecked();
+
+        for _ in 1..n {
+            output = output.double_unchecked();
+        }
+
+        output
+    }
+
+    /// Computes the doubling of this point. This formulae is faster than
+    /// `ModifiedJacobianPoint::double` but is not working for the infinity point.
+    /// **This is dangerous to call unless you know that the point to be doubled
+    /// is not the identity point, otherwise, API invariants may be broken.**
+    /// Please consider using `double()` instead.
+    pub const fn double_unchecked(&self) -> ModifiedJacobianPoint {
+        // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
+
+        let x_sq = (&self.x).square();
+        let y_sq = (&self.y).square();
+        let y_sq2 = (&y_sq).square();
+
+        let a = (&y_sq).mul_by_u32(4);
+        let a = (&a).mul(&self.x);
+
+        let b = (&x_sq).triple();
+        let b = (&b).add(&self.z4);
+
+        let c = (&y_sq2).mul_by_u32(8);
+
+        let x3 = (&b).square();
+        let x3 = (&x3).sub(&a.double());
+
+        let y3 = (&a).sub(&x3);
+        let y3 = (&y3).mul(&b);
+        let y3 = (&y3).sub(&c);
+
+        let z3 = (&self.y).double();
+        let z3 = (&z3).mul(&self.z);
+
+        let z34 = (&c).double();
+        let z34 = (&z34).mul(&self.z4);
+
+        ModifiedJacobianPoint {
+            x: x3,
+            y: y3,
+            z: z3,
+            z4: z34,
+        }
+    }
+
+    /// Computes the negation of a point in modified jacobian coordinates
+    #[inline]
+    pub const fn neg(&self) -> Self {
+        Self {
+            x: self.x,
+            y: (&self.y).neg(),
+            z: self.z,
+            z4: self.z4,
+        }
+    }
+
+    /// Adds this point to another point in the affine model. This formulae is faster than
+    /// `ModifiedJacobianPoint::add_mixed` but is not complete.
+    /// **This is dangerous to call unless you know that the points to be added are not
+    /// identical, opposite of each other, and neither of them is the identity point; otherwise,
+    /// API invariants may be broken.** Please consider using `add_mixed()` instead.
+    pub fn add_mixed_unchecked(&self, rhs: &AffinePoint) -> ModifiedJacobianPoint {
+        // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
+
+        let z1_sq = self.z.square();
+
+        let b = rhs.x * z1_sq;
+
+        let d = self.z * z1_sq;
+        let d = d * rhs.y;
+
+        let e = b - self.x;
+
+        let f = d - self.y;
+
+        let e_sq = e.square();
+        let e_sq_times_e = e * e_sq;
+        let x_e_sq = self.x * e_sq;
+
+        let x3 = f.square();
+        let x3 = x3 - e_sq_times_e;
+        let x3 = x3 - x_e_sq.double();
+
+        let y3 = x_e_sq - x3;
+        let y3 = y3 * f;
+        let t3 = self.y * e_sq_times_e;
+        let y3 = y3 - t3;
+
+        let z3 = self.z * e;
+
+        let z34 = z3.square();
+        let z34 = z34.square();
+
+        let tmp = ModifiedJacobianPoint {
+            x: x3,
+            y: y3,
+            z: z3,
+            z4: z34,
+        };
+
+        ModifiedJacobianPoint::conditional_select(&tmp, self, rhs.is_identity())
+    }
+
+    /// Returns true if this element is the identity (the point at infinity).
+    #[inline]
+    pub fn is_identity(&self) -> Choice {
+        self.z.is_zero()
     }
 }
 

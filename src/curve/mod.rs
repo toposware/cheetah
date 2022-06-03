@@ -17,7 +17,7 @@ mod projective;
 
 pub use affine::AffinePoint;
 pub use encoding::{CompressedPoint, UncompressedPoint};
-pub use jacobian::JacobianPoint;
+pub use jacobian::{JacobianPoint, ModifiedJacobianPoint};
 pub use projective::ProjectivePoint;
 
 // HELPER METHODS

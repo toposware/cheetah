@@ -6,7 +6,10 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::{AffinePoint, BasePointTable, JacobianPoint, NafLookupTable, ProjectivePoint};
+use crate::{
+    AffinePoint, BasePointTable, JacobianPoint, ModifiedJacobianPoint, NafLookupTable,
+    ProjectivePoint,
+};
 use crate::{Fp, Fp6, Scalar};
 
 use core::ops::Mul;
@@ -55,8 +58,11 @@ lazy_static! {
     /// The same point as `SHIFT_POINT_AFFINE` but seen in projective coordinates.
     pub static ref SHIFT_POINT_PROJECTIVE: ProjectivePoint = ProjectivePoint::from(*SHIFT_POINT_AFFINE);
 
-    /// The same point as `SHIFT_POINT_AFFINE` but seen in projective coordinates.
+    /// The same point as `SHIFT_POINT_AFFINE` but seen in jacobian coordinates.
     pub static ref SHIFT_POINT_JACOBIAN: JacobianPoint = JacobianPoint::from(*SHIFT_POINT_AFFINE);
+
+    /// The same point as `SHIFT_POINT_AFFINE` but seen in modified jacobian coordinates.
+    pub static ref SHIFT_POINT_MODIFIED_JACOBIAN: ModifiedJacobianPoint = ModifiedJacobianPoint::from(*SHIFT_POINT_AFFINE);
 
     /// An array of points corresponding to -2^i.SHIFT_POINT, for i ranging
     /// from 0 to 256 included. This is used when multiplying an `AffinePoint`,

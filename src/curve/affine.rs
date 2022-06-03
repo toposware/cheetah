@@ -19,7 +19,7 @@ use super::B;
 
 use crate::{CompressedPoint, UncompressedPoint};
 use crate::{Fp, Fp6, Scalar};
-use crate::{JacobianPoint, ProjectivePoint};
+use crate::{JacobianPoint, ModifiedJacobianPoint, ProjectivePoint};
 
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
@@ -97,6 +97,29 @@ impl<'a> From<&'a JacobianPoint> for AffinePoint {
 
 impl From<JacobianPoint> for AffinePoint {
     fn from(p: JacobianPoint) -> AffinePoint {
+        AffinePoint::from(&p)
+    }
+}
+
+impl<'a> From<&'a ModifiedJacobianPoint> for AffinePoint {
+    fn from(p: &'a ModifiedJacobianPoint) -> AffinePoint {
+        let zinv4 = p.z4.invert().unwrap_or(Fp6::zero());
+        let zinv3 = zinv4 * p.z;
+        let x = p.x * zinv3 * p.z;
+        let y = p.y * zinv3;
+
+        let tmp = AffinePoint {
+            x,
+            y,
+            infinity: Choice::from(0u8),
+        };
+
+        AffinePoint::conditional_select(&tmp, &AffinePoint::identity(), zinv4.ct_eq(&Fp6::zero()))
+    }
+}
+
+impl From<ModifiedJacobianPoint> for AffinePoint {
+    fn from(p: ModifiedJacobianPoint) -> AffinePoint {
         AffinePoint::from(&p)
     }
 }
