@@ -7,7 +7,7 @@
 // except according to those terms.
 
 //! This module provides an implementation of the cheetah curve in
-//! projective coordinates.
+//! jacobian coordinates.
 
 use core::{
     borrow::Borrow,
@@ -18,12 +18,12 @@ use core::{
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
-use super::{mul_by_3b, B};
+use super::B;
 
 use crate::{AffinePoint, CompressedPoint, UncompressedPoint};
 use crate::{Fp, Fp6, Scalar};
 
-use crate::{MINUS_SHIFT_POINT_ARRAY, SHIFT_POINT_PROJECTIVE};
+use crate::{MINUS_SHIFT_POINT_ARRAY, SHIFT_POINT_JACOBIAN};
 
 use crate::constants::ODD_MULTIPLES_BASEPOINT;
 use crate::LookupTable;
@@ -36,30 +36,30 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 #[cfg(feature = "serialize")]
 use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 
-impl_binops_additive!(ProjectivePoint, AffinePoint);
-impl_binops_additive_specify_output!(AffinePoint, ProjectivePoint, ProjectivePoint);
+impl_binops_additive!(JacobianPoint, AffinePoint);
+impl_binops_additive_specify_output!(AffinePoint, JacobianPoint, JacobianPoint);
 
-impl<'a, 'b> Add<&'b AffinePoint> for &'a ProjectivePoint {
-    type Output = ProjectivePoint;
+impl<'a, 'b> Add<&'b AffinePoint> for &'a JacobianPoint {
+    type Output = JacobianPoint;
 
     #[inline]
-    fn add(self, rhs: &'b AffinePoint) -> ProjectivePoint {
+    fn add(self, rhs: &'b AffinePoint) -> JacobianPoint {
         self.add_mixed(rhs)
     }
 }
 
-impl<'a, 'b> Sub<&'b AffinePoint> for &'a ProjectivePoint {
-    type Output = ProjectivePoint;
+impl<'a, 'b> Sub<&'b AffinePoint> for &'a JacobianPoint {
+    type Output = JacobianPoint;
 
     #[inline]
-    fn sub(self, rhs: &'b AffinePoint) -> ProjectivePoint {
+    fn sub(self, rhs: &'b AffinePoint) -> JacobianPoint {
         self + (-rhs)
     }
 }
 
-impl<T> Sum<T> for ProjectivePoint
+impl<T> Sum<T> for JacobianPoint
 where
-    T: Borrow<ProjectivePoint>,
+    T: Borrow<JacobianPoint>,
 {
     fn sum<I>(iter: I) -> Self
     where
@@ -69,37 +69,37 @@ where
     }
 }
 
-/// A projective point
+/// A jacobian point
 #[derive(Copy, Clone, Debug)]
-pub struct ProjectivePoint {
+pub struct JacobianPoint {
     pub(crate) x: Fp6,
     pub(crate) y: Fp6,
     pub(crate) z: Fp6,
 }
 
-impl Default for ProjectivePoint {
-    fn default() -> ProjectivePoint {
-        ProjectivePoint::identity()
+impl Default for JacobianPoint {
+    fn default() -> JacobianPoint {
+        JacobianPoint::identity()
     }
 }
 
-impl zeroize::DefaultIsZeroes for ProjectivePoint {}
+impl zeroize::DefaultIsZeroes for JacobianPoint {}
 
-impl fmt::Display for ProjectivePoint {
+impl fmt::Display for JacobianPoint {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
-impl Hash for ProjectivePoint {
+impl Hash for JacobianPoint {
     fn hash<H: Hasher>(&self, hasher: &mut H) {
-        self.to_affine().hash(hasher);
+        AffinePoint::from(self).hash(hasher);
     }
 }
 
-impl<'a> From<&'a AffinePoint> for ProjectivePoint {
-    fn from(p: &'a AffinePoint) -> ProjectivePoint {
-        ProjectivePoint {
+impl<'a> From<&'a AffinePoint> for JacobianPoint {
+    fn from(p: &'a AffinePoint) -> JacobianPoint {
+        JacobianPoint {
             x: p.x,
             y: p.y,
             z: Fp6::conditional_select(&Fp6::one(), &Fp6::zero(), p.infinity),
@@ -107,21 +107,24 @@ impl<'a> From<&'a AffinePoint> for ProjectivePoint {
     }
 }
 
-impl From<AffinePoint> for ProjectivePoint {
-    fn from(p: AffinePoint) -> ProjectivePoint {
-        ProjectivePoint::from(&p)
+impl From<AffinePoint> for JacobianPoint {
+    fn from(p: AffinePoint) -> JacobianPoint {
+        JacobianPoint::from(&p)
     }
 }
 
-impl ConstantTimeEq for ProjectivePoint {
+impl ConstantTimeEq for JacobianPoint {
     fn ct_eq(&self, other: &Self) -> Choice {
-        // Is (xz, yz, z) equal to (x'z', y'z', z') when converted to affine?
+        // Is (xz^2, yz^3, z) equal to (x'z'^2, y'z'^3, z') when converted to affine?
 
-        let x1 = self.x * other.z;
-        let x2 = other.x * self.z;
+        let z1_squared = self.z.square();
+        let z2_squared = other.z.square();
 
-        let y1 = self.y * other.z;
-        let y2 = other.y * self.z;
+        let x1 = self.x * z2_squared;
+        let x2 = other.x * z1_squared;
+
+        let y1 = self.y * z2_squared * other.z;
+        let y2 = other.y * z1_squared * self.z;
 
         let self_is_zero = self.z.is_zero();
         let other_is_zero = other.z.is_zero();
@@ -132,9 +135,9 @@ impl ConstantTimeEq for ProjectivePoint {
     }
 }
 
-impl ConditionallySelectable for ProjectivePoint {
+impl ConditionallySelectable for JacobianPoint {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        ProjectivePoint {
+        JacobianPoint {
             x: Fp6::conditional_select(&a.x, &b.x, choice),
             y: Fp6::conditional_select(&a.y, &b.y, choice),
             z: Fp6::conditional_select(&a.z, &b.z, choice),
@@ -142,87 +145,87 @@ impl ConditionallySelectable for ProjectivePoint {
     }
 }
 
-impl Eq for ProjectivePoint {}
-impl PartialEq for ProjectivePoint {
+impl Eq for JacobianPoint {}
+impl PartialEq for JacobianPoint {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
         bool::from(self.ct_eq(other))
     }
 }
 
-impl<'a> Neg for &'a ProjectivePoint {
-    type Output = ProjectivePoint;
+impl<'a> Neg for &'a JacobianPoint {
+    type Output = JacobianPoint;
 
     #[inline]
-    fn neg(self) -> ProjectivePoint {
+    fn neg(self) -> JacobianPoint {
         self.neg()
     }
 }
 
-impl Neg for ProjectivePoint {
-    type Output = ProjectivePoint;
+impl Neg for JacobianPoint {
+    type Output = JacobianPoint;
 
     #[inline]
-    fn neg(self) -> ProjectivePoint {
+    fn neg(self) -> JacobianPoint {
         -&self
     }
 }
 
-impl<'a, 'b> Add<&'b ProjectivePoint> for &'a ProjectivePoint {
-    type Output = ProjectivePoint;
+impl<'a, 'b> Add<&'b JacobianPoint> for &'a JacobianPoint {
+    type Output = JacobianPoint;
 
     #[inline]
-    fn add(self, rhs: &'b ProjectivePoint) -> ProjectivePoint {
+    fn add(self, rhs: &'b JacobianPoint) -> JacobianPoint {
         self.add(rhs)
     }
 }
 
-impl<'a, 'b> Sub<&'b ProjectivePoint> for &'a ProjectivePoint {
-    type Output = ProjectivePoint;
+impl<'a, 'b> Sub<&'b JacobianPoint> for &'a JacobianPoint {
+    type Output = JacobianPoint;
 
     #[inline]
-    fn sub(self, rhs: &'b ProjectivePoint) -> ProjectivePoint {
+    fn sub(self, rhs: &'b JacobianPoint) -> JacobianPoint {
         self + (-rhs)
     }
 }
 
-impl<'a, 'b> Mul<&'b Scalar> for &'a ProjectivePoint {
-    type Output = ProjectivePoint;
+impl<'a, 'b> Mul<&'b Scalar> for &'a JacobianPoint {
+    type Output = JacobianPoint;
 
     fn mul(self, other: &'b Scalar) -> Self::Output {
         self.multiply(&other.to_bytes())
     }
 }
 
-impl_binops_additive!(ProjectivePoint, ProjectivePoint);
-impl_binops_multiplicative!(ProjectivePoint, Scalar);
+impl_binops_additive!(JacobianPoint, JacobianPoint);
+impl_binops_multiplicative!(JacobianPoint, Scalar);
 
-impl ProjectivePoint {
+impl JacobianPoint {
     /// Returns the identity of the group: the point at infinity.
-    pub const fn identity() -> ProjectivePoint {
-        ProjectivePoint {
-            x: Fp6::zero(),
+    pub const fn identity() -> JacobianPoint {
+        JacobianPoint {
+            x: Fp6::one(),
             y: Fp6::one(),
             z: Fp6::zero(),
         }
     }
 
-    /// Returns the x coordinate of this ProjectivePoint
+    /// Returns the x coordinate of this JacobianPoint
     pub const fn get_x(&self) -> Fp6 {
         self.x
     }
 
-    /// Returns the y coordinate of this ProjectivePoint
+    /// Returns the y coordinate of this JacobianPoint
     pub const fn get_y(&self) -> Fp6 {
         self.y
     }
 
-    /// Returns the z coordinate of this ProjectivePoint
+    /// Returns the z coordinate of this JacobianPoint
     pub const fn get_z(&self) -> Fp6 {
         self.z
     }
 
-    /// Computes a random `ProjectivePoint` element
+    /// Computes a random `JacobianPoint` element
     pub fn random(mut rng: impl RngCore) -> Self {
         loop {
             let x = Fp6::random(&mut rng);
@@ -236,7 +239,7 @@ impl ProjectivePoint {
             });
 
             if p.is_some().into() {
-                let p = ProjectivePoint::from(p.unwrap()).clear_cofactor();
+                let p = JacobianPoint::from(p.unwrap()).clear_cofactor();
 
                 if bool::from(!p.is_identity()) {
                     return p;
@@ -245,7 +248,7 @@ impl ProjectivePoint {
         }
     }
 
-    /// Returns a fixed generator of the curve in projective coordinates
+    /// Returns a fixed generator of the curve in jacobian coordinates
     /// The point has been generated from the Simplified Shallue-van
     /// de Woestijne-Ulas method for hashing to elliptic curves in
     /// Short Weierstrass form, applied on the integer value of the
@@ -253,8 +256,8 @@ impl ProjectivePoint {
     ///
     /// See https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-hash-to-curve
     /// for more.
-    pub const fn generator() -> ProjectivePoint {
-        ProjectivePoint {
+    pub const fn generator() -> JacobianPoint {
+        JacobianPoint {
             x: Fp6 {
                 c0: Fp(0x263a588f4b0118a1),
                 c1: Fp(0x7757a0bcb26a142d),
@@ -275,13 +278,13 @@ impl ProjectivePoint {
         }
     }
 
-    /// Outputs a compress byte representation of this `ProjectivePoint` element
+    /// Outputs a compress byte representation of this `JacobianPoint` element
     pub fn to_compressed(&self) -> CompressedPoint {
         AffinePoint::from(self).to_compressed()
     }
 
-    /// Outputs an uncompressed byte representation of this `ProjectivePoint` element
-    /// It is twice larger than when calling `ProjectivePoint::to_uncompress()`
+    /// Outputs an uncompressed byte representation of this `JacobianPoint` element
+    /// It is twice larger than when calling `JacobianPoint::to_uncompress()`
     pub fn to_uncompressed(&self) -> UncompressedPoint {
         AffinePoint::from(self).to_uncompressed()
     }
@@ -289,7 +292,7 @@ impl ProjectivePoint {
     /// Attempts to deserialize an uncompressed element.
     pub fn from_uncompressed(uncompressed_point: &UncompressedPoint) -> CtOption<Self> {
         AffinePoint::from_uncompressed(uncompressed_point)
-            .and_then(|p| CtOption::new(ProjectivePoint::from(p), 1.into()))
+            .and_then(|p| CtOption::new(JacobianPoint::from(p), 1.into()))
     }
 
     /// Attempts to deserialize an uncompressed element, not checking if the
@@ -298,18 +301,18 @@ impl ProjectivePoint {
     /// API invariants may be broken.** Please consider using `from_uncompressed()` instead.
     pub fn from_uncompressed_unchecked(uncompressed_point: &UncompressedPoint) -> CtOption<Self> {
         AffinePoint::from_uncompressed_unchecked(uncompressed_point)
-            .and_then(|p| CtOption::new(ProjectivePoint::from(p), 1.into()))
+            .and_then(|p| CtOption::new(JacobianPoint::from(p), 1.into()))
     }
 
     /// Attempts to deserialize a compressed element.
     pub fn from_compressed(compressed_point: &CompressedPoint) -> CtOption<Self> {
-        AffinePoint::from_compressed(compressed_point).map(ProjectivePoint::from)
+        AffinePoint::from_compressed(compressed_point).map(JacobianPoint::from)
     }
 
     #[allow(unused)]
-    /// Constructs a `ProjectivePoint` element without checking that it is a valid point.
+    /// Constructs a `JacobianPoint` element without checking that it is a valid point.
     pub const fn from_raw_coordinates(elems: [Fp6; 3]) -> Self {
-        ProjectivePoint {
+        JacobianPoint {
             x: elems[0],
             y: elems[1],
             z: elems[2],
@@ -317,7 +320,7 @@ impl ProjectivePoint {
     }
 
     /// Computes `n` iterated doubling of this point.
-    pub fn double_multi(&self, n: u32) -> ProjectivePoint {
+    pub fn double_multi(&self, n: u32) -> JacobianPoint {
         assert!(n >= 1);
         let mut output = self.double();
 
@@ -332,7 +335,7 @@ impl ProjectivePoint {
     /// **This is dangerous to call unless you know that the point to be doubled
     /// is not the identity point, otherwise, API invariants may be broken.**
     /// Please consider using `double()` instead.
-    pub fn double_multi_unchecked(&self, n: u32) -> ProjectivePoint {
+    pub fn double_multi_unchecked(&self, n: u32) -> JacobianPoint {
         assert!(n >= 1);
         let mut output = self.double_unchecked();
 
@@ -344,42 +347,32 @@ impl ProjectivePoint {
     }
 
     /// Computes the doubling of this point.
-    pub fn double(&self) -> ProjectivePoint {
+    pub fn double(&self) -> JacobianPoint {
         // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
 
-        let x2 = self.x.square();
-        let z2 = self.z.square();
+        let x_sq = self.x.square();
+        let y_sq = self.y.square();
+        let y_sq2 = y_sq.square();
+        let z_sq = self.z.square();
+        let z_sq2 = z_sq.square();
 
-        let a = x2.double();
-        let a = (&a).add(&x2);
-        let a = (&a).add(&z2);
+        let a = y_sq.mul_by_u32(4);
+        let a = a * self.x;
 
-        let b = (&self.y).mul(&self.z);
-        let t3 = (&self.y).mul(&b);
-        let c = (&t3).mul(&self.x);
+        let b = x_sq.triple();
+        let b = b + z_sq2;
 
-        let c4 = c.mul_by_u32(4);
-        let d = c4.double();
+        let x3 = b.square();
+        let x3 = x3 - a.double();
 
-        let t = a.square();
-        let d = (&t).sub(&d);
+        let y3 = a - x3;
+        let y3 = y3 * b;
+        let y3 = y3 - y_sq2.mul_by_u32(8);
 
-        let x3 = (&b).mul(&d);
-        let x3 = x3.double();
+        let z3 = self.y.double();
+        let z3 = z3 * self.z;
 
-        let y3 = (&c4).sub(&d);
-        let y3 = (&a).mul(&y3);
-        let t3 = t3.square();
-
-        let t3 = t3.mul_by_u32(8);
-
-        let y3 = (&y3).sub(&t3);
-        let z3 = b.square();
-        let z3 = (&z3).mul(&b);
-
-        let z3 = z3.mul_by_u32(8);
-
-        let tmp = ProjectivePoint {
+        let tmp = JacobianPoint {
             x: x3,
             y: y3,
             z: z3,
@@ -387,60 +380,47 @@ impl ProjectivePoint {
 
         // The calculation above fails for doubling the infinity point,
         // hence we do a final conditional selection.
-        ProjectivePoint::conditional_select(&tmp, &ProjectivePoint::identity(), self.is_identity())
+        JacobianPoint::conditional_select(&tmp, &JacobianPoint::identity(), self.is_identity())
     }
 
     /// Computes the doubling of this point. This formulae is faster than
-    /// `ProjectivePoint::double` but is not working for the infinity point.
+    /// `JacobianPoint::double` but is not working for the infinity point.
     /// **This is dangerous to call unless you know that the point to be doubled
     /// is not the identity point, otherwise, API invariants may be broken.**
     /// Please consider using `double()` instead.
-    pub const fn double_unchecked(&self) -> ProjectivePoint {
+    pub const fn double_unchecked(&self) -> JacobianPoint {
         // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
 
-        let x2 = self.x.square();
-        let z2 = self.z.square();
+        let x_sq = (&self.x).square();
+        let y_sq = (&self.y).square();
+        let y_sq2 = (&y_sq).square();
+        let z_sq = (&self.z).square();
+        let z_sq2 = (&z_sq).square();
 
-        let a = x2.double();
-        let a = (&a).add(&x2);
-        let a = (&a).add(&z2);
+        let a = (&y_sq).mul_by_u32(4);
+        let a = (&a).mul(&self.x);
 
-        let b = (&self.y).mul(&self.z);
-        let t3 = (&self.y).mul(&b);
-        let c = (&t3).mul(&self.x);
+        let b = (&x_sq).triple();
+        let b = (&b).add(&z_sq2);
 
-        let d = c.double();
-        let c4 = d.double();
-        let d = c4.double();
+        let x3 = (&b).square();
+        let x3 = (&x3).sub(&a.double());
 
-        let t = a.square();
-        let d = (&t).sub(&d);
+        let y3 = (&a).sub(&x3);
+        let y3 = (&y3).mul(&b);
+        let y3 = (&y3).sub(&y_sq2.mul_by_u32(8));
 
-        let x3 = (&b).mul(&d);
-        let x3 = x3.double();
+        let z3 = (&self.y).double();
+        let z3 = (&z3).mul(&self.z);
 
-        let y3 = (&c4).sub(&d);
-        let y3 = (&a).mul(&y3);
-
-        let t3 = t3.double();
-        let t3 = t3.square();
-        let t3 = t3.double();
-
-        let y3 = (&y3).sub(&t3);
-
-        let z3 = b.double();
-        let z3 = z3.square();
-        let z3 = (&z3).mul(&b);
-        let z3 = z3.double();
-
-        ProjectivePoint {
+        JacobianPoint {
             x: x3,
             y: y3,
             z: z3,
         }
     }
 
-    /// Computes the negation of a point in projective coordinates
+    /// Computes the negation of a point in jacobian coordinates
     #[inline]
     pub const fn neg(&self) -> Self {
         Self {
@@ -451,169 +431,158 @@ impl ProjectivePoint {
     }
 
     /// Adds this point to another point.
-    pub const fn add(&self, rhs: &ProjectivePoint) -> ProjectivePoint {
-        // Algorithm 1, https://eprint.iacr.org/2015/1060.pdf
+    pub fn add(&self, rhs: &JacobianPoint) -> JacobianPoint {
+        // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
 
-        let t0 = (&self.x).mul(&rhs.x);
-        let t1 = (&self.y).mul(&rhs.y);
-        let t2 = (&self.z).mul(&rhs.z);
+        let z1_sq = self.z.square();
+        let z2_sq = rhs.z.square();
 
-        let t3 = (&self.x).add(&self.y);
-        let t4 = (&rhs.x).add(&rhs.y);
-        let t3 = (&t3).mul(&t4);
+        let a = self.x * z2_sq;
 
-        let t4 = (&t0).add(&t1);
-        let t3 = (&t3).sub(&t4);
-        let t4 = (&self.x).add(&self.z);
+        let b = rhs.x * z1_sq;
 
-        let t5 = (&rhs.x).add(&rhs.z);
-        let t4 = (&t4).mul(&t5);
-        let t5 = (&t0).add(&t2);
+        let c = rhs.z * z2_sq;
+        let c = c * self.y;
 
-        let t4 = (&t4).sub(&t5);
-        let t5 = (&self.y).add(&self.z);
-        let x3 = (&rhs.y).add(&rhs.z);
+        let d = self.z * z1_sq;
+        let d = d * rhs.y;
 
-        let t5 = (&t5).mul(&x3);
-        let x3 = (&t1).add(&t2);
-        let t5 = (&t5).sub(&x3);
+        let e = b - a;
 
-        let x3 = mul_by_3b(&t2);
-        let z3 = (&x3).add(&t4);
+        let f = d - c;
 
-        let x3 = (&t1).sub(&z3);
-        let z3 = (&t1).add(&z3);
-        let y3 = (&x3).mul(&z3);
+        let e_sq = e.square();
+        let e_sq_times_e = e * e_sq;
+        let a_e_sq = a * e_sq;
 
-        let t1 = t0.double();
-        let t1 = (&t1).add(&t0);
+        let x3 = f.square();
+        let x3 = x3 - e_sq_times_e;
+        let x3 = x3 - a_e_sq.double();
 
-        let t4 = mul_by_3b(&t4);
-        let t1 = (&t1).add(&t2);
-        let t2 = (&t0).sub(&t2);
+        let y3 = a_e_sq - x3;
+        let y3 = y3 * f;
+        let t3 = c * e_sq_times_e;
+        let y3 = y3 - t3;
 
-        let t4 = (&t4).add(&t2);
-        let t0 = (&t1).mul(&t4);
+        let z3 = self.z * rhs.z;
+        let z3 = z3 * e;
 
-        let y3 = (&y3).add(&t0);
-        let t0 = (&t5).mul(&t4);
-        let x3 = (&t3).mul(&x3);
-
-        let x3 = (&x3).sub(&t0);
-        let t0 = (&t3).mul(&t1);
-        let z3 = (&t5).mul(&z3);
-
-        let z3 = (&z3).add(&t0);
-
-        ProjectivePoint {
+        let tmp = JacobianPoint {
             x: x3,
             y: y3,
             z: z3,
-        }
+        };
+
+        let tmp = JacobianPoint::conditional_select(&tmp, rhs, self.is_identity());
+
+        let tmp = JacobianPoint::conditional_select(&tmp, self, rhs.is_identity());
+
+        let tmp = JacobianPoint::conditional_select(
+            &tmp,
+            &JacobianPoint::identity(),
+            rhs.ct_eq(&self.neg()),
+        );
+
+        JacobianPoint::conditional_select(&tmp, &self.double(), rhs.ct_eq(self))
     }
 
     /// Adds this point to another point in the affine model.
-    pub fn add_mixed(&self, rhs: &AffinePoint) -> ProjectivePoint {
-        // Algorithm 2, https://eprint.iacr.org/2015/1060.pdf
+    pub fn add_mixed(&self, rhs: &AffinePoint) -> JacobianPoint {
+        // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
 
-        let t0 = (&self.x).mul(&rhs.x);
-        let t1 = (&self.y).mul(&rhs.y);
-        let t3 = (&rhs.x).add(&rhs.y);
+        let z1_sq = self.z.square();
 
-        let t4 = (&self.x).add(&self.y);
-        let t3 = (&t3).mul(&t4);
-        let t4 = (&t0).add(&t1);
+        let b = rhs.x * z1_sq;
 
-        let t3 = (&t3).sub(&t4);
-        let t4 = (&rhs.x).mul(&self.z);
-        let t4 = (&t4).add(&self.x);
+        let d = self.z * z1_sq;
+        let d = d * rhs.y;
 
-        let t5 = (&rhs.y).mul(&self.z);
-        let t5 = (&t5).add(&self.y);
+        let e = b - self.x;
 
-        let x3 = mul_by_3b(&self.z);
-        let z3 = (&x3).add(&t4);
-        let x3 = (&t1).sub(&z3);
+        let f = d - self.y;
 
-        let z3 = (&t1).add(&z3);
-        let y3 = (&x3).mul(&z3);
-        let t1 = t0.double();
+        let e_sq = e.square();
+        let e_sq_times_e = e * e_sq;
+        let x_e_sq = self.x * e_sq;
 
-        let t1 = (&t1).add(&t0);
-        let t4 = mul_by_3b(&t4);
+        let x3 = f.square();
+        let x3 = x3 - e_sq_times_e;
+        let x3 = x3 - x_e_sq.double();
 
-        let t1 = (&t1).add(&self.z);
-        let t2 = (&t0).sub(&self.z);
+        let y3 = x_e_sq - x3;
+        let y3 = y3 * f;
+        let t3 = self.y * e_sq_times_e;
+        let y3 = y3 - t3;
 
-        let t4 = (&t4).add(&t2);
-        let t0 = (&t1).mul(&t4);
-        let y3 = (&y3).add(&t0);
+        let z3 = self.z * e;
 
-        let t0 = (&t5).mul(&t4);
-        let x3 = (&t3).mul(&x3);
-        let x3 = (&x3).sub(&t0);
-
-        let t0 = (&t3).mul(&t1);
-        let z3 = (&t5).mul(&z3);
-        let z3 = (&z3).add(&t0);
-
-        let tmp = ProjectivePoint {
+        let tmp = JacobianPoint {
             x: x3,
             y: y3,
             z: z3,
         };
 
-        ProjectivePoint::conditional_select(&tmp, self, rhs.is_identity())
+        let tmp = JacobianPoint::conditional_select(&tmp, self, rhs.is_identity());
+
+        let tmp = JacobianPoint::conditional_select(
+            &tmp,
+            &JacobianPoint::identity(),
+            rhs.ct_eq(&self.neg().into()),
+        );
+
+        JacobianPoint::conditional_select(&tmp, &self.double(), rhs.ct_eq(&self.into()))
     }
 
     /// Adds this point to another point in the affine model. This formulae is faster than
-    /// `ProjectivePoint::add_mixed` but is not complete.
+    /// `JacobianPoint::add_mixed` but is not complete.
     /// **This is dangerous to call unless you know that the points to be added are not
     /// identical, opposite of each other, and neither of them is the identity point; otherwise,
     /// API invariants may be broken.** Please consider using `add_mixed()` instead.
-    pub fn add_mixed_unchecked(&self, rhs: &AffinePoint) -> ProjectivePoint {
+    pub fn add_mixed_unchecked(&self, rhs: &AffinePoint) -> JacobianPoint {
         // Use formula given in Handbook of Elliptic and Hyperelliptic Curve Cryptography, part 13.2
 
-        let t0 = (&rhs.y).mul(&self.z);
-        let t0 = (&t0).sub(&self.y);
+        let z1_sq = self.z.square();
 
-        let t1 = (&rhs.x).mul(&self.z);
-        let t1 = (&t1).sub(&self.x);
+        let b = rhs.x * z1_sq;
 
-        let t2 = t0.square();
-        let t2 = (&t2).mul(&self.z);
-        let t3 = t1.square();
-        let t4 = (&t1).mul(&t3);
-        let t2 = (&t2).sub(&t4);
-        let t5 = (&t3).mul(&self.x);
-        let t6 = t5.double();
-        let t2 = (&t2).sub(&t6);
+        let d = self.z * z1_sq;
+        let d = d * rhs.y;
 
-        let x3 = (&t1).mul(&t2);
+        let e = b - self.x;
 
-        let y3 = (&t5).sub(&t2);
-        let y3 = (&y3).mul(&t0);
-        let t7 = (&t4).mul(&self.y);
-        let y3 = (&y3).sub(&t7);
+        let f = d - self.y;
 
-        let z3 = (&t4).mul(&self.z);
+        let e_sq = e.square();
+        let e_sq_times_e = e * e_sq;
+        let x_e_sq = self.x * e_sq;
 
-        let tmp = ProjectivePoint {
+        let x3 = f.square();
+        let x3 = x3 - e_sq_times_e;
+        let x3 = x3 - x_e_sq.double();
+
+        let y3 = x_e_sq - x3;
+        let y3 = y3 * f;
+        let t3 = self.y * e_sq_times_e;
+        let y3 = y3 - t3;
+
+        let z3 = self.z * e;
+
+        let tmp = JacobianPoint {
             x: x3,
             y: y3,
             z: z3,
         };
 
-        ProjectivePoint::conditional_select(&tmp, self, rhs.is_identity())
+        JacobianPoint::conditional_select(&tmp, self, rhs.is_identity())
     }
 
-    /// Performs a projective scalar multiplication from `by`
+    /// Performs a jacobian scalar multiplication from `by`
     /// given as byte representation of a `Scalar` element
-    pub fn multiply(&self, by: &[u8; 32]) -> ProjectivePoint {
+    pub fn multiply(&self, by: &[u8; 32]) -> JacobianPoint {
         let table = LookupTable::<16>::from(self);
         let digits = Scalar::bytes_to_radix_16(by);
 
-        let mut acc = *SHIFT_POINT_PROJECTIVE;
+        let mut acc = *SHIFT_POINT_JACOBIAN;
         for i in (0..64).rev() {
             acc = acc.double_multi_unchecked(4);
             acc = acc.add_mixed_unchecked(&table.get_point(digits[i]));
@@ -622,13 +591,13 @@ impl ProjectivePoint {
         acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
     }
 
-    /// Performs a projective scalar multiplication from `by`
+    /// Performs a jacobian scalar multiplication from `by`
     /// given as byte representation of a `Scalar` element.
     ///
     /// **This operation is variable time with respect
     /// to the scalar.** If the scalar is fixed,
     /// this operation is effectively constant time.
-    pub fn multiply_vartime(&self, by: &[u8; 32]) -> ProjectivePoint {
+    pub fn multiply_vartime(&self, by: &[u8; 32]) -> JacobianPoint {
         let digits = Scalar::bytes_to_wnaf_vartime(by, 5);
 
         // We skip unset digits
@@ -640,18 +609,14 @@ impl ProjectivePoint {
             }
         }
         let table = NafLookupTable::<8>::from(self);
-        let mut acc = *SHIFT_POINT_PROJECTIVE;
+        let mut acc = *SHIFT_POINT_JACOBIAN;
 
         for j in (0..i + 1).rev() {
             acc = acc.double_unchecked();
 
             match digits[j].cmp(&0) {
-                Ordering::Greater => {
-                    acc = acc.add_mixed_unchecked(&table.get_point(digits[j] as usize))
-                }
-                Ordering::Less => {
-                    acc = acc.add_mixed_unchecked(&table.get_point(-digits[j] as usize).neg())
-                }
+                Ordering::Greater => acc += &table.get_point(digits[j] as usize),
+                Ordering::Less => acc -= &table.get_point(-digits[j] as usize),
                 Ordering::Equal => (),
             };
         }
@@ -659,20 +624,20 @@ impl ProjectivePoint {
         acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[i + 1])
     }
 
-    /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
+    /// Performs the jacobian sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
     /// `by_lhs` and `by_rhs` given as byte representations of `Scalar` elements.
     pub fn multiply_double(
         &self,
-        rhs: &ProjectivePoint,
+        rhs: &JacobianPoint,
         by_lhs: &[u8; 32],
         by_rhs: &[u8; 32],
-    ) -> ProjectivePoint {
+    ) -> JacobianPoint {
         let table_lhs = LookupTable::<16>::from(self);
         let table_rhs = LookupTable::<16>::from(rhs);
         let digits_lhs = Scalar::bytes_to_radix_16(by_lhs);
         let digits_rhs = Scalar::bytes_to_radix_16(by_rhs);
 
-        let mut acc = *SHIFT_POINT_PROJECTIVE;
+        let mut acc = *SHIFT_POINT_JACOBIAN;
         for i in (0..64).rev() {
             acc = acc.double_multi_unchecked(4);
             acc = acc.add_mixed_unchecked(&table_lhs.get_point(digits_lhs[i]));
@@ -682,7 +647,7 @@ impl ProjectivePoint {
         acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
     }
 
-    /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
+    /// Performs the jacobian sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with
     /// `by_lhs` and `by_rhs` given as byte representations of `Scalar` elements.
     ///
     /// **This operation is variable time with respect
@@ -690,10 +655,10 @@ impl ProjectivePoint {
     /// this operation is effectively constant time.
     pub fn multiply_double_vartime(
         &self,
-        rhs: &ProjectivePoint,
+        rhs: &JacobianPoint,
         by_lhs: &[u8; 32],
         by_rhs: &[u8; 32],
-    ) -> ProjectivePoint {
+    ) -> JacobianPoint {
         let by_lhs_digits = Scalar::bytes_to_wnaf_vartime(by_lhs, 5);
         let by_rhs_digits = Scalar::bytes_to_wnaf_vartime(by_rhs, 5);
 
@@ -707,7 +672,7 @@ impl ProjectivePoint {
         }
         let table_self = NafLookupTable::<8>::from(self);
         let table_rhs = NafLookupTable::<8>::from(rhs);
-        let mut acc = *SHIFT_POINT_PROJECTIVE;
+        let mut acc = *SHIFT_POINT_JACOBIAN;
 
         for j in (0..i + 1).rev() {
             acc = acc.double_unchecked();
@@ -742,7 +707,7 @@ impl ProjectivePoint {
     // TODO: It would be nice to have a constant-time variant of the method below,
     // though this may be tricky for accessing the point in the table.
 
-    /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `g`] with
+    /// Performs the jacobian sum [`by_lhs` * `self` + `by_rhs` * `g`] with
     /// `by_lhs` and `by_rhs` given as byte representations of `Scalar` elements
     /// and `g` being the curve basepoint.
     ///
@@ -756,7 +721,7 @@ impl ProjectivePoint {
         &self,
         by_self: &[u8; 32],
         by_basepoint: &[u8; 32],
-    ) -> ProjectivePoint {
+    ) -> JacobianPoint {
         let by_self_digits = Scalar::bytes_to_wnaf_vartime(by_self, 5);
         let by_basepoint_digits = Scalar::bytes_to_wnaf_vartime(by_basepoint, 8);
 
@@ -770,7 +735,7 @@ impl ProjectivePoint {
         }
         let table_self = NafLookupTable::<8>::from(self);
         let table_basepoint = &ODD_MULTIPLES_BASEPOINT;
-        let mut acc = *SHIFT_POINT_PROJECTIVE;
+        let mut acc = *SHIFT_POINT_JACOBIAN;
 
         for j in (0..i + 1).rev() {
             acc = acc.double_unchecked();
@@ -808,7 +773,7 @@ impl ProjectivePoint {
     }
 
     /// Multiplies by the curve cofactor
-    pub fn clear_cofactor(&self) -> ProjectivePoint {
+    pub fn clear_cofactor(&self) -> JacobianPoint {
         // cofactor = 708537115134665106932687062569690615370
         //          = 0x2150b48e071ef610049bc3f5d54304e4a
         const COFACTOR_BYTES: [u8; 32] = [
@@ -831,7 +796,7 @@ impl ProjectivePoint {
         self.multiply_vartime(&FQ_MODULUS_BYTES).is_identity()
     }
 
-    /// Converts a batch of `ProjectivePoint` elements into `AffinePoint` elements. This
+    /// Converts a batch of `JacobianPoint` elements into `AffinePoint` elements. This
     /// function will panic if `p.len() != q.len()`.
     pub fn batch_normalize(p: &[Self], q: &mut [AffinePoint]) {
         assert_eq!(p.len(), q.len());
@@ -855,13 +820,14 @@ impl ProjectivePoint {
 
             // Compute tmp = 1/z`
             let tmp = q.x * acc;
+            let tmp2 = tmp.square();
 
             // Cancel out z-coordinate in denominator of `acc`
             acc = Fp6::conditional_select(&(acc * p.z), &acc, skip);
 
             // Set the coordinates to the correct value
-            q.x = p.x * tmp;
-            q.y = p.y * tmp;
+            q.x = p.x * tmp2;
+            q.y = p.y * tmp2 * tmp;
             q.infinity = Choice::from(0);
 
             *q = AffinePoint::conditional_select(q, &AffinePoint::identity(), skip);
@@ -877,18 +843,20 @@ impl ProjectivePoint {
     /// Returns true if this point is on the curve. This should always return
     /// true unless an "unchecked" API was used.
     pub fn is_on_curve(&self) -> Choice {
-        // Y^2 Z = X^3 + X Z^2 + b Z^3
+        // Y^2 = X^3 + X Z^4 + b Z^6
 
-        (self.y.square() * self.z).ct_eq(
-            &(self.x.square() * self.x + self.x * self.z.square() + self.z.square() * self.z * B),
-        ) | (self.z.is_zero())
+        let z2 = self.z.square();
+        let z4 = z2.square();
+
+        (self.y.square()).ct_eq(&(self.x.square() * self.x + self.x * z4 + z2 * z4 * B))
+            | (self.z.is_zero())
     }
 }
 
 // GROUP TRAITS IMPLEMENTATION
 // ================================================================================================
 
-impl Group for ProjectivePoint {
+impl Group for JacobianPoint {
     type Scalar = Scalar;
 
     fn random(mut rng: impl RngCore) -> Self {
@@ -913,7 +881,7 @@ impl Group for ProjectivePoint {
     }
 }
 
-impl Curve for ProjectivePoint {
+impl Curve for JacobianPoint {
     type AffineRepr = AffinePoint;
 
     fn batch_normalize(p: &[Self], q: &mut [Self::AffineRepr]) {
@@ -929,7 +897,7 @@ impl Curve for ProjectivePoint {
 // ================================================================================================
 
 #[cfg(feature = "serialize")]
-impl Serialize for ProjectivePoint {
+impl Serialize for JacobianPoint {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -939,13 +907,13 @@ impl Serialize for ProjectivePoint {
 }
 
 #[cfg(feature = "serialize")]
-impl<'de> Deserialize<'de> for ProjectivePoint {
+impl<'de> Deserialize<'de> for JacobianPoint {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
         let compressed_point = CompressedPoint::deserialize(deserializer)?;
-        let p = ProjectivePoint::from_compressed(&compressed_point);
+        let p = JacobianPoint::from_compressed(&compressed_point);
         if bool::from(p.is_some()) {
             Ok(p.unwrap())
         } else {
@@ -959,12 +927,10 @@ mod tests {
     use super::*;
     use rand_core::OsRng;
 
-    use crate::{BasePointTable, BASEPOINT_TABLE};
-
     #[test]
     fn test_is_on_curve() {
-        assert!(bool::from(ProjectivePoint::identity().is_on_curve()));
-        assert!(bool::from(ProjectivePoint::generator().is_on_curve()));
+        assert!(bool::from(JacobianPoint::identity().is_on_curve()));
+        assert!(bool::from(JacobianPoint::generator().is_on_curve()));
 
         let z = Fp6 {
             c0: Fp(0x79b230ab69fdb493),
@@ -976,9 +942,9 @@ mod tests {
         };
 
         let gen = AffinePoint::generator();
-        let mut test = ProjectivePoint {
-            x: gen.x * z,
-            y: gen.y * z,
+        let mut test = JacobianPoint {
+            x: gen.x * z.square(),
+            y: gen.y * z.square() * z,
             z,
         };
 
@@ -990,10 +956,10 @@ mod tests {
 
     #[test]
     #[allow(clippy::eq_op)]
-    fn test_projective_point_equality() {
-        let a = ProjectivePoint::generator();
-        let b = ProjectivePoint::identity();
-        let c = ProjectivePoint::default();
+    fn test_jacobian_point_equality() {
+        let a = JacobianPoint::generator();
+        let b = JacobianPoint::identity();
+        let c = JacobianPoint::default();
 
         assert!(a == a);
         assert!(b == b);
@@ -1013,9 +979,9 @@ mod tests {
             c5: Fp(0xcfb89c494391a555),
         };
 
-        let mut c = ProjectivePoint {
-            x: a.x * z,
-            y: a.y * z,
+        let mut c = JacobianPoint {
+            x: a.x * z.square(),
+            y: a.y * z.square() * z,
             z,
         };
         assert!(bool::from(c.is_on_curve()));
@@ -1042,9 +1008,9 @@ mod tests {
     }
 
     #[test]
-    fn test_projective_to_affine() {
-        let a = ProjectivePoint::generator();
-        let b = ProjectivePoint::identity();
+    fn test_jacobian_to_affine() {
+        let a = JacobianPoint::generator();
+        let b = JacobianPoint::identity();
 
         assert!(bool::from(AffinePoint::from(a).is_on_curve()));
         assert!(!bool::from(AffinePoint::from(a).is_identity()));
@@ -1060,38 +1026,52 @@ mod tests {
             c5: Fp(0xcfb89c494391a555),
         };
 
-        let c = ProjectivePoint {
-            x: a.x * z,
-            y: a.y * z,
+        let c = JacobianPoint {
+            x: a.x * z.square(),
+            y: a.y * z.square() * z,
             z,
         };
 
         assert_eq!(AffinePoint::from(c), AffinePoint::generator());
+
+        let mut rng = OsRng;
+        for _ in 0..100 {
+            let a = AffinePoint::random(&mut rng);
+            let z = Fp6::random(&mut rng);
+
+            let b = JacobianPoint {
+                x: a.x * z.square(),
+                y: a.y * z.square() * z,
+                z,
+            };
+
+            assert_eq!(AffinePoint::from(b), a);
+        }
     }
 
     #[test]
-    fn test_affine_to_projective() {
+    fn test_affine_to_jacobian() {
         let a = AffinePoint::generator();
         let b = AffinePoint::identity();
 
-        assert!(bool::from(ProjectivePoint::from(a).is_on_curve()));
-        assert!(!bool::from(ProjectivePoint::from(a).is_identity()));
-        assert!(bool::from(ProjectivePoint::from(b).is_on_curve()));
-        assert!(bool::from(ProjectivePoint::from(b).is_identity()));
+        assert!(bool::from(JacobianPoint::from(a).is_on_curve()));
+        assert!(!bool::from(JacobianPoint::from(a).is_identity()));
+        assert!(bool::from(JacobianPoint::from(b).is_on_curve()));
+        assert!(bool::from(JacobianPoint::from(b).is_identity()));
     }
 
     #[test]
     fn test_doubling() {
         {
-            let tmp = ProjectivePoint::identity().double();
+            let tmp = JacobianPoint::identity().double();
             assert!(bool::from(tmp.is_identity()));
             assert!(bool::from(tmp.is_on_curve()));
         }
         {
-            let tmp = ProjectivePoint::generator().double();
+            let tmp = JacobianPoint::generator().double();
             assert!(!bool::from(tmp.is_identity()));
             assert!(bool::from(tmp.is_on_curve()));
-            assert_eq!(tmp, ProjectivePoint::generator().double_unchecked());
+            assert_eq!(tmp, JacobianPoint::generator().double_unchecked());
 
             assert_eq!(
                 AffinePoint::from(tmp),
@@ -1119,17 +1099,17 @@ mod tests {
     }
 
     #[test]
-    fn test_projective_addition() {
+    fn test_jacobian_addition() {
         {
-            let a = ProjectivePoint::identity();
-            let b = ProjectivePoint::identity();
+            let a = JacobianPoint::identity();
+            let b = JacobianPoint::identity();
             let c = a + b;
             assert!(bool::from(c.is_identity()));
             assert!(bool::from(c.is_on_curve()));
         }
         {
-            let a = ProjectivePoint::identity();
-            let mut b = ProjectivePoint::generator();
+            let a = JacobianPoint::identity();
+            let mut b = JacobianPoint::generator();
             {
                 let z = Fp6 {
                     c0: Fp(0xa3c62f9770336022),
@@ -1140,25 +1120,49 @@ mod tests {
                     c5: Fp(0xe15458e6d847f393),
                 };
 
-                b = ProjectivePoint {
-                    x: b.x * z,
-                    y: b.y * z,
+                b = JacobianPoint {
+                    x: b.x * z.square(),
+                    y: b.y * z.square() * z,
                     z,
                 };
             }
             let c = a + b;
             assert!(!bool::from(c.is_identity()));
             assert!(bool::from(c.is_on_curve()));
-            assert!(c == ProjectivePoint::generator());
+            assert!(c == JacobianPoint::generator());
         }
         {
-            let a = ProjectivePoint::generator().double_multi(2); // 4P
-            let b = ProjectivePoint::generator().double(); // 2P
+            let a = JacobianPoint::identity();
+            let mut b = JacobianPoint::generator();
+            {
+                let z = Fp6 {
+                    c0: Fp(0xa3c62f9770336022),
+                    c1: Fp(0x69a1531152c92fc1),
+                    c2: Fp(0x1636d9b90656a08a),
+                    c3: Fp(0x635289066593aaf6),
+                    c4: Fp(0x1e2178e3c54f6682),
+                    c5: Fp(0xe15458e6d847f393),
+                };
+
+                b = JacobianPoint {
+                    x: b.x * z.square(),
+                    y: b.y * z.square() * z,
+                    z,
+                };
+            }
+            let c = b + a;
+            assert!(!bool::from(c.is_identity()));
+            assert!(bool::from(c.is_on_curve()));
+            assert!(c == JacobianPoint::generator());
+        }
+        {
+            let a = JacobianPoint::generator().double_multi(2); // 4P
+            let b = JacobianPoint::generator().double(); // 2P
             let c = a + b;
 
-            let mut d = ProjectivePoint::generator();
+            let mut d = JacobianPoint::generator();
             for _ in 0..5 {
-                d += ProjectivePoint::generator();
+                d += JacobianPoint::generator();
             }
             assert!(!bool::from(c.is_identity()));
             assert!(bool::from(c.is_on_curve()));
@@ -1172,14 +1176,14 @@ mod tests {
     fn test_mixed_addition() {
         {
             let a = AffinePoint::identity();
-            let b = ProjectivePoint::identity();
+            let b = JacobianPoint::identity();
             let c = a + b;
             assert!(bool::from(c.is_identity()));
             assert!(bool::from(c.is_on_curve()));
         }
         {
             let a = AffinePoint::identity();
-            let mut b = ProjectivePoint::generator();
+            let mut b = JacobianPoint::generator();
             {
                 let z = Fp6 {
                     c0: Fp(0xa3c62f9770336022),
@@ -1190,20 +1194,20 @@ mod tests {
                     c5: Fp(0xe15458e6d847f393),
                 };
 
-                b = ProjectivePoint {
-                    x: b.x * z,
-                    y: b.y * z,
+                b = JacobianPoint {
+                    x: b.x * z.square(),
+                    y: b.y * z.square() * z,
                     z,
                 };
             }
             let c = a + b;
             assert!(!bool::from(c.is_identity()));
             assert!(bool::from(c.is_on_curve()));
-            assert!(c == ProjectivePoint::generator());
+            assert!(c == JacobianPoint::generator());
         }
         {
             let a = AffinePoint::identity();
-            let mut b = ProjectivePoint::generator();
+            let mut b = JacobianPoint::generator();
             {
                 let z = Fp6 {
                     c0: Fp(0xa3c62f9770336022),
@@ -1214,23 +1218,23 @@ mod tests {
                     c5: Fp(0xe15458e6d847f393),
                 };
 
-                b = ProjectivePoint {
-                    x: b.x * z,
-                    y: b.y * z,
+                b = JacobianPoint {
+                    x: b.x * z.square(),
+                    y: b.y * z.square() * z,
                     z,
                 };
             }
             let c = b + a;
             assert!(!bool::from(c.is_identity()));
             assert!(bool::from(c.is_on_curve()));
-            assert!(c == ProjectivePoint::generator());
+            assert!(c == JacobianPoint::generator());
         }
         {
-            let a = ProjectivePoint::generator().double_multi(2); // 4P
-            let b = ProjectivePoint::generator().double(); // 2P
+            let a = JacobianPoint::generator().double_multi(2); // 4P
+            let b = JacobianPoint::generator().double(); // 2P
             let c = a + b;
 
-            let mut d = ProjectivePoint::generator();
+            let mut d = JacobianPoint::generator();
             for _ in 0..5 {
                 d += AffinePoint::generator();
             }
@@ -1243,30 +1247,30 @@ mod tests {
         {
             let mut rng = OsRng;
             for _ in 0..100 {
-                let a = ProjectivePoint::random(&mut rng);
+                let a = JacobianPoint::random(&mut rng);
                 let b = AffinePoint::random(&mut rng);
 
                 // If this fails, we are very unlucky!
                 assert_eq!(a.add_mixed(&b), a.add_mixed_unchecked(&b));
             }
 
-            let a = ProjectivePoint::random(&mut rng);
+            let a = JacobianPoint::random(&mut rng);
             assert_ne!(a.add(&a), a.add_mixed_unchecked(&a.to_affine()));
         }
     }
 
     #[test]
     #[allow(clippy::eq_op)]
-    fn test_projective_negation_and_subtraction() {
-        let a = ProjectivePoint::generator().double();
-        assert_eq!(a + (-a), ProjectivePoint::identity());
+    fn test_jacobian_negation_and_subtraction() {
+        let a = JacobianPoint::generator().double();
+        assert_eq!(a + (-a), JacobianPoint::identity());
         assert_eq!(a + (-a), a - a);
     }
 
     #[test]
-    fn test_projective_scalar_multiplication() {
+    fn test_jacobian_scalar_multiplication() {
         let mut rng = OsRng;
-        let g = ProjectivePoint::generator();
+        let g = JacobianPoint::generator();
 
         for _ in 0..100 {
             let a = Scalar::random(&mut rng);
@@ -1276,24 +1280,14 @@ mod tests {
 
             assert_eq!((g * a) * b, g * c);
             assert_eq!(g * c, g.multiply_vartime(&c.to_bytes()));
-
-            assert_eq!(g * c, &BASEPOINT_TABLE * c);
-            assert_eq!(g * c, BASEPOINT_TABLE.multiply(&c.to_bytes()));
-            assert_eq!(g * c, BASEPOINT_TABLE.multiply_vartime(&c.to_bytes()));
-
-            let g = g * a;
-            let basepoint_table = BasePointTable::create(&g);
-            assert_eq!(g * b, &basepoint_table * b);
-            assert_eq!(g * b, basepoint_table.multiply(&b.to_bytes()));
-            assert_eq!(g * b, basepoint_table.multiply_vartime(&b.to_bytes()));
         }
     }
 
     #[test]
-    fn test_projective_double_scalar_multiplication() {
+    fn test_jacobian_double_scalar_multiplication() {
         let mut rng = OsRng;
-        let g = ProjectivePoint::generator() * Scalar::random(&mut rng);
-        let h = ProjectivePoint::generator() * Scalar::random(&mut rng);
+        let g = JacobianPoint::generator() * Scalar::random(&mut rng);
+        let h = JacobianPoint::generator() * Scalar::random(&mut rng);
 
         for _ in 0..100 {
             let a = Scalar::random(&mut rng);
@@ -1311,10 +1305,10 @@ mod tests {
     }
 
     #[test]
-    fn test_projective_double_scalar_multiplication_with_basepoint() {
+    fn test_jacobian_double_scalar_multiplication_with_basepoint() {
         let mut rng = OsRng;
-        let g = ProjectivePoint::generator() * Scalar::random(&mut rng);
-        let h = ProjectivePoint::generator();
+        let g = JacobianPoint::generator() * Scalar::random(&mut rng);
+        let h = JacobianPoint::generator();
 
         for _ in 0..100 {
             let a = Scalar::random(&mut rng);
@@ -1330,12 +1324,12 @@ mod tests {
     #[test]
     fn test_clear_cofactor() {
         // the generator (and the identity) are always on the curve
-        let generator = ProjectivePoint::generator();
+        let generator = JacobianPoint::generator();
         assert!(bool::from(generator.clear_cofactor().is_on_curve()));
-        let id = ProjectivePoint::identity();
+        let id = JacobianPoint::identity();
         assert!(bool::from(id.clear_cofactor().is_on_curve()));
 
-        let point = ProjectivePoint {
+        let point = JacobianPoint {
             x: Fp6 {
                 c0: Fp(0x9bfcd3244afcb637),
                 c1: Fp(0x39005e478830b187),
@@ -1386,16 +1380,16 @@ mod tests {
             infinity: Choice::from(0u8),
         };
 
-        let a = ProjectivePoint::from(&a);
+        let a = JacobianPoint::from(&a);
         assert!(bool::from(a.is_on_curve()));
         assert!(!bool::from(a.is_torsion_free()));
-        assert!(bool::from(ProjectivePoint::identity().is_torsion_free()));
-        assert!(bool::from(ProjectivePoint::generator().is_torsion_free()));
+        assert!(bool::from(JacobianPoint::identity().is_torsion_free()));
+        assert!(bool::from(JacobianPoint::generator().is_torsion_free()));
     }
 
     #[test]
     fn test_batch_normalize() {
-        let a = ProjectivePoint::generator().double();
+        let a = JacobianPoint::generator().double();
         let b = a.double();
         let c = b.double();
 
@@ -1404,13 +1398,13 @@ mod tests {
                 for c_identity in (0..1).map(|n| n == 1) {
                     let mut v = [a, b, c];
                     if a_identity {
-                        v[0] = ProjectivePoint::identity()
+                        v[0] = JacobianPoint::identity()
                     }
                     if b_identity {
-                        v[1] = ProjectivePoint::identity()
+                        v[1] = JacobianPoint::identity()
                     }
                     if c_identity {
-                        v[2] = ProjectivePoint::identity()
+                        v[2] = JacobianPoint::identity()
                     }
 
                     let mut t = [
@@ -1424,7 +1418,7 @@ mod tests {
                         AffinePoint::from(v[2]),
                     ];
 
-                    ProjectivePoint::batch_normalize(&v[..], &mut t[..]);
+                    JacobianPoint::batch_normalize(&v[..], &mut t[..]);
 
                     assert_eq!(&t[..], &expected[..]);
                 }
@@ -1436,9 +1430,9 @@ mod tests {
     fn test_zeroize() {
         use zeroize::Zeroize;
 
-        let mut a = ProjectivePoint::generator();
+        let mut a = JacobianPoint::generator();
         a.zeroize();
-        assert_eq!(a, ProjectivePoint::identity());
+        assert_eq!(a, JacobianPoint::identity());
     }
 
     // POINT COMPRESSION
@@ -1449,20 +1443,20 @@ mod tests {
         let mut rng = OsRng;
         // Random points
         for _ in 0..100 {
-            let point = ProjectivePoint::random(&mut rng);
+            let point = JacobianPoint::random(&mut rng);
             let bytes = point.to_compressed();
-            let point_decompressed = ProjectivePoint::from_compressed(&bytes).unwrap();
+            let point_decompressed = JacobianPoint::from_compressed(&bytes).unwrap();
             assert_eq!(point, point_decompressed);
         }
 
         // Identity point
         {
-            let bytes = ProjectivePoint::identity().to_compressed();
-            let point_decompressed = ProjectivePoint::from_compressed(&bytes).unwrap();
+            let bytes = JacobianPoint::identity().to_compressed();
+            let point_decompressed = JacobianPoint::from_compressed(&bytes).unwrap();
             assert!(bool::from(point_decompressed.is_identity()));
 
             assert_eq!(
-                ProjectivePoint::identity().to_compressed().to_bytes(),
+                JacobianPoint::identity().to_compressed().to_bytes(),
                 [
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128
@@ -1478,9 +1472,9 @@ mod tests {
                 infinity: 0.into(),
             };
 
-            let point = ProjectivePoint::from(&point);
+            let point = JacobianPoint::from(&point);
             let bytes = point.to_compressed();
-            let point_decompressed = ProjectivePoint::from_compressed(&bytes);
+            let point_decompressed = JacobianPoint::from_compressed(&bytes);
             assert!(bool::from(point_decompressed.is_none()));
         }
     }
@@ -1491,20 +1485,20 @@ mod tests {
 
         // Random points
         for _ in 0..100 {
-            let point = ProjectivePoint::random(&mut rng);
+            let point = JacobianPoint::random(&mut rng);
             let bytes = point.to_uncompressed();
-            let point_decompressed = ProjectivePoint::from_uncompressed(&bytes).unwrap();
+            let point_decompressed = JacobianPoint::from_uncompressed(&bytes).unwrap();
             assert_eq!(point, point_decompressed);
         }
 
         // Identity point
         {
-            let bytes = ProjectivePoint::identity().to_uncompressed();
-            let point_decompressed = ProjectivePoint::from_uncompressed(&bytes).unwrap();
+            let bytes = JacobianPoint::identity().to_uncompressed();
+            let point_decompressed = JacobianPoint::from_uncompressed(&bytes).unwrap();
             assert!(bool::from(point_decompressed.is_identity()));
 
             assert_eq!(
-                ProjectivePoint::identity().to_uncompressed().to_bytes(),
+                JacobianPoint::identity().to_uncompressed().to_bytes(),
                 [
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1522,9 +1516,9 @@ mod tests {
                 infinity: 0.into(),
             };
 
-            let point = ProjectivePoint::from(&point);
+            let point = JacobianPoint::from(&point);
             let bytes = point.to_uncompressed();
-            let point_decompressed = ProjectivePoint::from_uncompressed(&bytes);
+            let point_decompressed = JacobianPoint::from_uncompressed(&bytes);
             assert!(bool::from(point_decompressed.is_none()));
         }
         {
@@ -1536,7 +1530,7 @@ mod tests {
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             ]);
 
-            let point_decompressed = ProjectivePoint::from_uncompressed_unchecked(&bytes);
+            let point_decompressed = JacobianPoint::from_uncompressed_unchecked(&bytes);
             assert!(bool::from(point_decompressed.is_none()));
         }
         {
@@ -1548,7 +1542,7 @@ mod tests {
                 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
             ]);
 
-            let point_decompressed = ProjectivePoint::from_uncompressed_unchecked(&bytes);
+            let point_decompressed = JacobianPoint::from_uncompressed_unchecked(&bytes);
             assert!(bool::from(point_decompressed.is_none()));
         }
     }
@@ -1558,11 +1552,11 @@ mod tests {
 
     #[test]
     #[cfg(feature = "serialize")]
-    fn test_serde_projective() {
+    fn test_serde_jacobian() {
         let mut rng = OsRng;
-        let point = ProjectivePoint::random(&mut rng);
+        let point = JacobianPoint::random(&mut rng);
         let encoded = bincode::serialize(&point).unwrap();
-        let parsed: ProjectivePoint = bincode::deserialize(&encoded).unwrap();
+        let parsed: JacobianPoint = bincode::deserialize(&encoded).unwrap();
         assert_eq!(parsed, point);
 
         // Check that the encoding is 49 bytes exactly
@@ -1576,9 +1570,9 @@ mod tests {
 
         // Check that invalid encodings fail
         let encoded = bincode::serialize(&point).unwrap();
-        assert!(bincode::deserialize::<ProjectivePoint>(&encoded[0..47]).is_err());
+        assert!(bincode::deserialize::<JacobianPoint>(&encoded[0..47]).is_err());
 
         let encoded = [255; 49];
-        assert!(bincode::deserialize::<ProjectivePoint>(&encoded).is_err());
+        assert!(bincode::deserialize::<JacobianPoint>(&encoded).is_err());
     }
 }

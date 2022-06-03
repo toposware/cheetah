@@ -17,9 +17,9 @@ use core::{
 
 use super::B;
 
-use crate::ProjectivePoint;
 use crate::{CompressedPoint, UncompressedPoint};
 use crate::{Fp, Fp6, Scalar};
+use crate::{JacobianPoint, ProjectivePoint};
 
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
@@ -74,6 +74,29 @@ impl<'a> From<&'a ProjectivePoint> for AffinePoint {
 
 impl From<ProjectivePoint> for AffinePoint {
     fn from(p: ProjectivePoint) -> AffinePoint {
+        AffinePoint::from(&p)
+    }
+}
+
+impl<'a> From<&'a JacobianPoint> for AffinePoint {
+    fn from(p: &'a JacobianPoint) -> AffinePoint {
+        let z3 = p.z.square() * p.z;
+        let zinv3 = z3.invert().unwrap_or(Fp6::zero());
+        let x = p.x * zinv3 * p.z;
+        let y = p.y * zinv3;
+
+        let tmp = AffinePoint {
+            x,
+            y,
+            infinity: Choice::from(0u8),
+        };
+
+        AffinePoint::conditional_select(&tmp, &AffinePoint::identity(), zinv3.ct_eq(&Fp6::zero()))
+    }
+}
+
+impl From<JacobianPoint> for AffinePoint {
+    fn from(p: JacobianPoint) -> AffinePoint {
         AffinePoint::from(&p)
     }
 }
@@ -146,6 +169,24 @@ impl<'a, 'b> Sub<&'b ProjectivePoint> for &'a AffinePoint {
 
     #[inline]
     fn sub(self, rhs: &'b ProjectivePoint) -> ProjectivePoint {
+        self + (-rhs)
+    }
+}
+
+impl<'a, 'b> Add<&'b JacobianPoint> for &'a AffinePoint {
+    type Output = JacobianPoint;
+
+    #[inline]
+    fn add(self, rhs: &'b JacobianPoint) -> JacobianPoint {
+        rhs.add_mixed(self)
+    }
+}
+
+impl<'a, 'b> Sub<&'b JacobianPoint> for &'a AffinePoint {
+    type Output = JacobianPoint;
+
+    #[inline]
+    fn sub(self, rhs: &'b JacobianPoint) -> JacobianPoint {
         self + (-rhs)
     }
 }

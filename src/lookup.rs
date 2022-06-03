@@ -10,8 +10,8 @@
 //!
 //! Adapted from https://github.com/RustCrypto/elliptic-curves
 
-use crate::{AffinePoint, ProjectivePoint, Scalar};
-use crate::{MINUS_SHIFT_POINT_ARRAY, SHIFT_POINT};
+use crate::{AffinePoint, JacobianPoint, ProjectivePoint, Scalar};
+use crate::{MINUS_SHIFT_POINT_ARRAY, SHIFT_POINT_PROJECTIVE};
 
 use core::ops::Mul;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
@@ -38,6 +38,26 @@ impl<const N: usize> From<&ProjectivePoint> for LookupTable<N> {
 
 impl<const N: usize> From<ProjectivePoint> for LookupTable<N> {
     fn from(p: ProjectivePoint) -> Self {
+        Self::from(&p)
+    }
+}
+
+impl<const N: usize> From<&JacobianPoint> for LookupTable<N> {
+    fn from(p: &JacobianPoint) -> Self {
+        let mut points = [*p; N];
+        for i in 1..N {
+            points[i] = p + points[i - 1];
+        }
+
+        let mut points_affine = [AffinePoint::identity(); N];
+        JacobianPoint::batch_normalize(&points, &mut points_affine);
+
+        Self(points_affine)
+    }
+}
+
+impl<const N: usize> From<JacobianPoint> for LookupTable<N> {
+    fn from(p: JacobianPoint) -> Self {
         Self::from(&p)
     }
 }
@@ -178,7 +198,7 @@ impl BasePointTable {
         let a = Scalar::bytes_to_radix_16(scalar);
 
         let tables = &self.0;
-        let mut acc = SHIFT_POINT;
+        let mut acc = *SHIFT_POINT_PROJECTIVE;
 
         for i in (0..64).filter(|x| x % 2 == 1) {
             acc = acc.add_mixed_unchecked(&tables[i / 2].get_point(a[i]));
@@ -205,7 +225,7 @@ impl BasePointTable {
         let a = Scalar::bytes_to_radix_16(scalar);
 
         let tables = &self.0;
-        let mut acc = SHIFT_POINT;
+        let mut acc = *SHIFT_POINT_PROJECTIVE;
 
         for i in (0..64).filter(|x| x % 2 == 1) {
             acc = acc.add_mixed_unchecked(&tables[i / 2].get_point(a[i]));

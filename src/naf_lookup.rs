@@ -8,7 +8,7 @@
 
 //! This module implements NAF lookup tables for points in Affine coordinates.
 
-use crate::{AffinePoint, ProjectivePoint};
+use crate::{AffinePoint, JacobianPoint, ProjectivePoint};
 
 use zeroize::Zeroize;
 
@@ -42,6 +42,36 @@ impl<const N: usize> From<&ProjectivePoint> for NafLookupTable<N> {
 
         let mut points_affine = [AffinePoint::identity(); N];
         ProjectivePoint::batch_normalize(&points, &mut points_affine);
+
+        Self(points_affine)
+    }
+}
+
+impl<const N: usize> From<JacobianPoint> for NafLookupTable<N> {
+    fn from(p: JacobianPoint) -> Self {
+        let mut points = [p; N];
+        let double = p.double();
+        for i in 1..N {
+            points[i] = double + points[i - 1];
+        }
+
+        let mut points_affine = [AffinePoint::identity(); N];
+        JacobianPoint::batch_normalize(&points, &mut points_affine);
+
+        Self(points_affine)
+    }
+}
+
+impl<const N: usize> From<&JacobianPoint> for NafLookupTable<N> {
+    fn from(p: &JacobianPoint) -> Self {
+        let mut points = [*p; N];
+        let double = p.double();
+        for i in 1..N {
+            points[i] = double + points[i - 1];
+        }
+
+        let mut points_affine = [AffinePoint::identity(); N];
+        JacobianPoint::batch_normalize(&points, &mut points_affine);
 
         Self(points_affine)
     }
