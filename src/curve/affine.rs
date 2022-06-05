@@ -8,6 +8,9 @@
 
 //! This module provides an implementation of the cheetah curve in
 //! affine coordinates.
+//!
+//! All arithmetic operations on points given in affine coordinates
+//! internally rely on modified jacobian coordinates arithmetic.
 
 use core::{
     fmt,
@@ -340,7 +343,7 @@ impl AffinePoint {
     /// given as byte representation of a `Scalar` element.
     #[inline]
     pub fn multiply(&self, by: &[u8; 32]) -> AffinePoint {
-        ProjectivePoint::multiply(&self.into(), by).into()
+        JacobianPoint::multiply(&self.into(), by).into()
     }
 
     /// Performs an affine scalar multiplication from `by`
@@ -351,7 +354,7 @@ impl AffinePoint {
     /// this operation is effectively constant time.
     #[inline]
     pub fn multiply_vartime(&self, by: &[u8; 32]) -> AffinePoint {
-        ProjectivePoint::multiply_vartime(&self.into(), by).into()
+        JacobianPoint::multiply_vartime(&self.into(), by).into()
     }
 
     /// Performs the affine sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with `by_lhs`
@@ -363,7 +366,7 @@ impl AffinePoint {
         by_lhs: &[u8; 32],
         by_rhs: &[u8; 32],
     ) -> AffinePoint {
-        ProjectivePoint::multiply_double(&self.into(), &rhs.into(), by_lhs, by_rhs).into()
+        JacobianPoint::multiply_double(&self.into(), &rhs.into(), by_lhs, by_rhs).into()
     }
 
     /// Performs the affine sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with `by_lhs`
@@ -379,7 +382,7 @@ impl AffinePoint {
         by_lhs: &[u8; 32],
         by_rhs: &[u8; 32],
     ) -> AffinePoint {
-        ProjectivePoint::multiply_double_vartime(&self.into(), &rhs.into(), by_lhs, by_rhs).into()
+        JacobianPoint::multiply_double_vartime(&self.into(), &rhs.into(), by_lhs, by_rhs).into()
     }
 
     /// Performs the affine sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with `by_lhs`
@@ -394,13 +397,13 @@ impl AffinePoint {
         by_self: &[u8; 32],
         by_basepoint: &[u8; 32],
     ) -> AffinePoint {
-        ProjectivePoint::multiply_double_with_basepoint_vartime(&self.into(), by_self, by_basepoint)
+        JacobianPoint::multiply_double_with_basepoint_vartime(&self.into(), by_self, by_basepoint)
             .into()
     }
 
     /// Multiplies by the curve cofactor
     pub fn clear_cofactor(&self) -> AffinePoint {
-        let point: ProjectivePoint = self.into();
+        let point: JacobianPoint = self.into();
 
         point.clear_cofactor().into()
     }
@@ -408,21 +411,21 @@ impl AffinePoint {
     /// Returns true if this point is free of an $h$-torsion component.
     /// This should always return true unless an "unchecked" API was used.
     pub fn is_torsion_free(&self) -> Choice {
-        let point: ProjectivePoint = self.into();
+        let point: JacobianPoint = self.into();
 
         point.is_torsion_free()
     }
 }
 
 impl<'a, 'b> Mul<&'b Scalar> for &'a AffinePoint {
-    type Output = ProjectivePoint;
+    type Output = JacobianPoint;
 
     fn mul(self, other: &'b Scalar) -> Self::Output {
-        ProjectivePoint::from(self).multiply(&other.to_bytes())
+        JacobianPoint::from(self).multiply(&other.to_bytes())
     }
 }
 
-impl_binops_multiplicative_mixed!(AffinePoint, Scalar, ProjectivePoint);
+impl_binops_multiplicative_mixed!(AffinePoint, Scalar, JacobianPoint);
 
 // SERDE SERIALIZATION
 // ================================================================================================
