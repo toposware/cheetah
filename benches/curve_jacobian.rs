@@ -26,8 +26,20 @@ fn criterion_benchmark(c: &mut Criterion) {
     let p = JacobianPoint::random(&mut rng);
     let p2 = JacobianPoint::random(&mut rng);
     let p2_affine = AffinePoint::from(&p2);
-    let pow = Scalar::random(&mut rng).to_bytes();
-    let pow2 = Scalar::random(&mut rng).to_bytes();
+    let pow = Scalar::new([
+        0xb283b88ede33b702,
+        0x4460d73106ed6dad,
+        0x6c2f3c993870f926,
+        0x71acba2667ccf016,
+    ])
+    .to_bytes();
+    let pow2 = Scalar::new([
+        0xafd872bc45b8fbd0,
+        0xe714cd570760ccad,
+        0x4ec25207c1649a1a,
+        0x6fa45dca4626832f,
+    ])
+    .to_bytes();
 
     let uncompressed_encoding = p.to_uncompressed();
     let compressed_encoding = p.to_compressed();
