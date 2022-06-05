@@ -49,31 +49,13 @@ impl<const N: usize> From<&ProjectivePoint> for NafLookupTable<N> {
 
 impl<const N: usize> From<JacobianPoint> for NafLookupTable<N> {
     fn from(p: JacobianPoint) -> Self {
-        let mut points = [p; N];
-        let double = p.double();
-        for i in 1..N {
-            points[i] = double + points[i - 1];
-        }
-
-        let mut points_affine = [AffinePoint::identity(); N];
-        JacobianPoint::batch_normalize(&points, &mut points_affine);
-
-        Self(points_affine)
+        Self::from(AffinePoint::from(&p))
     }
 }
 
 impl<const N: usize> From<&JacobianPoint> for NafLookupTable<N> {
     fn from(p: &JacobianPoint) -> Self {
-        let mut points = [*p; N];
-        let double = p.double();
-        for i in 1..N {
-            points[i] = double + points[i - 1];
-        }
-
-        let mut points_affine = [AffinePoint::identity(); N];
-        JacobianPoint::batch_normalize(&points, &mut points_affine);
-
-        Self(points_affine)
+        Self::from(AffinePoint::from(p))
     }
 }
 

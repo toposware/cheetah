@@ -44,21 +44,13 @@ impl<const N: usize> From<ProjectivePoint> for LookupTable<N> {
 
 impl<const N: usize> From<&JacobianPoint> for LookupTable<N> {
     fn from(p: &JacobianPoint) -> Self {
-        let mut points = [*p; N];
-        for i in 1..N {
-            points[i] = p + points[i - 1];
-        }
-
-        let mut points_affine = [AffinePoint::identity(); N];
-        JacobianPoint::batch_normalize(&points, &mut points_affine);
-
-        Self(points_affine)
+        Self::from(AffinePoint::from(p))
     }
 }
 
 impl<const N: usize> From<JacobianPoint> for LookupTable<N> {
     fn from(p: JacobianPoint) -> Self {
-        Self::from(&p)
+        Self::from(AffinePoint::from(&p))
     }
 }
 
