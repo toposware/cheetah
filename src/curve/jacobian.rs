@@ -1206,6 +1206,8 @@ mod tests {
     use super::*;
     use rand_core::OsRng;
 
+    use crate::BASEPOINT_LOOKUP;
+
     #[test]
     fn test_is_on_curve() {
         assert!(bool::from(JacobianPoint::identity().is_on_curve()));
@@ -1558,6 +1560,7 @@ mod tests {
             let c = a * b;
 
             assert_eq!((g * a) * b, g * c);
+            assert_eq!(&BASEPOINT_LOOKUP * c, g * c);
             assert_eq!(g * c, g.multiply_vartime(&c.to_bytes()));
         }
     }

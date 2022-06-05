@@ -17,6 +17,7 @@ use criterion::Criterion;
 extern crate cheetah;
 
 use cheetah::Scalar;
+use cheetah::BASEPOINT_LOOKUP;
 use cheetah::{AffinePoint, JacobianPoint};
 
 static BATCH_SIZES: [u32; 5] = [1, 10, 100, 1000, 10000];
@@ -116,6 +117,15 @@ fn criterion_benchmark(c: &mut Criterion) {
                 )
             })
         },
+    );
+
+    c.bench_function("Jacobian scalar multiplication (basepoint)", |bench| {
+        bench.iter(|| black_box(&BASEPOINT_LOOKUP).multiply(black_box(&pow)))
+    });
+
+    c.bench_function(
+        "Jacobian scalar multiplication (basepoint) - variable time",
+        |bench| bench.iter(|| black_box(&BASEPOINT_LOOKUP).multiply_vartime(black_box(&pow))),
     );
 
     c.bench_function("Jacobian uncompressed encoding", |bench| {

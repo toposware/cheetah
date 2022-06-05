@@ -7,7 +7,7 @@
 // except according to those terms.
 
 use crate::{
-    AffinePoint, BasePointTable, JacobianPoint, ModifiedJacobianPoint, NafLookupTable,
+    AffinePoint, BasePointTable, JacobianPoint, LookupTable, ModifiedJacobianPoint, NafLookupTable,
     ProjectivePoint,
 };
 use crate::{Fp, Fp6, Scalar};
@@ -20,6 +20,11 @@ lazy_static! {
     /// curve, to allow for efficient single scalar multiplication.
     pub static ref BASEPOINT_TABLE: BasePointTable =
         BasePointTable::from(&AffinePoint::generator());
+
+    /// A hardcoded `LookupTable` for the generator of the Cheetah
+    /// curve, to allow for efficient single scalar multiplication.
+    pub static ref BASEPOINT_LOOKUP: LookupTable<128> =
+        LookupTable::from(&AffinePoint::generator());
 
     /// A hardcoded `NafLookupTable` for odd multiples of the generator
     /// of the Cheetah curve, to allow for efficient double scalar
@@ -93,3 +98,57 @@ impl<'a, 'b> Mul<&'b Scalar> for &'a BASEPOINT_TABLE {
 }
 
 impl_binops_multiplicative_mixed!(BASEPOINT_TABLE, Scalar, ProjectivePoint);
+
+impl<'a, 'b> Mul<&'b Scalar> for &'a BASEPOINT_LOOKUP {
+    type Output = JacobianPoint;
+
+    fn mul(self, scalar: &'b Scalar) -> Self::Output {
+        let digits = Scalar::bytes_to_radix_256(&scalar.to_bytes());
+
+        let mut acc = *SHIFT_POINT_MODIFIED_JACOBIAN;
+        for i in (0..32).rev() {
+            acc = acc.double_multi_unchecked(8);
+            acc = acc.add_mixed_unchecked(&self.get_point(digits[i]));
+        }
+
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
+            .into()
+    }
+}
+
+impl_binops_multiplicative_mixed!(BASEPOINT_LOOKUP, Scalar, JacobianPoint);
+
+impl BASEPOINT_LOOKUP {
+    /// Performs a mixed scalar multiplication from `by`
+    /// given as byte representation of a `Scalar` element
+    pub fn multiply(&self, by: &[u8; 32]) -> JacobianPoint {
+        let digits = Scalar::bytes_to_radix_256(by);
+
+        let mut acc = *SHIFT_POINT_MODIFIED_JACOBIAN;
+        for i in (0..32).rev() {
+            acc = acc.double_multi_unchecked(8);
+            acc = acc.add_mixed_unchecked(&self.get_point(digits[i]));
+        }
+
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
+            .into()
+    }
+    /// Performs a mixed scalar multiplication from `by`
+    /// given as byte representation of a `Scalar` element
+    ///
+    /// **This operation is variable time with respect
+    /// to the scalar.** If the scalar is fixed,
+    /// this operation is effectively constant time.
+    pub fn multiply_vartime(&self, by: &[u8; 32]) -> JacobianPoint {
+        let digits = Scalar::bytes_to_radix_256(by);
+
+        let mut acc = *SHIFT_POINT_MODIFIED_JACOBIAN;
+        for i in (0..32).rev() {
+            acc = acc.double_multi_unchecked(8);
+            acc = acc.add_mixed_unchecked(&self.get_point_vartime(digits[i]));
+        }
+
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
+            .into()
+    }
+}
