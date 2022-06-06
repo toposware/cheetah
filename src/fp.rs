@@ -295,7 +295,7 @@ impl Fp {
 
     /// Exponentiates `self` by `power`, where `power` is a
     /// little-endian order integer exponent.
-    pub fn exp(self, power: u64) -> Self {
+    pub fn exp(&self, power: u64) -> Self {
         let mut res = Self::one();
         for i in (0..64).rev() {
             res = res.square();

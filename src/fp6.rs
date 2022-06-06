@@ -800,7 +800,7 @@ impl Fp6 {
 
     /// Exponentiates `self` by `power`, where `power` is a
     /// little-endian order integer exponent.
-    pub fn exp(self, power: &[u64; 6]) -> Self {
+    pub fn exp(&self, power: &[u64; 6]) -> Self {
         let mut res = Self::one();
         for e in power.iter().rev() {
             for i in (0..64).rev() {
