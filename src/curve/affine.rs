@@ -385,8 +385,8 @@ impl AffinePoint {
         JacobianPoint::multiply_double_vartime(&self.into(), &rhs.into(), by_lhs, by_rhs).into()
     }
 
-    /// Performs the affine sum [`by_lhs` * `self` + `by_rhs` * `rhs`] with `by_lhs`
-    /// and `by_rhs` given as byte representations of `Scalar` elements.
+    /// Performs the affine sum [`by_self` * `self` + `by_basepoint` * `ODD_MULTIPLES_BASEPOINT`]
+    /// with `by_self` and `by_rby_basepoinths` given as byte representations of `Scalar` elements.
     ///
     /// **This operation is variable time with respect
     /// to the scalars.** If the scalars are fixed,

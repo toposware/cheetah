@@ -742,9 +742,8 @@ impl ProjectivePoint {
     // TODO: It would be nice to have a constant-time variant of the method below,
     // though this may be tricky for accessing the point in the table.
 
-    /// Performs the projective sum [`by_lhs` * `self` + `by_rhs` * `g`] with
-    /// `by_lhs` and `by_rhs` given as byte representations of `Scalar` elements
-    /// and `g` being the curve basepoint.
+    /// Performs the affine sum [`by_self` * `self` + `by_basepoint` * `ODD_MULTIPLES_BASEPOINT`]
+    /// with `by_self` and `by_rby_basepoinths` given as byte representations of `Scalar` elements.
     ///
     /// This operation is useful to speed-up verification of signature schemes
     /// such as ECDSA or Schnorr signatures.

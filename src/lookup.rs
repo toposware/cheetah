@@ -186,8 +186,8 @@ impl BasePointTable {
     /// given as byte representation of a `Scalar` element, by
     /// using internally the Pippenger's algorithm.
     #[inline]
-    pub fn multiply(&self, scalar: &[u8; 32]) -> ProjectivePoint {
-        let a = Scalar::bytes_to_radix_16(scalar);
+    pub fn multiply(&self, by: &[u8; 32]) -> ProjectivePoint {
+        let a = Scalar::bytes_to_radix_16(by);
 
         let tables = &self.0;
         let mut acc = *SHIFT_POINT_PROJECTIVE;
@@ -213,8 +213,8 @@ impl BasePointTable {
     /// to the scalar.** If the scalar is fixed,
     /// this operation is effectively constant time.
     #[inline]
-    pub fn multiply_vartime(&self, scalar: &[u8; 32]) -> ProjectivePoint {
-        let a = Scalar::bytes_to_radix_16(scalar);
+    pub fn multiply_vartime(&self, by: &[u8; 32]) -> ProjectivePoint {
+        let a = Scalar::bytes_to_radix_16(by);
 
         let tables = &self.0;
         let mut acc = *SHIFT_POINT_PROJECTIVE;
