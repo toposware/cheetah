@@ -9,14 +9,14 @@
 //! This module provides an implementation of the STARK-friendly
 //! cheetah curve encoding.
 
-use core::fmt;
-
 use super::B;
 
 use crate::AffinePoint;
 use crate::Fp6;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
+#[cfg(feature = "serialize")]
+use core::fmt;
 #[cfg(feature = "serialize")]
 use serde::de::Visitor;
 #[cfg(feature = "serialize")]
