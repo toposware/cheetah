@@ -331,7 +331,7 @@ impl ProjectivePoint {
     /// Computes `n` iterated doubling of this point.
     /// **This is dangerous to call unless you know that the point to be doubled
     /// is not the identity point, otherwise, API invariants may be broken.**
-    /// Please consider using `double()` instead.
+    /// Please consider using `double_multi()` instead.
     pub fn double_multi_unchecked(&self, n: u32) -> ProjectivePoint {
         assert!(n >= 1);
         let mut output = self.double_unchecked();

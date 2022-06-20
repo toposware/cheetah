@@ -173,8 +173,7 @@ impl UncompressedPoint {
     }
 
     /// Attempts to convert an `UncompressedPoint` to an `AffinePoint`
-    /// The resulting point is ensured to be on the curve, but is
-    /// not necessarily on the prime order subgroup.
+    /// The resulting point is not ensured to be on the curve.
     pub(crate) fn to_affine(self) -> CtOption<AffinePoint> {
         // Obtain the two flags
         let infinity_flag_set = Choice::from((self.0[96] >> 7) & 1);
