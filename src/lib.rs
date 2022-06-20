@@ -51,8 +51,16 @@ pub use scalar::Scalar;
 pub use fp::Fp;
 pub use fp6::Fp6;
 
-pub use constants::{BASEPOINT_TABLE, MINUS_SHIFT_POINT_ARRAY, SHIFT_POINT};
+pub(crate) use constants::SHIFT_POINT_MODIFIED_JACOBIAN;
+pub use constants::{
+    BASEPOINT_LOOKUP, BASEPOINT_TABLE, MINUS_SHIFT_POINT_ARRAY, SHIFT_POINT_AFFINE,
+    SHIFT_POINT_JACOBIAN, SHIFT_POINT_PROJECTIVE,
+};
+
 pub use lookup::{BasePointTable, LookupTable};
 pub use naf_lookup::NafLookupTable;
 
-pub use curve::{AffinePoint, CompressedPoint, ProjectivePoint, UncompressedPoint, B};
+pub(crate) use curve::ModifiedJacobianPoint;
+pub use curve::{
+    AffinePoint, CompressedPoint, JacobianPoint, ProjectivePoint, UncompressedPoint, B,
+};

@@ -51,7 +51,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     });
 
     c.bench_function("Fp exp", |bench| {
-        bench.iter(|| Fp::exp(black_box(x), black_box(pow)))
+        bench.iter(|| Fp::exp(black_box(&x), black_box(pow)))
     });
 
     c.bench_function("Fp invert", |bench| {

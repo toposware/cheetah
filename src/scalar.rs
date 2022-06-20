@@ -547,6 +547,34 @@ impl Scalar {
         result
     }
 
+    /// Converts a `Scalar` element given as byte representation into a radix-256
+    /// representation, where each resulting coefficient is in [-128; 128).
+    ///
+    /// The resulting decomposition `[a_0, ..., a_31]` is such that
+    /// `sum(a_j * 2^(j * 8)) == a`.
+    pub(crate) fn bytes_to_radix_256(bytes: &[u8; 32]) -> [i8; 32] {
+        let mut result = [0i16; 32];
+
+        // Convert to signed integers
+        for i in 0..32 {
+            result[i] = bytes[i] as i16;
+        }
+
+        // Shift every coefficients from [0; 255) to [-128; 128)
+        for i in 0..31 {
+            let carry = (result[i] + 128) >> 8;
+            result[i] -= carry << 8;
+            result[i + 1] += carry;
+        }
+
+        let mut result_i8 = [0i8; 32];
+        for i in 0..32 {
+            result_i8[i] = result[i] as i8;
+        }
+
+        result_i8
+    }
+
     /// Converts a `Scalar` element given as byte representation into a w-NAF
     /// representation, where each resulting coefficient is odd and in (-2^(w-1); 2^(w-1)).
     /// In addition, the leading coefficient is non-zero, and there cannot be
@@ -640,7 +668,7 @@ impl Scalar {
 
     /// Exponentiates `self` by `power`, where `power` is a
     /// little-endian order integer exponent.
-    pub fn exp(self, power: &[u64; 4]) -> Self {
+    pub fn exp(&self, power: &[u64; 4]) -> Self {
         let mut res = Self::one();
         for e in power.iter().rev() {
             for i in (0..64).rev() {
@@ -1443,6 +1471,30 @@ mod tests {
             let digits = Scalar::bytes_to_radix_16(&a.to_bytes());
 
             let radix = Scalar::from(16u64);
+            let mut term = Scalar::one();
+            let mut a_bis = Scalar::zero();
+            for &digit in digits.iter() {
+                if digit < 0 {
+                    a_bis += -Scalar::from((-(digit as i64)) as u64) * term;
+                } else {
+                    a_bis += Scalar::from(digit as u64) * term;
+                };
+                term *= radix;
+            }
+
+            assert_eq!(a_bis, a);
+        }
+    }
+
+    #[test]
+    fn test_to_radix_256() {
+        let mut rng = OsRng;
+
+        for _ in 0..100 {
+            let a = Scalar::random(&mut rng);
+            let digits = Scalar::bytes_to_radix_256(&a.to_bytes());
+
+            let radix = Scalar::from(256u64);
             let mut term = Scalar::one();
             let mut a_bis = Scalar::zero();
             for &digit in digits.iter() {

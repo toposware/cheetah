@@ -55,7 +55,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     });
 
     c.bench_function("Scalar exp", |bench| {
-        bench.iter(|| Scalar::exp(black_box(x), black_box(&pow)))
+        bench.iter(|| Scalar::exp(black_box(&x), black_box(&pow)))
     });
 
     c.bench_function("Scalar invert", |bench| {
