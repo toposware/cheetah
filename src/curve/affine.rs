@@ -314,6 +314,32 @@ impl AffinePoint {
         compressed_point.to_affine()
     }
 
+    /// Attempts to recover an AffinePoint from an `x` coordinate. The internal behavior is similar
+    /// to calling `AffinePoint::from_compressed()` on a byte sequence. This method will always
+    /// choose the lexicographically largest `y` coordinate corresponding to the provided `x` one.
+    /// The value zero is mapped to the infinity point.
+    ///
+    /// This method does ***NOT*** check that the point is in the correct subgroup. If the provided
+    /// `Fp6` element is not trusted, one should call `AffinePoint::is_torsion_free()` after.
+    pub fn from_x(x: &Fp6) -> CtOption<Self> {
+        CtOption::new(AffinePoint::identity(), x.is_zero()).or_else(|| {
+            // Recover a y-coordinate given x by y = sqrt(x^3 + x + B)
+            ((x.square() * x) + x + B).sqrt().and_then(|y| {
+                // Switch to the correct y-coordinate if necessary.
+                let y = Fp6::conditional_select(&-y, &y, y.lexicographically_largest());
+
+                CtOption::new(
+                    AffinePoint {
+                        x: *x,
+                        y,
+                        infinity: Choice::from(0u8),
+                    },
+                    Choice::from(1u8),
+                )
+            })
+        })
+    }
+
     #[allow(unused)]
     /// Constructs an `AffinePoint` element without checking that it is a valid point.
     /// Assumes the coordinates do not represent the infinity point.
@@ -564,6 +590,43 @@ mod tests {
 
     // POINT COMPRESSION
     // ================================================================================================
+
+    #[test]
+    fn test_from_x() {
+        let mut rng = OsRng;
+
+        // Random points
+        for _ in 0..100 {
+            let mut point = AffinePoint::random(&mut rng);
+            if !bool::from(point.y.lexicographically_largest()) {
+                point = point.neg();
+            }
+            assert_eq!(point, AffinePoint::from_x(&point.x).unwrap());
+        }
+
+        // Identity point
+        {
+            let point = AffinePoint::identity();
+            assert_eq!(point, AffinePoint::from_x(&point.x).unwrap());
+        }
+
+        // Invalid points
+        {
+            let point = AffinePoint {
+                x: Fp6::one(),
+                y: Fp6::zero(),
+                infinity: 0.into(),
+            };
+            assert!(bool::from(AffinePoint::from_x(&point.x).is_none()));
+        }
+        for _ in 0..100 {
+            let mut point = AffinePoint::random(&mut rng);
+            if bool::from(point.y.lexicographically_largest()) {
+                point = point.neg();
+            }
+            assert_ne!(point, AffinePoint::from_x(&point.x).unwrap());
+        }
+    }
 
     #[test]
     fn test_point_compressed() {
