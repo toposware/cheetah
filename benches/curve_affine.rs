@@ -20,6 +20,8 @@ use cheetah::AffinePoint;
 use cheetah::BasePointTable;
 use cheetah::Scalar;
 
+static BATCH_SIZES: [u32; 5] = [1, 10, 100, 1000, 10000];
+
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = OsRng;
     let p = AffinePoint::random(&mut rng);
@@ -80,7 +82,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     );
 
     c.bench_function(
-        "AffinePoint double scalar multiplication with basepoint - variable time",
+        "Affine double scalar multiplication with basepoint - variable time",
         |bench| {
             bench.iter(|| {
                 AffinePoint::multiply_double_with_basepoint_vartime(
@@ -91,6 +93,24 @@ fn criterion_benchmark(c: &mut Criterion) {
             })
         },
     );
+
+    let ct_batch_str = "Affine multi scalar multiplication - ".to_string();
+    let vt_batch_str = "Affine multi scalar multiplication (variable time) - ".to_string();
+    for &batch_size in BATCH_SIZES.iter() {
+        let ct_name = ct_batch_str.clone() + &batch_size.to_string();
+        let vt_name = vt_batch_str.clone() + &batch_size.to_string();
+        let affine_points = vec![AffinePoint::random(&mut rng); batch_size as usize];
+        let scalars = vec![Scalar::random(&mut rng).to_bytes(); batch_size as usize];
+        c.bench_function(&ct_name, |bench| {
+            bench
+                .iter(|| AffinePoint::multiply_many(black_box(&affine_points), black_box(&scalars)))
+        });
+        c.bench_function(&vt_name, |bench| {
+            bench.iter(|| {
+                AffinePoint::multiply_many_vartime(black_box(&affine_points), black_box(&scalars))
+            })
+        });
+    }
 
     c.bench_function("Affine basepoint table creation", |bench| {
         bench.iter(|| BasePointTable::from(black_box(&p)))

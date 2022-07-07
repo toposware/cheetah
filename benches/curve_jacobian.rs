@@ -123,6 +123,28 @@ fn criterion_benchmark(c: &mut Criterion) {
         bench.iter(|| black_box(&BASEPOINT_LOOKUP).multiply(black_box(&pow)))
     });
 
+    let ct_batch_str = "Jacobian multi scalar multiplication - ".to_string();
+    let vt_batch_str = "Jacobian multi scalar multiplication (variable time) - ".to_string();
+    for &batch_size in BATCH_SIZES.iter() {
+        let ct_name = ct_batch_str.clone() + &batch_size.to_string();
+        let vt_name = vt_batch_str.clone() + &batch_size.to_string();
+        let jacobian_points = vec![JacobianPoint::random(&mut rng); batch_size as usize];
+        let scalars = vec![Scalar::random(&mut rng).to_bytes(); batch_size as usize];
+        c.bench_function(&ct_name, |bench| {
+            bench.iter(|| {
+                JacobianPoint::multiply_many(black_box(&jacobian_points), black_box(&scalars))
+            })
+        });
+        c.bench_function(&vt_name, |bench| {
+            bench.iter(|| {
+                JacobianPoint::multiply_many_vartime(
+                    black_box(&jacobian_points),
+                    black_box(&scalars),
+                )
+            })
+        });
+    }
+
     c.bench_function(
         "Jacobian scalar multiplication (basepoint) - variable time",
         |bench| bench.iter(|| black_box(&BASEPOINT_LOOKUP).multiply_vartime(black_box(&pow))),

@@ -24,6 +24,7 @@ use crate::{CompressedPoint, UncompressedPoint};
 use crate::{Fp, Fp6, Scalar};
 use crate::{JacobianPoint, ModifiedJacobianPoint, ProjectivePoint};
 
+use alloc::vec::Vec;
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
@@ -427,6 +428,28 @@ impl AffinePoint {
             .into()
     }
 
+    /// Performs the affine multiscalar multiplication ∑ s[i].p[i] with
+    /// the s[i] given as byte representations of `Scalar` elements.
+    pub fn multiply_many(points: &[AffinePoint], scalars: &[[u8; 32]]) -> AffinePoint {
+        // We do not use JacobianPoint, unlike the methods above,
+        // because this scales better with ProjectivePoint.
+        let points_projective: Vec<ProjectivePoint> = points.iter().map(|p| p.into()).collect();
+        ProjectivePoint::multiply_many(&points_projective, scalars).into()
+    }
+
+    /// Performs the affine multiscalar multiplication ∑ s[i].p[i] with
+    /// the s[i] given as byte representations of `Scalar` elements.
+    ///
+    /// **This operation is variable time with respect
+    /// to the scalars.** If the scalars are fixed,
+    /// this operation is effectively constant time.
+    pub fn multiply_many_vartime(points: &[AffinePoint], scalars: &[[u8; 32]]) -> AffinePoint {
+        // We do not use JacobianPoint, unlike the methods above,
+        // because this scales better with ProjectivePoint.
+        let points_projective: Vec<ProjectivePoint> = points.iter().map(|p| p.into()).collect();
+        ProjectivePoint::multiply_many_vartime(&points_projective, scalars).into()
+    }
+
     /// Multiplies by the curve cofactor
     pub fn clear_cofactor(&self) -> AffinePoint {
         let point: JacobianPoint = self.into();
@@ -547,6 +570,14 @@ mod tests {
             );
             assert_eq!(
                 g.multiply_double_vartime(&h, &a.to_bytes(), &b.to_bytes()),
+                AffinePoint::from(g * a + h * b)
+            );
+            assert_eq!(
+                AffinePoint::multiply_many(&[g, h], &[a.to_bytes(), b.to_bytes()]),
+                AffinePoint::from(g * a + h * b)
+            );
+            assert_eq!(
+                AffinePoint::multiply_many_vartime(&[g, h], &[a.to_bytes(), b.to_bytes()]),
                 AffinePoint::from(g * a + h * b)
             );
         }

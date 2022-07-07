@@ -24,6 +24,8 @@
 #![deny(unsafe_code)]
 #![allow(clippy::many_single_char_names)]
 
+extern crate alloc;
+
 #[cfg(test)]
 #[macro_use]
 extern crate std;

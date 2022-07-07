@@ -40,6 +40,16 @@ impl ConstantTimeEq for CompressedPoint {
     }
 }
 
+impl ConditionallySelectable for CompressedPoint {
+    fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
+        CompressedPoint::from_affine(&AffinePoint::conditional_select(
+            &a.to_affine().unwrap(),
+            &b.to_affine().unwrap(),
+            choice,
+        ))
+    }
+}
+
 impl CompressedPoint {
     /// Converts an `AffinePoint` to a `CompressedPoint`
     pub(crate) fn from_affine(point: &AffinePoint) -> Self {

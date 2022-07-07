@@ -29,6 +29,7 @@ use crate::constants::ODD_MULTIPLES_BASEPOINT;
 use crate::LookupTable;
 use crate::NafLookupTable;
 
+use alloc::vec::Vec;
 use group::{Curve, Group};
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
@@ -793,6 +794,65 @@ impl JacobianPoint {
         }
 
         acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[i + 1])
+            .into()
+    }
+
+    /// Performs the jacobian multiscalar multiplication ∑ s[i].p[i] with
+    /// the s[i] given as byte representations of `Scalar` elements.
+    // TODO: this is significantly slower than its vartime counterpart, because of the
+    // construction of LookupTable<16> vs NafLookupTable<5>, which is about twice slower.
+    // It would be nice to implement a constant-time variation of the latter, including the
+    // wnaf conversion of the scalar.
+    pub fn multiply_many(points: &[JacobianPoint], scalars: &[[u8; 32]]) -> JacobianPoint {
+        let digits: Vec<[i8; 64]> = scalars.iter().map(Scalar::bytes_to_radix_16).collect();
+
+        let tables: Vec<LookupTable<16>> = points.iter().map(LookupTable::<16>::from).collect();
+
+        let mut acc = *SHIFT_POINT_MODIFIED_JACOBIAN;
+
+        for i in (0..64).rev() {
+            acc = acc.double_multi_unchecked(4);
+            for (table, digit) in tables.iter().zip(&digits) {
+                acc = acc.add_mixed_unchecked(&table.get_point(digit[i]));
+            }
+        }
+
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
+            .into()
+    }
+
+    /// Performs the jacobian multiscalar multiplication ∑ s[i].p[i] with
+    /// the s[i] given as byte representations of `Scalar` elements.
+    ///
+    /// **This operation is variable time with respect
+    /// to the scalars.** If the scalars are fixed,
+    /// this operation is effectively constant time.
+    pub fn multiply_many_vartime(points: &[JacobianPoint], scalars: &[[u8; 32]]) -> JacobianPoint {
+        let digits: Vec<[i8; 256]> = scalars
+            .iter()
+            .map(|s| Scalar::bytes_to_wnaf_vartime(s, 5))
+            .collect();
+
+        let tables: Vec<NafLookupTable<8>> = points.iter().map(NafLookupTable::<8>::from).collect();
+
+        let mut acc = *SHIFT_POINT_MODIFIED_JACOBIAN;
+
+        for i in (0..256).rev() {
+            acc = acc.double_unchecked();
+            for (table, digit) in tables.iter().zip(&digits) {
+                match digit[i].cmp(&0) {
+                    Ordering::Greater => {
+                        acc = acc.add_mixed_unchecked(&table.get_point(digit[i] as usize))
+                    }
+                    Ordering::Less => {
+                        acc = acc.add_mixed_unchecked(&table.get_point(-digit[i] as usize).neg())
+                    }
+                    Ordering::Equal => (),
+                };
+            }
+        }
+
+        acc.add_mixed_unchecked(&MINUS_SHIFT_POINT_ARRAY[256])
             .into()
     }
 
@@ -1580,6 +1640,14 @@ mod tests {
             );
             assert_eq!(
                 g.multiply_double_vartime(&h, &a.to_bytes(), &b.to_bytes()),
+                g * a + h * b
+            );
+            assert_eq!(
+                JacobianPoint::multiply_many(&[g, h], &[a.to_bytes(), b.to_bytes()]),
+                g * a + h * b
+            );
+            assert_eq!(
+                JacobianPoint::multiply_many_vartime(&[g, h], &[a.to_bytes(), b.to_bytes()]),
                 g * a + h * b
             );
         }
