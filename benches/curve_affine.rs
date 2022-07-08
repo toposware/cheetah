@@ -20,7 +20,7 @@ use cheetah::AffinePoint;
 use cheetah::BasePointTable;
 use cheetah::Scalar;
 
-static BATCH_SIZES: [u32; 5] = [1, 10, 100, 1000, 10000];
+static BATCH_SIZES: [usize; 4] = [1, 10, 100, 1000];
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = OsRng;
@@ -99,8 +99,8 @@ fn criterion_benchmark(c: &mut Criterion) {
     for &batch_size in BATCH_SIZES.iter() {
         let ct_name = ct_batch_str.clone() + &batch_size.to_string();
         let vt_name = vt_batch_str.clone() + &batch_size.to_string();
-        let affine_points = vec![AffinePoint::random(&mut rng); batch_size as usize];
-        let scalars = vec![Scalar::random(&mut rng).to_bytes(); batch_size as usize];
+        let affine_points = vec![AffinePoint::random(&mut rng); batch_size];
+        let scalars = vec![Scalar::random(&mut rng).to_bytes(); batch_size];
         c.bench_function(&ct_name, |bench| {
             bench
                 .iter(|| AffinePoint::multiply_many(black_box(&affine_points), black_box(&scalars)))

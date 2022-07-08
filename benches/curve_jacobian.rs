@@ -20,7 +20,7 @@ use cheetah::Scalar;
 use cheetah::BASEPOINT_LOOKUP;
 use cheetah::{AffinePoint, JacobianPoint};
 
-static BATCH_SIZES: [u32; 5] = [1, 10, 100, 1000, 10000];
+static BATCH_SIZES: [usize; 4] = [1, 10, 100, 1000];
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = OsRng;
@@ -186,8 +186,8 @@ fn criterion_benchmark(c: &mut Criterion) {
     for &batch_size in BATCH_SIZES.iter() {
         let name = batch_str.clone() + &batch_size.to_string();
         c.bench_function(&name, |bench| {
-            let jacobian_points = vec![JacobianPoint::random(&mut rng); batch_size as usize];
-            let mut affine_points = vec![AffinePoint::identity(); batch_size as usize];
+            let jacobian_points = vec![JacobianPoint::random(&mut rng); batch_size];
+            let mut affine_points = vec![AffinePoint::identity(); batch_size];
             bench.iter(|| {
                 JacobianPoint::batch_normalize(
                     black_box(&jacobian_points),

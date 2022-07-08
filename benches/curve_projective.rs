@@ -21,7 +21,7 @@ use cheetah::{AffinePoint, ProjectivePoint};
 
 use cheetah::{BasePointTable, BASEPOINT_TABLE};
 
-static BATCH_SIZES: [u32; 5] = [1, 10, 100, 1000, 10000];
+static BATCH_SIZES: [usize; 4] = [1, 10, 100, 1000];
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut rng = OsRng;
@@ -139,8 +139,8 @@ fn criterion_benchmark(c: &mut Criterion) {
     for &batch_size in BATCH_SIZES.iter() {
         let ct_name = ct_batch_str.clone() + &batch_size.to_string();
         let vt_name = vt_batch_str.clone() + &batch_size.to_string();
-        let projective_points = vec![ProjectivePoint::random(&mut rng); batch_size as usize];
-        let scalars = vec![Scalar::random(&mut rng).to_bytes(); batch_size as usize];
+        let projective_points = vec![ProjectivePoint::random(&mut rng); batch_size];
+        let scalars = vec![Scalar::random(&mut rng).to_bytes(); batch_size];
         c.bench_function(&ct_name, |bench| {
             bench.iter(|| {
                 ProjectivePoint::multiply_many(black_box(&projective_points), black_box(&scalars))
@@ -196,8 +196,8 @@ fn criterion_benchmark(c: &mut Criterion) {
     for &batch_size in BATCH_SIZES.iter() {
         let name = batch_str.clone() + &batch_size.to_string();
         c.bench_function(&name, |bench| {
-            let projective_points = vec![ProjectivePoint::random(&mut rng); batch_size as usize];
-            let mut affine_points = vec![AffinePoint::identity(); batch_size as usize];
+            let projective_points = vec![ProjectivePoint::random(&mut rng); batch_size];
+            let mut affine_points = vec![AffinePoint::identity(); batch_size];
             bench.iter(|| {
                 ProjectivePoint::batch_normalize(
                     black_box(&projective_points),
