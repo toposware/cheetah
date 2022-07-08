@@ -413,7 +413,7 @@ impl AffinePoint {
     }
 
     /// Performs the affine sum [`by_self` * `self` + `by_basepoint` * `ODD_MULTIPLES_BASEPOINT`]
-    /// with `by_self` and `by_rby_basepoinths` given as byte representations of `Scalar` elements.
+    /// with `by_self` and `by_basepoint` given as byte representations of `Scalar` elements.
     ///
     /// **This operation is variable time with respect
     /// to the scalars.** If the scalars are fixed,

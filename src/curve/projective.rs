@@ -744,7 +744,7 @@ impl ProjectivePoint {
     // though this may be tricky for accessing the point in the table.
 
     /// Performs the affine sum [`by_self` * `self` + `by_basepoint` * `ODD_MULTIPLES_BASEPOINT`]
-    /// with `by_self` and `by_rby_basepoinths` given as byte representations of `Scalar` elements.
+    /// with `by_self` and `by_basepoint` given as byte representations of `Scalar` elements.
     ///
     /// This operation is useful to speed-up verification of signature schemes
     /// such as ECDSA or Schnorr signatures.
