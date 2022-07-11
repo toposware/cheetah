@@ -710,7 +710,7 @@ impl Fp6 {
             t = Self::conditional_select(&new_t, &t, b.ct_eq(&Self::one()));
         }
 
-        CtOption::new(s, (s * s).ct_eq(self))
+        CtOption::new(s, (s.square()).ct_eq(self))
     }
 
     /// Computes the double of a field element

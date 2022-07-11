@@ -223,7 +223,7 @@ impl Fp {
             t = Fp::conditional_select(&new_t, &t, b.ct_eq(&Fp::one()));
         }
 
-        CtOption::new(s, (s * s).ct_eq(self))
+        CtOption::new(s, (s.square()).ct_eq(self))
     }
 
     /// Outputs the internal representation as

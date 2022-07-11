@@ -362,7 +362,7 @@ impl Scalar {
             0x1ebc9666cecfc8b4,
         ]);
 
-        CtOption::new(s, (s * s).ct_eq(self))
+        CtOption::new(s, (s.square()).ct_eq(self))
     }
 
     /// Computes the double of a scalar element
