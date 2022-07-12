@@ -819,7 +819,7 @@ impl Fp6 {
     /// **This operation is variable time with respect
     /// to the exponent.** If the exponent is fixed,
     /// this operation is effectively constant time.
-    pub fn exp_vartime(&self, power: &[u64; 6]) -> Self {
+    pub fn exp_vartime(&self, power: &[u64]) -> Self {
         let mut res = Self::one();
         for e in power.iter().rev() {
             for i in (0..64).rev() {
