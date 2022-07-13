@@ -45,6 +45,7 @@ mod naf_lookup;
 
 mod curve;
 mod fp;
+mod fp3;
 mod fp6;
 mod scalar;
 
