@@ -28,23 +28,9 @@ use serde::{self, Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::fp::reduce_u96;
 use crate::fp::Fp;
-use crate::utils::square_assign_multi;
-
-use crate::fp::TWO_ADICITY;
+use crate::fp3::Fp3;
 
 const BETA: u128 = crate::fp::GENERATOR.0 as u128;
-
-// 2^33 root of unity = 135436726719221772*u^3
-const TWO_ADIC_ROOT_OF_UNITY_P6: Fp6 = Fp6 {
-    c0: Fp::zero(),
-    c1: Fp::zero(),
-    c2: Fp::zero(),
-    c3: Fp(135436726719221772),
-    c4: Fp::zero(),
-    c5: Fp::zero(),
-};
-
-const TWO_ADICITY_P6: u32 = TWO_ADICITY + 1;
 
 #[derive(Copy, Clone)]
 /// An element of the extension GF(p^6).
@@ -105,6 +91,32 @@ impl From<Fp> for Fp6 {
             c2: Fp::zero(),
             c3: Fp::zero(),
             c4: Fp::zero(),
+            c5: Fp::zero(),
+        }
+    }
+}
+
+impl From<Fp3> for Fp6 {
+    fn from(f: Fp3) -> Self {
+        Self {
+            c0: f.a0,
+            c1: Fp::zero(),
+            c2: f.a1,
+            c3: Fp::zero(),
+            c4: f.a2,
+            c5: Fp::zero(),
+        }
+    }
+}
+
+impl From<&Fp3> for Fp6 {
+    fn from(f: &Fp3) -> Self {
+        Self {
+            c0: f.a0,
+            c1: Fp::zero(),
+            c2: f.a1,
+            c3: Fp::zero(),
+            c4: f.a2,
             c5: Fp::zero(),
         }
     }
@@ -403,6 +415,184 @@ impl Fp6 {
     }
 
     #[inline]
+    /// Computes the multiplication of an Fp6 element with an Fp3 element
+    /// seen as the lower half of an element in Fp3[Y]/(Y^2 − γ).
+    const fn mul_by_low_fp3(&self, other: &Fp3) -> Fp6 {
+        // Precomputations for a_0 * b_0
+        let t00 = (&self.c0).mul(&other.a0).0 as u128;
+        let t01 = (&self.c2).mul(&other.a1).0 as u128;
+        let t02 = (&self.c4).mul(&other.a2).0 as u128;
+
+        let s012 = (&self.c2).add(&self.c4);
+        let tmp = (&other.a1).add(&other.a2);
+        let s012 = (&s012).mul(&tmp).0 as u128;
+
+        let s001 = (&self.c0).add(&self.c2);
+        let tmp = (&other.a0).add(&other.a1);
+        let s001 = (&s001).mul(&tmp).0 as u128;
+
+        let s002 = (&self.c0).add(&self.c4);
+        let tmp = (&other.a0).add(&other.a2);
+        let s002 = (&s002).mul(&tmp).0 as u128;
+
+        // Precomputations for a_1 * b_0
+        let t30 = (&self.c1).mul(&other.a0).0 as u128;
+        let t31 = (&self.c3).mul(&other.a1).0 as u128;
+        let t32 = (&self.c5).mul(&other.a2).0 as u128;
+
+        let s312 = (&self.c3).add(&self.c5);
+        let tmp = (&other.a1).add(&other.a2);
+        let s312 = (&s312).mul(&tmp).0 as u128;
+
+        let s301 = (&self.c1).add(&self.c3);
+        let tmp = (&other.a0).add(&other.a1);
+        let s301 = (&s301).mul(&tmp).0 as u128;
+
+        let s302 = (&self.c1).add(&self.c5);
+        let tmp = (&other.a0).add(&other.a2);
+        let s302 = (&s302).mul(&tmp).0 as u128;
+
+        // c_0 = a_0*b_0 + a_1*b_1.γ;
+        // c_1 = a_0*b_1 + a_1*b_0;
+
+        // Compute a_0 * b_0
+        let d00 = t01 + t02;
+        let d00 = s012 + 0x1fffffffe00000002 - d00;
+        let d00 = d00 * BETA;
+        let d00 = d00 + t00;
+
+        let d01 = t02 * BETA;
+        let tmp = t00 + t01;
+        let d01 = d01 + 0x1fffffffe00000002 - tmp;
+        let d01 = d01 + s001;
+
+        let d02 = t00 + t02;
+        let d02 = t01 + 0x1fffffffe00000002 - d02;
+        let d02 = d02 + s002;
+
+        // Compute a_1 * b_0
+        let d30 = t31 + t32;
+        let d30 = s312 + 0x1fffffffe00000002 - d30;
+        let d30 = d30 * BETA;
+        let d30 = d30 + t30;
+
+        let d31 = t32 * BETA;
+        let tmp = t30 + t31;
+        let d31 = d31 + 0x1fffffffe00000002 - tmp;
+        let d31 = d31 + s301;
+
+        let d32 = t30 + t32;
+        let d32 = t31 + 0x1fffffffe00000002 - d32;
+        let d32 = d32 + s302;
+
+        // Compute the final coordinates, reduced by the modulus
+        let c0 = Fp(reduce_u96(d00 + 0x1fffffffe00000002 * BETA));
+        let c2 = Fp(reduce_u96(d01 + 0x1fffffffe00000002 * BETA));
+        let c4 = Fp(reduce_u96(d02 + 0x1fffffffe00000002));
+        let c1 = Fp(reduce_u96(d30 + 0x1fffffffe00000002 * BETA));
+        let c3 = Fp(reduce_u96(d31 + 0x1fffffffe00000002));
+        let c5 = Fp(reduce_u96(d32 + 0x1fffffffe00000002));
+
+        Self {
+            c0,
+            c1,
+            c2,
+            c3,
+            c4,
+            c5,
+        }
+    }
+
+    #[inline]
+    /// Computes the multiplication of an Fp6 element with an Fp3 element
+    /// seen as the higher half of an element in Fp3[Y]/(Y^2 − γ).
+    const fn mul_by_high_fp3(&self, other: &Fp3) -> Fp6 {
+        // Precomputations for a_1 * b_1
+        let t10 = (&self.c1).mul(&other.a0).0 as u128;
+        let t11 = (&self.c3).mul(&other.a1).0 as u128;
+        let t12 = (&self.c5).mul(&other.a2).0 as u128;
+
+        let s112 = (&self.c3).add(&self.c5);
+        let tmp = (&other.a1).add(&other.a2);
+        let s112 = (&s112).mul(&tmp).0 as u128;
+
+        let s101 = (&self.c1).add(&self.c3);
+        let tmp = (&other.a0).add(&other.a1);
+        let s101 = (&s101).mul(&tmp).0 as u128;
+
+        let s102 = (&self.c1).add(&self.c5);
+        let tmp = (&other.a0).add(&other.a2);
+        let s102 = (&s102).mul(&tmp).0 as u128;
+
+        // Precomputations for a_0 * b_1
+        let t20 = (&self.c0).mul(&other.a0).0 as u128;
+        let t21 = (&self.c2).mul(&other.a1).0 as u128;
+        let t22 = (&self.c4).mul(&other.a2).0 as u128;
+
+        let s212 = (&self.c2).add(&self.c4);
+        let tmp = (&other.a1).add(&other.a2);
+        let s212 = (&s212).mul(&tmp).0 as u128;
+
+        let s201 = (&self.c0).add(&self.c2);
+        let tmp = (&other.a0).add(&other.a1);
+        let s201 = (&s201).mul(&tmp).0 as u128;
+
+        let s202 = (&self.c0).add(&self.c4);
+        let tmp = (&other.a0).add(&other.a2);
+        let s202 = (&s202).mul(&tmp).0 as u128;
+
+        // c_0 = a_0*b_0 + a_1*b_1.γ;
+        // c_1 = a_0*b_1 + a_1*b_0;
+
+        // Compute a_1 * b_1
+        let d10 = t11 + t12;
+        let d10 = s112 + 0x1fffffffe00000002 - d10;
+        let d10 = d10 * BETA;
+        let d10 = d10 + t10;
+
+        let d11 = t12 * BETA;
+        let tmp = t10 + t11;
+        let d11 = d11 + 0x1fffffffe00000002 - tmp;
+        let d11 = d11 + s101;
+
+        let d12 = t10 + t12;
+        let d12 = t11 + 0x1fffffffe00000002 - d12;
+        let d12 = d12 + s102;
+
+        // Compute a_0 * b_1
+        let d20 = t21 + t22;
+        let d20 = s212 + 0x1fffffffe00000002 - d20;
+        let d20 = d20 * BETA;
+        let d20 = d20 + t20;
+
+        let d21 = t22 * BETA;
+        let tmp = t20 + t21;
+        let d21 = d21 + 0x1fffffffe00000002 - tmp;
+        let d21 = d21 + s201;
+
+        let d22 = t20 + t22;
+        let d22 = t21 + 0x1fffffffe00000002 - d22;
+        let d22 = d22 + s202;
+
+        // Compute the final coordinates, reduced by the modulus
+        let c0 = Fp(reduce_u96((d12 + 0x1fffffffe00000002) * BETA));
+        let c2 = Fp(reduce_u96(d10 + 0x1fffffffe00000002));
+        let c4 = Fp(reduce_u96(d11 + 0x1fffffffe00000002));
+        let c1 = Fp(reduce_u96(d20 + 0x1fffffffe00000002 * BETA));
+        let c3 = Fp(reduce_u96(d21 + 0x1fffffffe00000002));
+        let c5 = Fp(reduce_u96(d22 + 0x1fffffffe00000002));
+
+        Self {
+            c0,
+            c1,
+            c2,
+            c3,
+            c4,
+            c5,
+        }
+    }
+
+    #[inline]
     /// Computes the multiplication of two Fp6 elements
     pub const fn mul(&self, other: &Fp6) -> Fp6 {
         // All helper values computed below are seen as u128 after modular reduction.
@@ -677,40 +867,46 @@ impl Fp6 {
 
     /// Computes the square root of this element, if it exists.
     pub fn sqrt(&self) -> CtOption<Self> {
-        // Tonelli-Shank's algorithm for q mod 16 = 1
-        // See https://eprint.iacr.org/2020/1497.pdf, page 3 for a
-        // constant time specification of the algorithm.
+        // Algorithm 10 of https://eprint.iacr.org/2012/685.pdf,
+        // adapted for constant-time specifications.
+
+        // c = u + 4 (multiplicative generator of the group)
+        // d = -1
+        // e = 1/dc
+        // f = (dc)^2
+        const E: Fp3 = Fp3 {
+            a0: Fp(17474221990273267221),
+            a1: Fp(11073203528037158631),
+            a2: Fp(1587630551273719300),
+        };
+        const F: Fp3 = Fp3 {
+            a0: Fp(16),
+            a1: Fp(18446744069414584320),
+            a2: Fp(0),
+        };
 
         // Compute the progenitor y of self
-        // y = self^((t - 1) // 2)
-        //   = self^0x3ffffffe800000053ffffff3800000167fffffe0800000233fffffe0800000167ffffff3800000053ffffffe
-        let y = self.exp_vartime(&[
-            0x800000053ffffffe,
-            0x800000167ffffff3,
-            0x800000233fffffe0,
-            0x800000167fffffe0,
-            0x800000053ffffff3,
-            0x000000003ffffffe,
-        ]);
+        // y = self^((p^3 - 1) // 4)
+        //   = self^0x3fffffff400000017ffffffe400000017fffffff40000000
+        let b = self.mul(&self.frobenius());
+        let b = b.mul(&self.frobenius_double());
+        let b = b.exp_vartime(&[0x3fffffffc0000000]);
+        let b2 = b.square();
+        let b_pow_p3 = b.frobenius_triple();
 
-        let mut s = self * y;
-        let mut t = s * y;
+        let check = b_pow_p3 * b;
+        let s = b2 * self;
+        let sf = s.mul_by_low_fp3(&F);
 
-        let mut z = TWO_ADIC_ROOT_OF_UNITY_P6;
+        let sqrt_s = Fp3::from(&s).sqrt().unwrap_or(Fp3::zero());
+        let sqrt_sf = Fp3::from(&sf).sqrt().unwrap_or(Fp3::zero());
 
-        for k in (2..=TWO_ADICITY_P6).rev() {
-            let mut b = t;
+        let x0 = Fp3::conditional_select(&sqrt_sf, &sqrt_s, check.ct_eq(&Fp6::one()));
+        let x = b_pow_p3.mul_by_low_fp3(&x0);
 
-            square_assign_multi(&mut b, (k - 2) as usize);
+        let x = Fp6::conditional_select(&(x.mul_by_high_fp3(&E)), &x, check.ct_eq(&Fp6::one()));
 
-            let new_s = s * z;
-            s = Self::conditional_select(&new_s, &s, b.ct_eq(&Self::one()));
-            z = z.square();
-            let new_t = t * z;
-            t = Self::conditional_select(&new_t, &t, b.ct_eq(&Self::one()));
-        }
-
-        CtOption::new(s, (s.square()).ct_eq(self))
+        CtOption::new(x, (x.square()).ct_eq(self))
     }
 
     /// Computes the double of a field element
@@ -1550,22 +1746,6 @@ mod tests {
         }
     }
 
-    // ROOTS OF UNITY
-    // ================================================================================================
-
-    #[test]
-    fn test_get_root_of_unity() {
-        let two_pow_33 = 1 << TWO_ADICITY_P6 as u64;
-        assert_eq!(
-            Fp6::one(),
-            TWO_ADIC_ROOT_OF_UNITY_P6.exp(&[two_pow_33, 0, 0, 0, 0, 0])
-        );
-        assert_ne!(
-            Fp6::one(),
-            TWO_ADIC_ROOT_OF_UNITY_P6.exp(&[two_pow_33 - 1, 0, 0, 0, 0, 0])
-        );
-    }
-
     #[test]
     fn test_lexicographic_largest() {
         assert!(!bool::from(Fp6::zero().lexicographically_largest()));
@@ -1636,6 +1816,20 @@ mod tests {
 
         assert_eq!(e_fp6, e.into());
         assert_eq!(Fp6::from(array), e_fp6);
+    }
+
+    #[test]
+    fn test_from_fp3() {
+        let mut rng = OsRng;
+        let t = Fp3::from(&Fp6::random(&mut rng));
+        let s = Fp6::random(&mut rng);
+
+        assert_eq!(t, Fp3::from(&Fp6::from(t)));
+
+        assert_eq!(s.mul_by_low_fp3(&t), s * Fp6::from(t));
+
+        let y = Fp6::new([0, t.a0.0, 0, t.a1.0, 0, t.a2.0]);
+        assert_eq!(s.mul_by_high_fp3(&t), s * y);
     }
 
     // FIELD TRAIT
