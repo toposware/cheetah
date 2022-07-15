@@ -232,6 +232,12 @@ impl Fp {
         self.make_canonical().0
     }
 
+    /// Outputs the internal representation as
+    /// a 64-bit limb without canonical reduction.
+    pub const fn output_unreduced_internal(&self) -> u64 {
+        self.0
+    }
+
     /// Converts an `Fp` element into a byte representation in
     /// little-endian byte order.
     pub const fn to_bytes(&self) -> [u8; 8] {
@@ -1000,11 +1006,27 @@ mod tests {
         let element_normalized = Fp::new(42);
 
         assert_eq!(element, element_normalized);
-        assert!(element.0 != element_normalized.0);
+        assert_eq!(
+            element.output_internal(),
+            element_normalized.output_internal()
+        );
+        assert_ne!(
+            element.output_unreduced_internal(),
+            element_normalized.output_unreduced_internal()
+        );
+        assert_ne!(element.0, element_normalized.0);
 
         element = element.make_canonical();
         assert_eq!(element, element_normalized);
-        assert!(element.0 == element_normalized.0);
+        assert_eq!(
+            element.output_internal(),
+            element_normalized.output_internal()
+        );
+        assert_eq!(
+            element.output_unreduced_internal(),
+            element_normalized.output_unreduced_internal()
+        );
+        assert_eq!(element.0, element_normalized.0);
     }
 
     // FIELD TRAIT
