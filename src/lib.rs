@@ -67,3 +67,8 @@ pub(crate) use curve::ModifiedJacobianPoint;
 pub use curve::{
     AffinePoint, CompressedPoint, JacobianPoint, ProjectivePoint, UncompressedPoint, B,
 };
+
+/// Helper methods for arithmetic reduction of integers mod p
+pub mod fp_arith_utils {
+    pub use crate::fp::{reduce_u128, reduce_u96};
+}

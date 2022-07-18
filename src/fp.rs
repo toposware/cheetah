@@ -620,7 +620,7 @@ impl<'de> Deserialize<'de> for Fp {
 
 /// Reduces a 128-bit value by M such that the output fits in a u64.
 #[inline(always)]
-pub(crate) const fn reduce_u128(x: u128) -> u64 {
+pub const fn reduce_u128(x: u128) -> u64 {
     // See https://github.com/mir-protocol/plonky2/blob/main/plonky2.pdf
     // for a more complete description of the reduction.
 
@@ -650,7 +650,7 @@ pub(crate) const fn reduce_u128(x: u128) -> u64 {
 /// This is similar to reduce_u128() but is aimed to be used when we are guaranteed that
 /// the value to be reduced is fitting in 96 bits.
 #[inline(always)]
-pub(crate) const fn reduce_u96(x: u128) -> u64 {
+pub const fn reduce_u96(x: u128) -> u64 {
     // Decompose x = r0 + c.2^64 with r0 a u64 value and c a u32 value
     let c = ((x >> 64) as u32) as u64;
 
