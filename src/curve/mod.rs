@@ -9,6 +9,17 @@
 //! This module provides an implementation of the STARK-friendly
 //! cheetah curve over the sextic extension of the prime field Fp
 //! of characteristic p = 2^64 - 2^32 + 1.
+//!
+//! It currently supports three coordinate systems: affine,
+//! projective and jacobian. Because of the inefficiency of affine
+//! coordinate-based group operations, the `AffinePoint` struct arithmetic
+//! internally relies on modified Chudnovsky Jacobian arithmetic.
+//!
+//! All three coordinate systems can be encoded in either compressed or
+//! uncompressed format. The compressed format, denoted by `CompressedPoint`,
+//! takes 49 bytes to represent a point (storing the x coordinate plus some
+//! extra information for recovering the y coordinate). The other format,
+//! `UncompressedPoint` stores an extra 48 bytes for the y coordinate.
 
 mod affine;
 mod encoding;

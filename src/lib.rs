@@ -14,6 +14,24 @@
 //! where u^6 - 7 = 0
 //!
 //! Portions of the codebase have been adapted from https://github.com/zkcrypto/bls12_381
+//!
+//! The Cheetah curve has been discovered from the SageMath script available at
+//! https://github.com/Toposware/cheetah_evidence and is detailed with security
+//! evaluation in https://eprint.iacr.org/2022/277.
+//!
+//! This library is not intended to provide any implementation of cryptographic
+//! protocols, but rather to serve as a intermediate level API providing
+//! all the necessary tools for building elliptic-curve based protocols over the
+//! Cheetah curve, from field elements to curve points in different coordinate
+//! systems.
+//!
+//! # Features
+//!
+//! The `cheetah` library doesn't rely on the Rust standard library, which makes it
+//! suitable for use in embedded systems or WASM environments. The `serialize` feature
+//! enables Serde serialization support for all the publicly available types defined
+//! in this library. This feature is enabled by default but can be disabled by using
+//! `no-default-features` when compiling.
 
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg))]
