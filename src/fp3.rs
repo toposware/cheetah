@@ -131,17 +131,17 @@ impl Fp3 {
         let s002 = (&s002).mul(&tmp).0 as u128;
 
         let d00 = t01 + t02;
-        let d00 = s012 + 0x1fffffffe00000002 - d00;
+        let d00 = s012 + 0x7fffffff800000008 - d00;
         let d00 = d00 * BETA;
         let d00 = d00 + t00;
 
         let d01 = t02 * BETA;
         let tmp = t00 + t01;
-        let d01 = d01 + 0x1fffffffe00000002 - tmp;
+        let d01 = d01 + 0x7fffffff800000008 - tmp;
         let d01 = d01 + s001;
 
         let d02 = t00 + t02;
-        let d02 = t01 + 0x1fffffffe00000002 - d02;
+        let d02 = t01 + 0x7fffffff800000008 - d02;
         let d02 = d02 + s002;
 
         // Compute the final coordinates, reduced by the modulus
@@ -169,17 +169,17 @@ impl Fp3 {
         let s002 = (&s002).square().0 as u128;
 
         let d00 = t01 + t02;
-        let d00 = s012 + 0x1fffffffe00000002 - d00;
+        let d00 = s012 + 0x7fffffff800000008 - d00;
         let d00 = d00 * BETA;
         let d00 = d00 + t00;
 
         let d01 = t02 * BETA;
         let tmp = t00 + t01;
-        let d01 = d01 + 0x1fffffffe00000002 - tmp;
+        let d01 = d01 + 0x7fffffff800000008 - tmp;
         let d01 = d01 + s001;
 
         let d02 = t00 + t02;
-        let d02 = t01 + 0x1fffffffe00000002 - d02;
+        let d02 = t01 + 0x7fffffff800000008 - d02;
         let d02 = d02 + s002;
 
         // Compute the final coordinates, reduced by the modulus

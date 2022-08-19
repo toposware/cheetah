@@ -457,41 +457,45 @@ impl Fp6 {
 
         // Compute a_0 * b_0
         let d00 = t01 + t02;
-        let d00 = s012 + 0x1fffffffe00000002 - d00;
+        // We need to make sure this doesn't underflow, hence adding a multiple of the modulus.
+        // Running the tests in debug mode complains about a potential underflow when adding 2.p
+        // hence adding a larger value (8.p).
+        let d00 = s012 + 0x7fffffff800000008 - d00;
         let d00 = d00 * BETA;
         let d00 = d00 + t00;
 
         let d01 = t02 * BETA;
         let tmp = t00 + t01;
-        let d01 = d01 + 0x1fffffffe00000002 - tmp;
+        let d01 = d01 + 0x7fffffff800000008 - tmp;
         let d01 = d01 + s001;
 
         let d02 = t00 + t02;
-        let d02 = t01 + 0x1fffffffe00000002 - d02;
+        let d02 = t01 + 0x7fffffff800000008 - d02;
         let d02 = d02 + s002;
 
         // Compute a_1 * b_0
         let d30 = t31 + t32;
-        let d30 = s312 + 0x1fffffffe00000002 - d30;
+        let d30 = s312 + 0x7fffffff800000008 - d30;
         let d30 = d30 * BETA;
         let d30 = d30 + t30;
 
         let d31 = t32 * BETA;
         let tmp = t30 + t31;
-        let d31 = d31 + 0x1fffffffe00000002 - tmp;
+        let d31 = d31 + 0x7fffffff800000008 - tmp;
         let d31 = d31 + s301;
 
         let d32 = t30 + t32;
-        let d32 = t31 + 0x1fffffffe00000002 - d32;
+        let d32 = t31 + 0x7fffffff800000008 - d32;
         let d32 = d32 + s302;
 
         // Compute the final coordinates, reduced by the modulus
-        let c0 = Fp(reduce_u96(d00 + 0x1fffffffe00000002 * BETA));
-        let c2 = Fp(reduce_u96(d01 + 0x1fffffffe00000002 * BETA));
-        let c4 = Fp(reduce_u96(d02 + 0x1fffffffe00000002));
-        let c1 = Fp(reduce_u96(d30 + 0x1fffffffe00000002 * BETA));
-        let c3 = Fp(reduce_u96(d31 + 0x1fffffffe00000002));
-        let c5 = Fp(reduce_u96(d32 + 0x1fffffffe00000002));
+        // 0x7fffffff800000008 * BETA = 0x37ffffffc800000038
+        let c0 = Fp(reduce_u96(d00 + 0x37ffffffc800000038));
+        let c2 = Fp(reduce_u96(d01 + 0x37ffffffc800000038));
+        let c4 = Fp(reduce_u96(d02 + 0x7fffffff800000008));
+        let c1 = Fp(reduce_u96(d30 + 0x37ffffffc800000038));
+        let c3 = Fp(reduce_u96(d31 + 0x7fffffff800000008));
+        let c5 = Fp(reduce_u96(d32 + 0x7fffffff800000008));
 
         Self {
             c0,
@@ -546,41 +550,42 @@ impl Fp6 {
 
         // Compute a_1 * b_1
         let d10 = t11 + t12;
-        let d10 = s112 + 0x1fffffffe00000002 - d10;
+        let d10 = s112 + 0x7fffffff800000008 - d10;
         let d10 = d10 * BETA;
         let d10 = d10 + t10;
 
         let d11 = t12 * BETA;
         let tmp = t10 + t11;
-        let d11 = d11 + 0x1fffffffe00000002 - tmp;
+        let d11 = d11 + 0x7fffffff800000008 - tmp;
         let d11 = d11 + s101;
 
         let d12 = t10 + t12;
-        let d12 = t11 + 0x1fffffffe00000002 - d12;
+        let d12 = t11 + 0x7fffffff800000008 - d12;
         let d12 = d12 + s102;
 
         // Compute a_0 * b_1
         let d20 = t21 + t22;
-        let d20 = s212 + 0x1fffffffe00000002 - d20;
+        let d20 = s212 + 0x7fffffff800000008 - d20;
         let d20 = d20 * BETA;
         let d20 = d20 + t20;
 
         let d21 = t22 * BETA;
         let tmp = t20 + t21;
-        let d21 = d21 + 0x1fffffffe00000002 - tmp;
+        let d21 = d21 + 0x7fffffff800000008 - tmp;
         let d21 = d21 + s201;
 
         let d22 = t20 + t22;
-        let d22 = t21 + 0x1fffffffe00000002 - d22;
+        let d22 = t21 + 0x7fffffff800000008 - d22;
         let d22 = d22 + s202;
 
         // Compute the final coordinates, reduced by the modulus
-        let c0 = Fp(reduce_u96((d12 + 0x1fffffffe00000002) * BETA));
-        let c2 = Fp(reduce_u96(d10 + 0x1fffffffe00000002));
-        let c4 = Fp(reduce_u96(d11 + 0x1fffffffe00000002));
-        let c1 = Fp(reduce_u96(d20 + 0x1fffffffe00000002 * BETA));
-        let c3 = Fp(reduce_u96(d21 + 0x1fffffffe00000002));
-        let c5 = Fp(reduce_u96(d22 + 0x1fffffffe00000002));
+        // 0x7fffffff800000008 * BETA = 0x37ffffffc800000038
+        let c0 = Fp(reduce_u96((d12 + 0x7fffffff800000008) * BETA));
+        let c2 = Fp(reduce_u96(d10 + 0x7fffffff800000008));
+        let c4 = Fp(reduce_u96(d11 + 0x7fffffff800000008));
+        let c1 = Fp(reduce_u96(d20 + 0x37ffffffc800000038));
+        let c3 = Fp(reduce_u96(d21 + 0x7fffffff800000008));
+        let c5 = Fp(reduce_u96(d22 + 0x7fffffff800000008));
 
         Self {
             c0,
@@ -703,62 +708,62 @@ impl Fp6 {
 
         // Compute a_0 * b_0
         let d00 = t01 + t02;
-        let d00 = s012 + 0x1fffffffe00000002 - d00;
+        let d00 = s012 + 0x7fffffff800000008 - d00;
         let d00 = d00 * BETA;
         let d00 = d00 + t00;
 
         let d01 = t02 * BETA;
         let tmp = t00 + t01;
-        let d01 = d01 + 0x1fffffffe00000002 - tmp;
+        let d01 = d01 + 0x7fffffff800000008 - tmp;
         let d01 = d01 + s001;
 
         let d02 = t00 + t02;
-        let d02 = t01 + 0x1fffffffe00000002 - d02;
+        let d02 = t01 + 0x7fffffff800000008 - d02;
         let d02 = d02 + s002;
 
         // Compute a_1 * b_1
         let d10 = t11 + t12;
-        let d10 = s112 + 0x1fffffffe00000002 - d10;
+        let d10 = s112 + 0x7fffffff800000008 - d10;
         let d10 = d10 * BETA;
         let d10 = d10 + t10;
 
         let d11 = t12 * BETA;
         let tmp = t10 + t11;
-        let d11 = d11 + 0x1fffffffe00000002 - tmp;
+        let d11 = d11 + 0x7fffffff800000008 - tmp;
         let d11 = d11 + s101;
 
         let d12 = t10 + t12;
-        let d12 = t11 + 0x1fffffffe00000002 - d12;
+        let d12 = t11 + 0x7fffffff800000008 - d12;
         let d12 = d12 + s102;
 
         // Compute a_0 * b_1
         let d20 = t21 + t22;
-        let d20 = s212 + 0x1fffffffe00000002 - d20;
+        let d20 = s212 + 0x7fffffff800000008 - d20;
         let d20 = d20 * BETA;
         let d20 = d20 + t20;
 
         let d21 = t22 * BETA;
         let tmp = t20 + t21;
-        let d21 = d21 + 0x1fffffffe00000002 - tmp;
+        let d21 = d21 + 0x7fffffff800000008 - tmp;
         let d21 = d21 + s201;
 
         let d22 = t20 + t22;
-        let d22 = t21 + 0x1fffffffe00000002 - d22;
+        let d22 = t21 + 0x7fffffff800000008 - d22;
         let d22 = d22 + s202;
 
         // Compute a_1 * b_0
         let d30 = t31 + t32;
-        let d30 = s312 + 0x1fffffffe00000002 - d30;
+        let d30 = s312 + 0x7fffffff800000008 - d30;
         let d30 = d30 * BETA;
         let d30 = d30 + t30;
 
         let d31 = t32 * BETA;
         let tmp = t30 + t31;
-        let d31 = d31 + 0x1fffffffe00000002 - tmp;
+        let d31 = d31 + 0x7fffffff800000008 - tmp;
         let d31 = d31 + s301;
 
         let d32 = t30 + t32;
-        let d32 = t31 + 0x1fffffffe00000002 - d32;
+        let d32 = t31 + 0x7fffffff800000008 - d32;
         let d32 = d32 + s302;
 
         // Compute the final coordinates, reduced by the modulus
