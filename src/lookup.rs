@@ -79,12 +79,12 @@ impl<const N: usize> LookupTable<N> {
     // To do so, we first compute |x|.P, and then conditionally
     // negate the result based on the sign of x.
     pub(crate) fn get_point(&self, x: i8) -> AffinePoint {
-        debug_assert!(x >= -(N as i8));
-        debug_assert!(x <= N as i8);
+        debug_assert!(x > 0 || x + 1 >= -((N - 1) as i8));
+        debug_assert!(x < 0 || x - 1 <= (N - 1) as i8);
 
         // Compute xabs = |x|
-        let xmask = x >> 7;
-        let xabs = (x + xmask) ^ xmask;
+        let xmask = (x as i16) >> 7;
+        let xabs = (x as i16 + xmask) ^ xmask;
 
         // Get an array element in constant time
         let mut t = AffinePoint::identity();
@@ -105,12 +105,12 @@ impl<const N: usize> LookupTable<N> {
     // To do so, we first compute |x|.P, and then conditionally
     // negate the result based on the sign of x.
     pub(crate) fn get_point_vartime(&self, x: i8) -> AffinePoint {
-        debug_assert!(x >= -(N as i8));
-        debug_assert!(x <= N as i8);
+        debug_assert!(x > 0 || x + 1 >= -((N - 1) as i8));
+        debug_assert!(x < 0 || x - 1 <= (N - 1) as i8);
 
         // Compute xabs = |x|
-        let xmask = x >> 7;
-        let xabs = (x + xmask) ^ xmask;
+        let xmask = (x as i16) >> 7;
+        let xabs = (x as i16 + xmask) ^ xmask;
 
         // Get an array element
         let mut t = self.0[xabs as usize - 1];
