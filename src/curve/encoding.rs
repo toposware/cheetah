@@ -349,6 +349,7 @@ mod tests {
     use super::*;
     use rand_core::OsRng;
 
+    #[cfg(feature = "serialize")]
     use crate::ProjectivePoint;
 
     // POINT COMPRESSION
