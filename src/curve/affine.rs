@@ -24,6 +24,7 @@ use crate::{CompressedPoint, UncompressedPoint};
 use crate::{Fp, Fp6, Scalar};
 use crate::{JacobianPoint, ModifiedJacobianPoint, ProjectivePoint};
 
+#[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};

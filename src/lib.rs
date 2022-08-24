@@ -27,13 +27,15 @@
 //!
 //! # Features
 //!
-//! The `cheetah` library doesn't rely on the Rust standard library, which makes it
-//! suitable for use in embedded systems or WASM environments. The `serialize` feature
-//! enables Serde serialization support for all the publicly available types defined
-//! in this library. This feature is enabled by default but can be disabled by using
-//! `no-default-features` when compiling.
+//! The `cheetah` library by default relies on the Rust standard library `std` through
+//! the `std` feature. To enable use in embedded systems or WASM environments, this
+//! feature can be disabled by using `no-default-features` when compiling, allowing
+//! heap allocations through the `alloc` crate instead.
+//! The `serialize` feature enables Serde serialization support for all the publicly
+//! available types defined in this library. This feature is enabled by default but can
+//! be also disabled by using `no-default-features` when compiling.
 
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 // Catch documentation errors caused by code changes.
 #![deny(rustdoc::broken_intra_doc_links)]
@@ -42,6 +44,7 @@
 #![deny(unsafe_code)]
 #![allow(clippy::many_single_char_names)]
 
+#[cfg(not(feature = "std"))]
 extern crate alloc;
 
 #[cfg(test)]

@@ -29,6 +29,7 @@ use crate::constants::ODD_MULTIPLES_BASEPOINT;
 use crate::LookupTable;
 use crate::NafLookupTable;
 
+#[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
 use group::{Curve, Group};
 use rand_core::RngCore;
