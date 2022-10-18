@@ -1,5 +1,8 @@
 # Cheetah 🐆
 
+[![codecov](https://codecov.io/gh/toposware/cheetah/branch/main/graph/badge.svg?token=0NWRGPBE8Q)](https://codecov.io/gh/toposware/cheetah)
+![example workflow](https://github.com/toposware/cheetah/actions/workflows/ci.yml/badge.svg)
+
 This crate provides an implementation of the Cheetah curve over a sextic extension of the prime field `Fp`,
 with p = 2<sup>64</sup> - 2<sup>32</sup> + 1.
 
