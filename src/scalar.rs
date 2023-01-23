@@ -425,7 +425,7 @@ impl Scalar {
     }
 
     /// Converts a little-endian bit sequence into a Scalar element
-    pub fn from_bits(bit_slice: &BitSlice<Lsb0, u8>) -> Scalar {
+    pub fn from_bits(bit_slice: &BitSlice<u8, Lsb0>) -> Scalar {
         assert_eq!(bit_slice.len(), 256);
 
         let mut result = Scalar::zero();
@@ -447,7 +447,7 @@ impl Scalar {
     /// **This operation is variable time with respect
     /// to the binary slice.** If the slice is fixed,
     /// this operation is effectively constant time.
-    pub fn from_bits_vartime(bit_slice: &BitSlice<Lsb0, u8>) -> Scalar {
+    pub fn from_bits_vartime(bit_slice: &BitSlice<u8, Lsb0>) -> Scalar {
         assert_eq!(bit_slice.len(), 256);
 
         let mut result = Scalar::zero();
