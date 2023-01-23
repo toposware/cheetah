@@ -43,6 +43,8 @@
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
 #![allow(clippy::many_single_char_names)]
+// until clippy fixes false positives
+#![allow(clippy::needless_borrow)]
 
 #[cfg(not(feature = "std"))]
 extern crate alloc;
