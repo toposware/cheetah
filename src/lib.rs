@@ -45,6 +45,8 @@
 #![allow(clippy::many_single_char_names)]
 // until clippy fixes false positives
 #![allow(clippy::needless_borrow)]
+// until clippy fixes false positives
+#![allow(clippy::unnecessary_cast)]
 
 #[cfg(not(feature = "std"))]
 extern crate alloc;
