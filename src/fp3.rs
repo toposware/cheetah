@@ -488,6 +488,4 @@ mod tests {
             TWO_ADIC_ROOT_OF_UNITY_P3.exp_vartime(&[two_pow_32 - 1, 0, 0,])
         );
     }
-
-
 }
