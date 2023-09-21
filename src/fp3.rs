@@ -42,7 +42,38 @@ pub(crate) struct Fp3 {
 
 impl fmt::Debug for Fp3 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{:?} + {:?}*u + {:?}*u^2", self.a0, self.a1, self.a2)
+        let coeffs = [self.a0, self.a1, self.a2];
+        let mut first_term = true;
+        for i in 0..3 {
+            if coeffs[i] == Fp::zero() {
+                continue;
+            }
+
+            if !first_term {
+                write!(f, " + ")?;
+            }
+
+            if coeffs[i] == Fp::one() && i > 0usize {
+                write!(f, "u")?; // Display "u" instead of "1u"
+            } else {
+                write!(f, "{}", coeffs[i])?;
+                if i > 0 {
+                    write!(f, "u")?;
+                }
+            }
+
+            if i > 1 {
+                write!(f, "^{}", i)?;
+            }
+
+            first_term = false;
+        }
+
+        if first_term {
+            write!(f, "")?; // Handle the case where all coefficients are zero
+        }
+
+        Ok(())
     }
 }
 
@@ -250,6 +281,15 @@ mod tests {
     use rand_core::{OsRng, RngCore};
 
     impl Fp3 {
+        /// Creates a new Fp3 element
+        fn new(coeffs: [u64; 3]) -> Self {
+            Self {
+                a0: Fp::new(coeffs[0]),
+                a1: Fp::new(coeffs[1]),
+                a2: Fp::new(coeffs[2])
+            }
+        }
+
         /// Generates a random canonical element
         fn random(mut rng: impl RngCore) -> Self {
             Self {
@@ -260,6 +300,26 @@ mod tests {
         }
     }
 
+    // DISPLAY
+    // ================================================================================================
+    #[test]
+    fn test_debug() {
+        assert_eq!(format!("{:?}", Fp3::zero()), "");
+        assert_eq!(format!("{:?}", Fp3::one()), "1");
+        assert_eq!(
+            format!("{:?}", Fp3::new([1, 2, 3])),
+            "1 + 2u + 3u^2"
+        );
+        assert_eq!(
+            format!("{:?}", Fp3::new([0, 1, 0])),
+            "u"
+        );
+        assert_eq!(format!("{:?}", Fp3::new([0, 0, 5])), "5u^2");
+
+        assert_eq!(format!("{:?}", Fp3::new([0, 5, 7])), "5u + 7u^2");
+        assert_eq!(format!("{:?}", Fp3::new([1, 1, 1])), "1 + u + u^2")
+
+    }
     // BASIC ALGEBRA
     // ================================================================================================
 
@@ -442,4 +502,6 @@ mod tests {
             TWO_ADIC_ROOT_OF_UNITY_P3.exp_vartime(&[two_pow_32 - 1, 0, 0,])
         );
     }
+
+
 }

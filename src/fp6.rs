@@ -57,29 +57,34 @@ pub struct Fp6 {
 impl fmt::Debug for Fp6 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let coeffs = [self.c0, self.c1, self.c2, self.c3, self.c4, self.c5];
-
+        let mut first_term = true;
         for i in 0..6 {
             if coeffs[i] == Fp::zero() {
                 continue;
             }
 
-            let coefficient = format!("{}", coeffs[i]);
+            if !first_term {
+                write!(f, " + ")?;
+            }
 
-            if i >= 1 {
-                if coeffs[i] != Fp::one() {
-                    write!(f, " + {}", coefficient)?
-                }
-
-                if i >= 1 {
+            if coeffs[i] == Fp::one() && i > 0usize {
+                write!(f, "u")?; // Display "u" instead of "1u"
+            } else {
+                write!(f, "{}", coeffs[i])?;
+                if i > 0 {
                     write!(f, "u")?;
                 }
-
-                if i >= 2 {
-                    write!(f, "^{}", i)?;
-                }
-            } else {
-                write!(f, "{coefficient}")?;
             }
+
+            if i > 1 {
+                write!(f, "^{}", i)?;
+            }
+
+            first_term = false;
+        }
+
+        if first_term {
+            write!(f, "")?; // Handle the case where all coefficients are zero
         }
 
         Ok(())
@@ -1290,9 +1295,12 @@ mod tests {
             format!("{:?}", Fp6::new([0, 1, 2, 0, 5, 23])),
             "u + 2u^2 + 5u^4 + 23u^5"
         );
+        assert_eq!(format!("{:?}", Fp6::new([0, 0, 0, 0, 0, 1])), "u^5");
 
         let a = Fp6::one().neg();
         assert_eq!(format!("{:?}", a), "18446744069414584320");
+
+        assert_eq!(format!("{:?}", Fp6::new([1, 1, 1, 1, 1, 1])), "1 + u + u^2 + u^3 + u^4 + u^5")
     }
 
     #[test]
