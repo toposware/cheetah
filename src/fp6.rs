@@ -57,34 +57,42 @@ pub struct Fp6 {
 impl fmt::Debug for Fp6 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let coeffs: [Fp; 6] = self.into();
-        let mut first_term = true;
-        for i in 0..6 {
-            if coeffs[i] == Fp::zero() {
-                continue;
-            }
 
-            if !first_term {
-                write!(f, " + ")?;
-            }
-
-            if coeffs[i] == Fp::one() && i > 0usize {
-                write!(f, "u")?; // Display "u" instead of "1u"
+        let format_term = |coef: Fp, degree: usize| -> String {
+            if coef == Fp::one() && degree > 0 {
+                let exp = if degree > 1 {
+                    format!("^{}", degree)
+                } else {
+                    "".to_string()
+                };
+                format!("u{}", exp)
             } else {
-                write!(f, "{}", coeffs[i])?;
-                if i > 0 {
-                    write!(f, "u")?;
+                let exp =  if degree > 0 {
+                    format!("u{}", if degree > 1 { format!("^{}", degree) } else { "".to_string() })
+                } else {
+                    "".to_string()
+                };
+                format!("{}{}", coef, exp)
+            }
+        };
+
+        let elem_rep = coeffs
+            .iter()
+            .enumerate()
+            .filter_map(|(i, &coef)| {
+                if coef == Fp::zero() {
+                    None
+                } else {
+                    Some(format_term(coef, i))
                 }
-            }
+            })
+            .collect::<Vec<String>>()
+            .join(" + ");
 
-            if i > 1 {
-                write!(f, "^{}", i)?;
-            }
-
-            first_term = false;
-        }
-
-        if first_term {
+        if elem_rep.is_empty() {
             write!(f, "0")?; // Handle the case where all coefficients are zero
+        } else {
+            write!(f, "{}", elem_rep)?;
         }
 
         Ok(())
@@ -1286,7 +1294,7 @@ mod tests {
     #[test]
     fn test_debug() {
         assert_eq!(format!("{:?}", Fp6::one()), "1");
-        assert_eq!(format!("{:?}", Fp6::zero()), "");
+        assert_eq!(format!("{:?}", Fp6::zero()), "0");
         assert_eq!(
             format!("{:?}", Fp6::new([1, 2, 3, 4, 5, 6])),
             "1 + 2u + 3u^2 + 4u^3 + 5u^4 + 6u^5"
