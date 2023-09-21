@@ -84,7 +84,7 @@ impl fmt::Debug for Fp6 {
         }
 
         if first_term {
-            write!(f, "")?; // Handle the case where all coefficients are zero
+            write!(f, "0")?; // Handle the case where all coefficients are zero
         }
 
         Ok(())
