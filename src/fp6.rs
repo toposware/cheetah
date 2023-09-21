@@ -56,7 +56,7 @@ pub struct Fp6 {
 
 impl fmt::Debug for Fp6 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let coeffs = [self.c0, self.c1, self.c2, self.c3, self.c4, self.c5];
+        let coeffs: [Fp; 6] = self.into();
         let mut first_term = true;
         for i in 0..6 {
             if coeffs[i] == Fp::zero() {
