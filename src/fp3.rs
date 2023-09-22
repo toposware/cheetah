@@ -75,11 +75,11 @@ impl fmt::Debug for Fp3 {
             .collect::<Vec<String>>()
             .join(" + ");
 
-        if elem_rep.is_empty() {
-            write!(f, "0")?; // Handle the case where all coefficients are zero
-        } else {
-            write!(f, "{}", elem_rep)?;
-        }
+        if *self == Fp3::zero() {
+            return write!(f, "0"); // Handle the case where all coefficients are zero
+        } 
+        
+        write!(f, "{}", elem_rep)?;
 
         Ok(())
     }
