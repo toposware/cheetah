@@ -12,6 +12,13 @@
 
 use core::fmt::{self, Formatter};
 
+#[cfg(not(feature = "std"))]
+use alloc::{
+    format,
+    string::{String, ToString},
+    vec::Vec,
+};
+
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 use crate::fp::reduce_u96;
@@ -42,7 +49,53 @@ pub(crate) struct Fp3 {
 
 impl fmt::Debug for Fp3 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{:?} + {:?}*u + {:?}*u^2", self.a0, self.a1, self.a2)
+        if *self == Fp3::zero() {
+            return write!(f, "0"); // Handle the case where all coefficients are zero
+        }
+
+        let coeffs = [self.a0, self.a1, self.a2];
+
+        let format_term = |coef: Fp, degree: usize| -> String {
+            if coef == Fp::one() && degree > 0 {
+                let exp = if degree > 1 {
+                    format!("^{}", degree)
+                } else {
+                    "".to_string()
+                };
+                format!("u{}", exp)
+            } else {
+                let exp = if degree > 0 {
+                    format!(
+                        "u{}",
+                        if degree > 1 {
+                            format!("^{}", degree)
+                        } else {
+                            "".to_string()
+                        }
+                    )
+                } else {
+                    "".to_string()
+                };
+                format!("{}{}", coef, exp)
+            }
+        };
+
+        let elem_rep = coeffs
+            .iter()
+            .enumerate()
+            .filter_map(|(i, &coef)| {
+                if coef == Fp::zero() {
+                    None
+                } else {
+                    Some(format_term(coef, i))
+                }
+            })
+            .collect::<Vec<String>>()
+            .join(" + ");
+
+        write!(f, "{}", elem_rep)?;
+
+        Ok(())
     }
 }
 
@@ -260,6 +313,34 @@ mod tests {
         }
     }
 
+    // DISPLAY
+    // ================================================================================================
+    #[test]
+    fn test_debug() {
+        assert_eq!(format!("{:?}", Fp3::zero()), "0");
+        assert_eq!(format!("{:?}", Fp3::one()), "1");
+
+        let a = Fp3 {
+            a0: Fp::new(0),
+            a1: Fp::new(0),
+            a2: Fp::new(7),
+        };
+        assert_eq!(format!("{:?}", a), "7u^2");
+
+        let b = Fp3 {
+            a0: Fp::new(1),
+            a1: Fp::new(0),
+            a2: Fp::new(11),
+        };
+        assert_eq!(format!("{:?}", b), "1 + 11u^2");
+
+        let c = Fp3 {
+            a0: Fp::new(1),
+            a1: Fp::new(2),
+            a2: Fp::new(1),
+        };
+        assert_eq!(format!("{:?}", c), "1 + 2u + u^2");
+    }
     // BASIC ALGEBRA
     // ================================================================================================
 

@@ -17,6 +17,13 @@ use core::{
     ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
+#[cfg(not(feature = "std"))]
+use alloc::{
+    format,
+    string::{String, ToString},
+    vec::Vec,
+};
+
 use group::ff::Field;
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
@@ -56,11 +63,53 @@ pub struct Fp6 {
 
 impl fmt::Debug for Fp6 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{:?} + {:?}*u + {:?}*u^2 + {:?}*u^3 + {:?}*u^4 + {:?}*u^5",
-            self.c0, self.c1, self.c2, self.c3, self.c4, self.c5
-        )
+        if self.is_zero().into() {
+            return write!(f, "0"); // Handle the case where all coefficients are zero
+        }
+
+        let coeffs: [Fp; 6] = self.into();
+
+        let format_term = |coef: Fp, degree: usize| -> String {
+            if coef == Fp::one() && degree > 0 {
+                let exp = if degree > 1 {
+                    format!("^{}", degree)
+                } else {
+                    "".to_string()
+                };
+                format!("u{}", exp)
+            } else {
+                let exp = if degree > 0 {
+                    format!(
+                        "u{}",
+                        if degree > 1 {
+                            format!("^{}", degree)
+                        } else {
+                            "".to_string()
+                        }
+                    )
+                } else {
+                    "".to_string()
+                };
+                format!("{}{}", coef, exp)
+            }
+        };
+
+        let elem_rep = coeffs
+            .iter()
+            .enumerate()
+            .filter_map(|(i, &coef)| {
+                if coef == Fp::zero() {
+                    None
+                } else {
+                    Some(format_term(coef, i))
+                }
+            })
+            .collect::<Vec<String>>()
+            .join(" + ");
+
+        write!(f, "{}", elem_rep)?;
+
+        Ok(())
     }
 }
 
@@ -1258,24 +1307,25 @@ mod tests {
 
     #[test]
     fn test_debug() {
-        assert_eq!(
-            format!("{:?}", Fp6::zero()),
-            "0 + 0*u + 0*u^2 + 0*u^3 + 0*u^4 + 0*u^5"
-        );
-        assert_eq!(
-            format!("{:?}", Fp6::one()),
-            "1 + 0*u + 0*u^2 + 0*u^3 + 0*u^4 + 0*u^5"
-        );
+        assert_eq!(format!("{:?}", Fp6::one()), "1");
+        assert_eq!(format!("{:?}", Fp6::zero()), "0");
         assert_eq!(
             format!("{:?}", Fp6::new([1, 2, 3, 4, 5, 6])),
-            "1 + 2*u + 3*u^2 + 4*u^3 + 5*u^4 + 6*u^5"
+            "1 + 2u + 3u^2 + 4u^3 + 5u^4 + 6u^5"
         );
+        assert_eq!(
+            format!("{:?}", Fp6::new([0, 1, 2, 0, 5, 23])),
+            "u + 2u^2 + 5u^4 + 23u^5"
+        );
+        assert_eq!(format!("{:?}", Fp6::new([0, 0, 0, 0, 0, 1])), "u^5");
 
         let a = Fp6::one().neg();
+        assert_eq!(format!("{:?}", a), "18446744069414584320");
+
         assert_eq!(
-            format!("{:?}", a),
-            "18446744069414584320 + 0*u + 0*u^2 + 0*u^3 + 0*u^4 + 0*u^5"
-        );
+            format!("{:?}", Fp6::new([1, 1, 1, 1, 1, 1])),
+            "1 + u + u^2 + u^3 + u^4 + u^5"
+        )
     }
 
     #[test]
