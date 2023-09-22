@@ -305,6 +305,27 @@ mod tests {
     fn test_debug() {
         assert_eq!(format!("{:?}", Fp3::zero()), "0");
         assert_eq!(format!("{:?}", Fp3::one()), "1");
+
+        let a = Fp3 {
+            a0: Fp::new(0),
+            a1: Fp::new(0),
+            a2: Fp::new(7)
+        };
+        assert_eq!(format!("{:?}", a), "7u^2");
+
+        let b = Fp3 {
+            a0: Fp::new(1),
+            a1: Fp::new(0),
+            a2: Fp::new(11)
+        };
+        assert_eq!(format!("{:?}", b), "1 + 11u^2");
+
+        let c = Fp3 {
+            a0: Fp::new(1),
+            a1: Fp::new(2),
+            a2: Fp::new(1)
+        };
+        assert_eq!(format!("{:?}", c), "1 + 2u + u^2");
     }
     // BASIC ALGEBRA
     // ================================================================================================
