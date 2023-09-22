@@ -56,6 +56,10 @@ pub struct Fp6 {
 
 impl fmt::Debug for Fp6 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        if self.is_zero().into() {
+            return write!(f, "0"); // Handle the case where all coefficients are zero
+        }
+
         let coeffs: [Fp; 6] = self.into();
 
         let format_term = |coef: Fp, degree: usize| -> String {
@@ -95,10 +99,6 @@ impl fmt::Debug for Fp6 {
             })
             .collect::<Vec<String>>()
             .join(" + ");
-
-        if self.is_zero().into() {
-            return write!(f, "0"); // Handle the case where all coefficients are zero
-        }
 
         write!(f, "{}", elem_rep)?;
 

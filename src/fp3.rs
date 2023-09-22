@@ -42,6 +42,10 @@ pub(crate) struct Fp3 {
 
 impl fmt::Debug for Fp3 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        if *self == Fp3::zero() {
+            return write!(f, "0"); // Handle the case where all coefficients are zero
+        }
+
         let coeffs = [self.a0, self.a1, self.a2];
 
         let format_term = |coef: Fp, degree: usize| -> String {
@@ -81,10 +85,6 @@ impl fmt::Debug for Fp3 {
             })
             .collect::<Vec<String>>()
             .join(" + ");
-
-        if *self == Fp3::zero() {
-            return write!(f, "0"); // Handle the case where all coefficients are zero
-        }
 
         write!(f, "{}", elem_rep)?;
 
