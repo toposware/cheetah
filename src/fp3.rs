@@ -53,8 +53,15 @@ impl fmt::Debug for Fp3 {
                 };
                 format!("u{}", exp)
             } else {
-                let exp =  if degree > 0 {
-                    format!("u{}", if degree > 1 { format!("^{}", degree) } else { "".to_string() })
+                let exp = if degree > 0 {
+                    format!(
+                        "u{}",
+                        if degree > 1 {
+                            format!("^{}", degree)
+                        } else {
+                            "".to_string()
+                        }
+                    )
                 } else {
                     "".to_string()
                 };
@@ -77,8 +84,8 @@ impl fmt::Debug for Fp3 {
 
         if *self == Fp3::zero() {
             return write!(f, "0"); // Handle the case where all coefficients are zero
-        } 
-        
+        }
+
         write!(f, "{}", elem_rep)?;
 
         Ok(())
@@ -309,21 +316,21 @@ mod tests {
         let a = Fp3 {
             a0: Fp::new(0),
             a1: Fp::new(0),
-            a2: Fp::new(7)
+            a2: Fp::new(7),
         };
         assert_eq!(format!("{:?}", a), "7u^2");
 
         let b = Fp3 {
             a0: Fp::new(1),
             a1: Fp::new(0),
-            a2: Fp::new(11)
+            a2: Fp::new(11),
         };
         assert_eq!(format!("{:?}", b), "1 + 11u^2");
 
         let c = Fp3 {
             a0: Fp::new(1),
             a1: Fp::new(2),
-            a2: Fp::new(1)
+            a2: Fp::new(1),
         };
         assert_eq!(format!("{:?}", c), "1 + 2u + u^2");
     }

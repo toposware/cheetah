@@ -67,8 +67,15 @@ impl fmt::Debug for Fp6 {
                 };
                 format!("u{}", exp)
             } else {
-                let exp =  if degree > 0 {
-                    format!("u{}", if degree > 1 { format!("^{}", degree) } else { "".to_string() })
+                let exp = if degree > 0 {
+                    format!(
+                        "u{}",
+                        if degree > 1 {
+                            format!("^{}", degree)
+                        } else {
+                            "".to_string()
+                        }
+                    )
                 } else {
                     "".to_string()
                 };
@@ -92,7 +99,7 @@ impl fmt::Debug for Fp6 {
         if self.is_zero().into() {
             return write!(f, "0"); // Handle the case where all coefficients are zero
         }
-        
+
         write!(f, "{}", elem_rep)?;
 
         Ok(())
@@ -1308,7 +1315,10 @@ mod tests {
         let a = Fp6::one().neg();
         assert_eq!(format!("{:?}", a), "18446744069414584320");
 
-        assert_eq!(format!("{:?}", Fp6::new([1, 1, 1, 1, 1, 1])), "1 + u + u^2 + u^3 + u^4 + u^5")
+        assert_eq!(
+            format!("{:?}", Fp6::new([1, 1, 1, 1, 1, 1])),
+            "1 + u + u^2 + u^3 + u^4 + u^5"
+        )
     }
 
     #[test]
