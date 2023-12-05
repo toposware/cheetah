@@ -3,6 +3,14 @@
 [![codecov](https://codecov.io/gh/toposware/cheetah/branch/main/graph/badge.svg?token=0NWRGPBE8Q)](https://codecov.io/gh/toposware/cheetah)
 ![example workflow](https://github.com/toposware/cheetah/actions/workflows/ci.yml/badge.svg)
 
+## NOTICE
+
+This repository is unmaintained and therefore publicly archived.
+If you have any interest in the Cheetah curve or the work from its associated preprint [eprint.iacr.org/2022/277](https://eprint.iacr.org/2022/277)
+on extension-based elliptic curves, feel free to contact the authors at "research [at] toposware [dot] com".
+
+---
+
 This crate provides an implementation of the Cheetah curve over a sextic extension of the prime field `Fp`,
 with p = 2<sup>64</sup> - 2<sup>32</sup> + 1.
 
